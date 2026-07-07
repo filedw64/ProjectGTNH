@@ -1,10 +1,10 @@
-package moze_intel.projecte.emc.mappers.customConversions;
+package projectgtnh.emc.mappers.customConversions;
 
 import static org.junit.Assert.*;
 
-import moze_intel.projecte.emc.mappers.customConversions.json.ConversionGroup;
-import moze_intel.projecte.emc.mappers.customConversions.json.CustomConversion;
-import moze_intel.projecte.emc.mappers.customConversions.json.CustomConversionFile;
+import projectgtnh.emc.mappers.customConversions.json.ConversionGroup;
+import projectgtnh.emc.mappers.customConversions.json.CustomConversion;
+import projectgtnh.emc.mappers.customConversions.json.CustomConversionFile;
 
 import org.junit.Test;
 

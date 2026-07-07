@@ -1,16 +1,16 @@
-package moze_intel.projecte.emc;
+package projectgtnh.emc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import moze_intel.projecte.emc.arithmetics.FullFractionArithmetic;
-import moze_intel.projecte.emc.arithmetics.HiddenFractionArithmetic;
-import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
-import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.emc.collector.IntToFractionCollector;
-import moze_intel.projecte.emc.generators.FractionToIntGenerator;
-import moze_intel.projecte.emc.generators.IValueGenerator;
+import projectgtnh.emc.arithmetics.FullFractionArithmetic;
+import projectgtnh.emc.arithmetics.HiddenFractionArithmetic;
+import projectgtnh.emc.arithmetics.IValueArithmetic;
+import projectgtnh.emc.collector.IExtendedMappingCollector;
+import projectgtnh.emc.collector.IMappingCollector;
+import projectgtnh.emc.collector.IntToFractionCollector;
+import projectgtnh.emc.generators.FractionToIntGenerator;
+import projectgtnh.emc.generators.IValueGenerator;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.math.Fraction;

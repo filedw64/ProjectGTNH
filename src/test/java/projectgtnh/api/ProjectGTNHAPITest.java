@@ -1,33 +1,33 @@
-package moze_intel.projecte.api;
+package projectgtnh.api;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class ProjectEAPITest
+public class ProjectGTNHAPITest
 {
 
 	@Test
 	public void testGetEMCProxy() throws Exception
 	{
-		assertNotNull(ProjectEAPI.getEMCProxy());
+		assertNotNull(ProjectGTNHAPI.getEMCProxy());
 	}
 
 	@Test
 	public void testGetConversionProxy() throws Exception
 	{
-		assertNotNull(ProjectEAPI.getConversionProxy());
+		assertNotNull(ProjectGTNHAPI.getConversionProxy());
 	}
 
 	@Test
 	public void testGetTransmutationProxy() throws Exception
 	{
-		assertNotNull(ProjectEAPI.getTransmutationProxy());
+		assertNotNull(ProjectGTNHAPI.getTransmutationProxy());
 	}
 
 	@Test
 	public void testGetBlacklistProxy() throws Exception
 	{
-		assertNotNull(ProjectEAPI.getBlacklistProxy());
+		assertNotNull(ProjectGTNHAPI.getBlacklistProxy());
 	}
 }
