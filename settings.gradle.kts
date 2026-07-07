@@ -4,7 +4,7 @@ pluginManagement {
         maven {
             // RetroFuturaGradle
             name = "GTNH Maven"
-            url = uri("https://nexus.gtnewhorizons.com/repository/public/")
+            url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
             mavenContent {
                 includeGroup("com.gtnewhorizons")
                 includeGroupByRegex("com\\.gtnewhorizons\\..+")
@@ -17,5 +17,5 @@ pluginManagement {
 }
 
 plugins {
-    id("com.gtnewhorizons.gtnhsettingsconvention") version("2.0.20")
+    id("com.gtnewhorizons.gtnhsettingsconvention") version("2.0.26")
 }

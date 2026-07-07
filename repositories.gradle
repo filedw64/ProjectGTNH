@@ -1,20 +1,18 @@
 // Add any additional repositories for your dependencies here.
 
 repositories {
-    maven { //Waila Repo
-        name "Mobius Repo"
-        url "http://mobiusstrip.eu/maven"
-    }
-    maven { //NEI Repo
-        name 'CB Repo'
-        url "http://chickenbones.net/maven/"
+	mavenLocal()
+    maven {
+        url "https://nexus.gtnewhorizons.com/repository/releases/"
     }
     maven {
-        name 'Chisel'
-        url "http://maven.tterrag.com/"
+        url "https://nexus.gtnewhorizons.com/repository/maven_cil_li/"
     }
-    ivy {
-        name "MineTweaker3"
-        artifactPattern "http://minetweaker3.powerofbytes.com/download/[module]-([classifier]-)[revision].[ext]"
+    maven {
+        url "https://repo.maven.apache.org/maven2/"
     }
+    maven {
+        url "https://gregtech.overminddl1.com/"
+    }
+    mavenCentral()
 }
