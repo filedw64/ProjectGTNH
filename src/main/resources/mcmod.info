@@ -1,17 +1,17 @@
 [
-{
-  "modid": "ProjectE",
-  "name": "ProjectE",
-  "description": "A complete rewrite of EE2 for modern Minecraft versions.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "logoFile": "assets/projecte/logo.png",
-  "url": "http://minecraft.curseforge.com/mc-mods/226410-projecte",
-  "updateUrl": "",
-  "authorList": [ "sinkillerj", "Moze_Intel" ],
-  "credits": "Thanks to:\nx3n0ph0b3 - EE2 creator. Allowed use of EE2 assets.\nMidnightLightning - EE2 GUI Textures.\nMagic Banana - Original ProjectE textures.\nMaPePeR - Assistant developer.\nWilliewillus - Assistant developer.\nLilylicious - Assistant developer.",
-  "parent": "",
-  "screenshots": [],
-  "dependencies": []
-}
+	{
+	  "modid": "${modId}",
+	  "name": "${modName}",
+	  "description": "A rewrite version of ProjectE for GTNH.",
+	  "version": "${modVersion}",
+	  "mcversion": "${minecraftVersion}",
+	  "logoFile": "assets/projectgtnh/logo.png",
+	  "url": "",
+	  "updateUrl": "",
+	  "authorList": [ "filedw64" ],
+	  "credits": "Thanks to:\nsinkillerj, Moze_Intel - ProjectE creator.",
+	  "parent": "",
+	  "screenshots": [],
+	  "dependencies": []
+	}
 ]
