@@ -91,7 +91,7 @@ public class TransmutationContainer extends Container
 		}
 		else if (slotIndex >= 10 && slotIndex <= 25) // Output Slots
 		{
-			int emc = EMCHelper.getEmcValue(newStack);
+            double emc = EMCHelper.getEmcValue(newStack);
 
 			int stackSize = 0;
 
@@ -106,7 +106,7 @@ public class TransmutationContainer extends Container
 		}
 		else if (slotIndex >= 26) //Unlearn Slot and Player Inventory
 		{
-			int emc = EMCHelper.getEmcValue(stack);
+            double emc = EMCHelper.getEmcValue(stack);
 
 			if (emc == 0 && stack.getItem() != ObjHandler.tome)
 			{

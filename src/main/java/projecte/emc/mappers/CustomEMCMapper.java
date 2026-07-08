@@ -8,10 +8,10 @@ import projecte.utils.PELogger;
 
 import java.util.Map;
 
-public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
+public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config) {
-		for (Map.Entry<NormalizedSimpleStack,Integer> entry : CustomEMCParser.userValues.entrySet()) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+		for (Map.Entry<NormalizedSimpleStack,Double> entry : CustomEMCParser.userValues.entrySet()) {
 			PELogger.logInfo("Adding custom EMC value for " + entry.getKey() + ": " + entry.getValue());
 			mapper.setValueBefore(entry.getKey(), entry.getValue());
 		}

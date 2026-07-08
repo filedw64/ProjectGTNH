@@ -42,10 +42,10 @@ public class TweakInit
 		defaultLines.add("#PhiloStone.addWorldTransmutation(<minecraft:obsidian>, <minecraft:grass>);");
 		defaultLines.add("");
 		defaultLines.add("");
-		defaultLines.add("#KleinStar.addShaped(<ProjectGTNH:item.pe_klein_star:2>, [[<ProjectGTNH:item.pe_klein_star:1>, <minecraft:dirt>, <ProjectGTNH:item.pe_klein_star:1>], [<minecraft:dirt>, <ProjectGTNH:item.pe_klein_star:1>, <minecraft:dirt>], [<ProjectGTNH:item.pe_klein_star:1>, <minecraft:dirt>, <ProjectGTNH:item.pe_klein_star:1>]]);");
-		defaultLines.add("#KleinStar.addShapeless(<ProjectGTNH:item.pe_klein_star:2>, [<ProjectGTNH:item.pe_klein_star:1>, <ProjectGTNH:item.pe_klein_star:1>]);");
+		defaultLines.add("#KleinStar.addShaped(<ProjectE:item.pe_klein_star:2>, [[<ProjectE:item.pe_klein_star:1>, <minecraft:dirt>, <ProjectE:item.pe_klein_star:1>], [<minecraft:dirt>, <ProjectE:item.pe_klein_star:1>, <minecraft:dirt>], [<ProjectE:item.pe_klein_star:1>, <minecraft:dirt>, <ProjectE:item.pe_klein_star:1>]]);");
+		defaultLines.add("#KleinStar.addShapeless(<ProjectE:item.pe_klein_star:2>, [<ProjectE:item.pe_klein_star:1>, <ProjectE:item.pe_klein_star:1>]);");
 		defaultLines.add("");
-		defaultLines.add("#KleinStar.removeRecipe(<ProjectGTNH:item.pe_klein_star:2>);");
+		defaultLines.add("#KleinStar.removeRecipe(<ProjectE:item.pe_klein_star:2>);");
 		defaultLines.add("");
 
 

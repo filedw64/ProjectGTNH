@@ -55,7 +55,7 @@ public final class PlayerChecks
 		return gemArmorReadyChecks.contains(player);
 	}
 
-	// Checks if the server state of player capas mismatches with what ProjectGTNH determines. If so, change it serverside and send a packet to client
+	// Checks if the server state of player capas mismatches with what ProjectE determines. If so, change it serverside and send a packet to client
 	public static void update(EntityPlayerMP player)
 	{
 		if (projectileCooldowns.containsKey(player) && projectileCooldowns.get(player) > 0) {

@@ -4,7 +4,6 @@ import org.apache.commons.lang3.math.Fraction;
 
 public class HiddenFractionArithmetic implements IValueArithmetic<Fraction>
 {
-
 	@Override
 	public boolean isZero(Fraction value)
 	{

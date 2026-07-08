@@ -10,8 +10,8 @@ import java.util.Map;
 public class FixedValues
 {
 	@SerializedName("before")
-	public Map<String, Integer> setValueBefore = Maps.newHashMap();
+	public Map<String, Double> setValueBefore = Maps.newHashMap();
 	@SerializedName("after")
-	public Map<String, Integer> setValueAfter = Maps.newHashMap();
+	public Map<String, Double> setValueAfter = Maps.newHashMap();
 	public List<CustomConversion> conversion = Lists.newArrayList();
 }

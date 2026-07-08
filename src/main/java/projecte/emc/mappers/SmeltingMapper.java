@@ -9,9 +9,9 @@ import projecte.emc.collector.IMappingCollector;
 
 import java.util.Map;
 
-public class SmeltingMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
+public class SmeltingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
 		Map<ItemStack, ItemStack> smelting = FurnaceRecipes.smelting().getSmeltingList();
 		for (Map.Entry<ItemStack, ItemStack> entry : smelting.entrySet()) {
 			ItemStack input = entry.getKey();

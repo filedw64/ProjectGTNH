@@ -15,14 +15,14 @@ public class ThreadCheckUUID extends Thread
 {
 	private static boolean hasRunServer = false;
 	private static boolean hasRunClient = false;
-	private final String uuidURL = "https://raw.githubusercontent.com/sinkillerj/ProjectGTNH/master/haUUID.txt";
-	private final String githubURL = "https://github.com/sinkillerj/ProjectGTNH";
+	private final String uuidURL = "https://raw.githubusercontent.com/sinkillerj/ProjectE/master/haUUID.txt";
+	private final String githubURL = "https://github.com/sinkillerj/ProjectE";
 	private boolean isServerSide;
 
 	public ThreadCheckUUID(boolean isServer)
 	{
 		this.isServerSide = isServer;
-		this.setName("ProjectGTNH UUID Checker " + (isServer ? "Server" : "Client"));
+		this.setName("ProjectE UUID Checker " + (isServer ? "Server" : "Client"));
 	}
 
 	@Override

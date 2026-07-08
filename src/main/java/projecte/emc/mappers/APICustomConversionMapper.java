@@ -8,7 +8,7 @@ import projecte.impl.ConversionProxyImpl;
 import java.util.List;
 import java.util.Map;
 
-public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,Integer>
+public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,Double>
 {
 	@Override
 	public String getName()
@@ -29,7 +29,7 @@ public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleSta
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config)
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
 	{
 		for (Map.Entry<String, List<ConversionProxyImpl.APIConversion>> entry : ConversionProxyImpl.instance.storedConversions.entrySet())
 		{

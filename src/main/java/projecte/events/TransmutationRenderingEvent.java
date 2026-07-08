@@ -31,7 +31,6 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class TransmutationRenderingEvent
 {
-	private Minecraft mc = Minecraft.getMinecraft();
 	private final List<AxisAlignedBB> renderList = Lists.newArrayList();
 	private double playerX;
 	private double playerY;
@@ -45,6 +44,7 @@ public class TransmutationRenderingEvent
 		{
 			if (transmutationResult != null)
 			{
+                Minecraft mc = Minecraft.getMinecraft();
 				RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), transmutationResult.toItemStack(), 0, 0);
 			}
 		}

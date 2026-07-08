@@ -63,7 +63,7 @@ public class Collector extends BlockDirection
 
 		TileEntity tile = world.getTileEntity(x, y, z);
 
-		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectGTNHBlock") && tile instanceof TileEmc)
+		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectEBlock") && tile instanceof TileEmc)
 		{
 			stack.stackTagCompound.setInteger("x", x);
 			stack.stackTagCompound.setInteger("y", y);
@@ -107,16 +107,12 @@ public class Collector extends BlockDirection
 
 	@Override
 	public TileEntity createTileEntity(World world, int meta) {
-		switch (tier) {
-			case 3:
-				return new CollectorMK3Tile();
-			case 2:
-				return new CollectorMK2Tile();
-			case 1:
-				return new CollectorMK1Tile();
-			default:
-				return null;
-		}
+        return switch (tier) {
+            case 3 -> new CollectorMK3Tile();
+            case 2 -> new CollectorMK2Tile();
+            case 1 -> new CollectorMK1Tile();
+            default -> null;
+        };
 	}
 
 	@Override

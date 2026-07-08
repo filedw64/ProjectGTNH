@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 
 public class CustomConversionMapperTest
 {
@@ -108,10 +109,10 @@ public class CustomConversionMapperTest
 						"}";
 		CustomConversionFile f = CustomConversionMapper.parseJson(new StringReader(simpleFile));
 		assertNotNull(f.values);
-		assertEquals(1, (int) f.values.setValueBefore.get("a"));
-		assertEquals(2, (int) f.values.setValueBefore.get("b"));
-		assertEquals(Integer.MIN_VALUE, (int) f.values.setValueBefore.get("c"));
-		assertEquals(3, (int) f.values.setValueAfter.get("d"));
+		assertEquals(1.0, (double) f.values.setValueBefore.get("a"), 1e-7);
+		assertEquals(2.0, (double) f.values.setValueBefore.get("b"), 1e-7);
+		assertEquals(-Double.MAX_VALUE, (double) f.values.setValueBefore.get("c"), 1e-7);
+		assertEquals(3.0, (double) f.values.setValueAfter.get("d"), 1e-7);
 
 	}
 

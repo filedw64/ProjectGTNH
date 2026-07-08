@@ -21,7 +21,7 @@ import projecte.utils.PELogger;
 import java.util.Arrays;
 import java.util.List;
 
-public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
+public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 	private static List<Pair<NormalizedSimpleStack, FluidStack>> melting = Lists.newArrayList();
 
 	public static void addMelting(String odName, String fluidName, int amount) {
@@ -80,14 +80,14 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config) {
-		mapper.setValueBefore(NormalizedSimpleStack.getFor(FluidRegistry.WATER), Integer.MIN_VALUE/*=Free. TODO: Use IntArithmetic*/);
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+		mapper.setValueBefore(NormalizedSimpleStack.getFor(FluidRegistry.WATER), -Double.MAX_VALUE);
 		//1 Bucket of Lava = 1 Block of Obsidian
 		mapper.addConversion(1000, NormalizedSimpleStack.getFor(FluidRegistry.LAVA), Arrays.asList(NormalizedSimpleStack.getFor(Blocks.obsidian)));
 
 		//Add Conversion in case MFR is not present and milk is not an actual fluid
 		NormalizedSimpleStack fakeMilkFluid = NormalizedSimpleStack.createFake("fakeMilkFluid");
-		mapper.setValueBefore(fakeMilkFluid, 16);
+		mapper.setValueBefore(fakeMilkFluid, 16.0);
 		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.getFor(Items.bucket), fakeMilkFluid));
 
 		Fluid milkFluid = FluidRegistry.getFluid("milk");

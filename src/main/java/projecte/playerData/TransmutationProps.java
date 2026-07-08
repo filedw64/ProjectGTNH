@@ -22,7 +22,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 	private double transmutationEmc;
 	private List<ItemStack> knowledge = Lists.newArrayList();
 	private ItemStack[] inputLocks = new ItemStack[9];
-	public static final String PROP_NAME = "ProjectGTNHTransmutation";
+	public static final String PROP_NAME = "ProjectETransmutation";
 
 	public static void register(EntityPlayer player)
 	{

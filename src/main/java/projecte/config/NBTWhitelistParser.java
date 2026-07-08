@@ -39,8 +39,7 @@ public final class NBTWhitelistParser
 			{
 				PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
 				e.printStackTrace();
-				return;
-			}
+            }
 		}
 		else
 		{

@@ -34,13 +34,7 @@ public class CondenserMK2 extends Condenser
 		return Constants.CONDENSER_MK2_RENDER_ID;
 	}
 
-	@Override
-	public boolean hasTileEntity(int meta)
-	{
-		return true;
-	}
-
-	@Override
+    @Override
 	public TileEntity createTileEntity(World world, int meta)
 	{
 		return new CondenserMK2Tile();

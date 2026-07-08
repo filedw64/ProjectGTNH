@@ -7,7 +7,7 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import java.util.List;
 
-public class ChangelogCMD extends ProjectGTNHBaseCMD
+public class ChangelogCMD extends ProjectEBaseCMD
 {
 	public static final List<String> changelog = Lists.newArrayList();
 

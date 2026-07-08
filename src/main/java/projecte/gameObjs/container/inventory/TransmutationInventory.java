@@ -112,10 +112,10 @@ public class TransmutationInventory implements IInventory
 
 	public void checkForUpdates()
 	{
-		int matterEmc = EMCHelper.getEmcValue(inventory[MATTER_INDEXES[0]]);
-		int fuelEmc = EMCHelper.getEmcValue(inventory[FUEL_INDEXES[0]]);
+        double matterEmc = EMCHelper.getEmcValue(inventory[MATTER_INDEXES[0]]);
+        double fuelEmc = EMCHelper.getEmcValue(inventory[FUEL_INDEXES[0]]);
 
-		int maxEmc = matterEmc > fuelEmc ? matterEmc : fuelEmc;
+        double maxEmc = Math.max(matterEmc, fuelEmc);
 
 		if (maxEmc > emc)
 		{
@@ -126,7 +126,6 @@ public class TransmutationInventory implements IInventory
 	public void updateOutputs() {
 		updateOutputs(false);
 	}
-	@SuppressWarnings("unchecked")
 	public void updateOutputs(boolean async)
 	{
 		if (!this.player.worldObj.isRemote) {
@@ -146,11 +145,11 @@ public class TransmutationInventory implements IInventory
 
 		ItemStack lockCopy = null;
 
-		Collections.sort(knowledge, Comparators.ITEMSTACK_EMC_DESCENDING);
+		knowledge.sort(Comparators.ITEMSTACK_EMC_DESCENDING);
 		ItemSearchHelper searchHelper = ItemSearchHelper.create(filter);
 		if (inventory[LOCK_INDEX] != null)
 		{
-			int reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
+            double reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
 
 			if (this.emc < reqEmc)
 			{

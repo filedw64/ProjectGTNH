@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-public class ProjectGTNHCMD extends ProjectGTNHBaseCMD
+public class ProjectECMD extends ProjectEBaseCMD
 {
 	private static final List<String> commands = Lists.newArrayList("changelog", "clearKnowledge", "setEMC", "reloadEMC", "removeEMC", "resetEMC");
 

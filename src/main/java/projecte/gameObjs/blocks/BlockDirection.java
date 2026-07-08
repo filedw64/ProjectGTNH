@@ -27,7 +27,7 @@ public abstract class BlockDirection extends Block
 	{
 		TileEntity tile = world.getTileEntity(x, y, z);
 
-		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectGTNHBlock") && tile instanceof TileEmc)
+		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectEBlock") && tile instanceof TileEmc)
 		{
 			stack.stackTagCompound.setInteger("x", x);
 			stack.stackTagCompound.setInteger("y", y);
@@ -97,11 +97,11 @@ public abstract class BlockDirection extends Block
 	{
 		switch (MathHelper.floor_double((double) (player.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3)
 		{
-			case 0: world.setBlockMetadataWithNotify(x, y, z, 2, 2); break;
-			case 1: world.setBlockMetadataWithNotify(x, y, z, 5, 2); break;
+            case 1: world.setBlockMetadataWithNotify(x, y, z, 5, 2); break;
 			case 2: world.setBlockMetadataWithNotify(x, y, z, 3, 2); break;
 			case 3: world.setBlockMetadataWithNotify(x, y, z, 4, 2); break;
-			default: world.setBlockMetadataWithNotify(x, y, z, 2, 2);
+            case 0:
+            default: world.setBlockMetadataWithNotify(x, y, z, 2, 2);
 		}
 	}
 

@@ -239,7 +239,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 
 			ItemStack result = inventory[lockSlot] == null ? FuelMapper.getFuelUpgrade(inventory[0]) : inventory[lockSlot].copy();
 
-			int upgradeCost = EMCHelper.getEmcValue(result) - EMCHelper.getEmcValue(inventory[0]);
+            double upgradeCost = EMCHelper.getEmcValue(result) - EMCHelper.getEmcValue(inventory[0]);
 
 			if (upgradeCost > 0 && this.getStoredEmc() >= upgradeCost)
 			{
@@ -339,7 +339,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			return 0;
 		}
 
-		int reqEmc = 0;
+        double reqEmc;
 
 		if (inventory[lockSlot] != null)
 		{
@@ -369,7 +369,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			return i;
 		}
 
-		return displayEmc * i / reqEmc;
+		return (int) (displayEmc * i / reqEmc);
 	}
 
 	@Override

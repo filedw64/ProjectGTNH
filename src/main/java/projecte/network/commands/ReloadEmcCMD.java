@@ -7,7 +7,7 @@ import projecte.emc.EMCMapper;
 import projecte.handlers.TileEntityHandler;
 import projecte.network.PacketHandler;
 
-public class ReloadEmcCMD extends ProjectGTNHBaseCMD
+public class ReloadEmcCMD extends ProjectEBaseCMD
 {
 	@Override
 	public String getCommandName()

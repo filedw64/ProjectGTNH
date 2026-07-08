@@ -10,7 +10,7 @@ import projecte.network.packets.KnowledgeClearPKT;
 import projecte.playerData.Transmutation;
 import projecte.utils.ChatHelper;
 
-public class ClearKnowledgeCMD extends ProjectGTNHBaseCMD
+public class ClearKnowledgeCMD extends ProjectEBaseCMD
 {
 	@Override
 	public String getCommandName()

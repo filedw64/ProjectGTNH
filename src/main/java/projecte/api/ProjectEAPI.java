@@ -29,7 +29,7 @@ public final class ProjectEAPI
 				emcProxy = (IEMCProxy) clazz.getField("instance").get(null);
 			} catch (ReflectiveOperationException ex)
 			{
-				FMLLog.warning("[ProjectGTNHAPI] Error retrieving EMCProxyImpl, ProjectGTNH may be absent, damaged, or outdated.");
+				FMLLog.warning("[ProjectEAPI] Error retrieving EMCProxyImpl, ProjectE may be absent, damaged, or outdated.");
 			}
 		}
 		return emcProxy;
@@ -49,7 +49,7 @@ public final class ProjectEAPI
 				recipeProxy = (IConversionProxy) clazz.getField("instance").get(null);
 			} catch (ReflectiveOperationException ex)
 			{
-				FMLLog.warning("[ProjectGTNHAPI] Error retrieving ConversionProxyImpl, ProjectGTNH may be absent, damaged, or outdated.");
+				FMLLog.warning("[ProjectEAPI] Error retrieving ConversionProxyImpl, ProjectE may be absent, damaged, or outdated.");
 			}
 		}
 		return recipeProxy;
@@ -69,7 +69,7 @@ public final class ProjectEAPI
 				transProxy = (ITransmutationProxy) clazz.getField("instance").get(null);
 			} catch (ReflectiveOperationException ex)
 			{
-				FMLLog.warning("[ProjectGTNHAPI] Error retrieving TransmutationProxyImpl, ProjectGTNH may be absent, damaged, or outdated.");
+				FMLLog.warning("[ProjectEAPI] Error retrieving TransmutationProxyImpl, ProjectE may be absent, damaged, or outdated.");
 			}
 		}
 		return transProxy;
@@ -89,7 +89,7 @@ public final class ProjectEAPI
 				blacklistProxy = (IBlacklistProxy) clazz.getField("instance").get(null);
 			} catch (ReflectiveOperationException ex)
 			{
-				FMLLog.warning("[ProjectGTNHAPI] Error retrieving BlacklistProxyImpl, ProjectGTNH may be absent, damaged, or outdated.");
+				FMLLog.warning("[ProjectEAPI] Error retrieving BlacklistProxyImpl, ProjectE may be absent, damaged, or outdated.");
 			}
 		}
 		return blacklistProxy;

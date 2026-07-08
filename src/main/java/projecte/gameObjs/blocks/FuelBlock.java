@@ -17,7 +17,7 @@ import java.util.List;
 public class FuelBlock extends Block
 {
 	@SideOnly(Side.CLIENT)
-	private IIcon icons[];
+	private IIcon[] icons;
 
 	public FuelBlock()
 	{

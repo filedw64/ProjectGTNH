@@ -9,12 +9,12 @@ import projecte.emc.NormalizedSimpleStack;
 import projecte.emc.collector.IMappingCollector;
 import projecte.utils.ItemHelper;
 
-public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
+public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
-	IMappingCollector<NormalizedSimpleStack, Integer> mapper;
+	IMappingCollector<NormalizedSimpleStack, Double> mapper;
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
 		this.mapper = mapper;
 		addMapping(new ItemStack(Blocks.cobblestone), 1);
 		addMapping(new ItemStack(Blocks.stone), 1);
@@ -148,8 +148,11 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
 	}
 
 	protected void addMapping(ItemStack itemStack, int value) {
-		this.mapper.setValueBefore(NormalizedSimpleStack.getFor(itemStack), value);
+        addMapping(itemStack, (double) value);
 	}
+    protected void addMapping(ItemStack itemStack, double value) {
+        this.mapper.setValueBefore(NormalizedSimpleStack.getFor(itemStack), value);
+    }
 
 	protected void addMapping(String unlocalName, int meta, int value) {
 		ItemStack stack = ItemHelper.getStackFromString(unlocalName, meta);

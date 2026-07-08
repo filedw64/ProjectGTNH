@@ -8,15 +8,16 @@ import projecte.emc.mappers.customConversions.json.CustomConversionFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Map;
 
-public class DumpToFileCollector<A extends IValueArithmetic> extends AbstractMappingCollector<NormalizedSimpleStack, Integer, A>
+public class DumpToFileCollector<A extends IValueArithmetic> extends AbstractMappingCollector<NormalizedSimpleStack, Double, A>
 {
 	public static String currentGroupName="default";
 	CustomConversionFile out = new CustomConversionFile();
-	IExtendedMappingCollector<NormalizedSimpleStack, Integer, A> inner;
+	IExtendedMappingCollector<NormalizedSimpleStack, Double, A> inner;
 	final File file;
-	public DumpToFileCollector(File f, IExtendedMappingCollector<NormalizedSimpleStack, Integer, A> inner)
+	public DumpToFileCollector(File f, IExtendedMappingCollector<NormalizedSimpleStack, Double, A> inner)
 	{
 		super(inner.getArithmetic());
 		file = f;
@@ -42,7 +43,7 @@ public class DumpToFileCollector<A extends IValueArithmetic> extends AbstractMap
 	}
 
 	@Override
-	public void setValueBefore(NormalizedSimpleStack something, Integer value)
+	public void setValueBefore(NormalizedSimpleStack something, Double value)
 	{
 		inner.setValueBefore(something, value);
 		if (something == null) return;
@@ -50,7 +51,7 @@ public class DumpToFileCollector<A extends IValueArithmetic> extends AbstractMap
 	}
 
 	@Override
-	public void setValueAfter(NormalizedSimpleStack something, Integer value)
+	public void setValueAfter(NormalizedSimpleStack something, Double value)
 	{
 		inner.setValueAfter(something, value);
 		if (something == null) return;

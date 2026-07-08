@@ -6,7 +6,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import projecte.utils.ChatHelper;
 
-public abstract class ProjectGTNHBaseCMD extends CommandBase
+public abstract class ProjectEBaseCMD extends CommandBase
 {
 	@Override
 	public abstract String getCommandName();

@@ -58,7 +58,7 @@ public final class ProjectEConfig
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
 			showEMCTooltip = config.getBoolean("emcToolTips", "misc", true, "Show the EMC value as a tooltip on items and blocks");
-			showStatTooltip = config.getBoolean("statToolTips", "misc", true, "Show stats as tooltips for various ProjectGTNH blocks");
+			showStatTooltip = config.getBoolean("statToolTips", "misc", true, "Show stats as tooltips for various ProjectE blocks");
 			showPedestalTooltip = config.getBoolean("pedestalToolTips", "misc", true, "Show DM pedestal functions in item tooltips");
 			showPedestalTooltipInGUI = config.getBoolean("pedestalToolTipsInGUI", "misc", false, "Show pedestal function tooltips only in pedestal GUI");
 			useLootBalls = config.getBoolean("useLootBalls", "misc", true, "Make loot balls for drops. Disabling this may potentially cause bad performance when large amounts of loot are spawned!");
@@ -70,8 +70,8 @@ public final class ProjectEConfig
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
 
 			craftableTome = config.getBoolean("craftableTome", "difficulty", false, "The Tome of Knowledge can be crafted.");
-			altCraftingMat = config.getBoolean("altCraftingMat", "difficulty", false, "If true some ProjectGTNH items require a nether star instead of a diamond.");
-			useOldDamage = config.getBoolean("useOldDamage", "difficulty", false, "If true the old damage amounts from ProjectGTNH 1.4.7 and before will be used for weapons.");
+			altCraftingMat = config.getBoolean("altCraftingMat", "difficulty", false, "If true some ProjectE items require a nether star instead of a diamond.");
+			useOldDamage = config.getBoolean("useOldDamage", "difficulty", false, "If true the old damage amounts from ProjectE 1.4.7 and before will be used for weapons.");
 			offensiveAbilities = config.getBoolean("offensiveAbilities", "difficulty", true, "Set to false to disable Gem Armor offensive abilities (helmet zap and chestplate explosion)");
 			katarDeathAura = config.getFloat("katarDeathAura", "difficulty", 1000F, 0, Integer.MAX_VALUE, "Amount of damage Katar 'C' key deals");
 
@@ -105,7 +105,7 @@ public final class ProjectEConfig
 			timePedMobSlowness = config.getFloat("timePedMobSlowness", "effects", 0.10F, 0.0F, 1.0F, "Factor the Watch of Flowing Time slows down mobs by while in the pedestal. Set to 1.0 for no slowdown.");
 			interdictionMode = config.getBoolean("interdictionMode", "effects", true, "If true the Interdiction Torch only affects hostile mobs. If false it affects all non blacklisted living entities.");
 
-			pickaxeAoeVeinMining = config.getBoolean("pickaxeAoeVeinMining", "items", false, "Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you like it did in ProjectGTNH before version 1.4.4.");
+			pickaxeAoeVeinMining = config.getBoolean("pickaxeAoeVeinMining", "items", false, "Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you like it did in ProjectE before version 1.4.4.");
 			harvBandGrass = config.getBoolean("harvBandGrass", "items", false, "Allows the Harvest Goddess Band to passively grow tall grass, flowers, etc, on top of grass blocks.");
 			disableAllRadiusMining = config.getBoolean("disableAllRadiusMining", "items", false, "If set to true, disables all radius-based mining functionaliy (right click of tools)");
 			PELogger.logInfo("Loaded configuration file.");

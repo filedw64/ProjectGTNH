@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Map;
 
-public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, Integer>
+public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 {
 	public static final ImmutableList<String> defaultfilenames = ImmutableList.of("metals", "example", "ODdefaults");
 
@@ -54,7 +54,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, Configuration config)
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
 	{
 		File customConversionFolder = getCustomConversionFolder();
 		if (customConversionFolder.isDirectory() || customConversionFolder.mkdir()) {
@@ -79,7 +79,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 				}
 			}
 		} else {
-			PELogger.logFatal("COULD NOT CREATE customConversions FOLDER IN config/ProjectGTNH");
+			PELogger.logFatal("COULD NOT CREATE customConversions FOLDER IN config/ProjectE");
 		}
 	}
 
@@ -88,11 +88,11 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		return new File(PECore.CONFIG_DIR, "customConversions");
 	}
 
-	public static void addMappingsFromFile(Reader json, IMappingCollector<NormalizedSimpleStack, Integer> mapper) {
+	public static void addMappingsFromFile(Reader json, IMappingCollector<NormalizedSimpleStack, Double> mapper) {
 		addMappingsFromFile(parseJson(json), mapper);
 	}
 
-	public static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, Integer> mapper) {
+	public static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, Double> mapper) {
 		Map<String, NormalizedSimpleStack> fakes = Maps.newHashMap();
 		//TODO implement buffered IMappingCollector to recover from failures
 		for (Map.Entry<String, ConversionGroup> entry : file.groups.entrySet())
@@ -116,7 +116,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			if (file.values != null)
 			{
 				if (file.values.setValueBefore != null) {
-					for (Map.Entry<String, Integer> entry : file.values.setValueBefore.entrySet())
+					for (Map.Entry<String, Double> entry : file.values.setValueBefore.entrySet())
 					{
 						NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 						mapper.setValueBefore(something, entry.getValue());
@@ -132,7 +132,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 				}
 				if (file.values.setValueAfter != null)
 				{
-					for (Map.Entry<String, Integer> entry : file.values.setValueAfter.entrySet())
+					for (Map.Entry<String, Double> entry : file.values.setValueAfter.entrySet())
 					{
 						NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 						mapper.setValueAfter(something, entry.getValue());

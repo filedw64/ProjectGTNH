@@ -14,7 +14,7 @@ public class IMCHandler
     {
         String messageKey = msg.key.toLowerCase(Locale.ROOT);
         if ("registeremc".equals(messageKey)) {
-            PELogger.logWarn("Mod %s is using a deprecated version of the ProjectGTNH API, their EMC registrations have been ignored", msg.getSender());
+            PELogger.logWarn("Mod %s is using a deprecated version of the ProjectE API, their EMC registrations have been ignored", msg.getSender());
         } else if ("interdictionblacklist".equals(messageKey) && msg.isStringMessage()) {
             blacklist(false, msg);
         } else if ("swrgblacklist".equals(messageKey) && msg.isStringMessage()) {

@@ -16,10 +16,10 @@ public class PregeneratedEMC
 {
 	static final Gson gson =  new GsonBuilder().registerTypeAdapter(NormalizedSimpleStack.class, new NSSJsonTypeAdapter().nullSafe()).enableComplexMapKeySerialization().setPrettyPrinting().create();
 
-	public static boolean tryRead(File f, Map<NormalizedSimpleStack, Integer> map)
+	public static boolean tryRead(File f, Map<NormalizedSimpleStack, Double> map)
 	{
 		try {
-			Map<NormalizedSimpleStack, Integer> m = read(f);
+			Map<NormalizedSimpleStack, Double> m = read(f);
 			map.clear();
 			map.putAll(m);
 			return true;
@@ -28,19 +28,19 @@ public class PregeneratedEMC
 		}
 	}
 
-	public static Map<NormalizedSimpleStack, Integer> read(File file) throws IOException
+	public static Map<NormalizedSimpleStack, Double> read(File file) throws IOException
 	{
-		Type type = new TypeToken<Map<NormalizedSimpleStack, Integer>>() {}.getType();
+		Type type = new TypeToken<Map<NormalizedSimpleStack, Double>>() {}.getType();
 		FileReader reader = new FileReader(file);
-		Map<NormalizedSimpleStack, Integer> map = gson.fromJson(reader, type);
+		Map<NormalizedSimpleStack, Double> map = gson.fromJson(reader, type);
 		reader.close();
 		map.remove(null);
 		return map;
 	}
 
-	public static void write(File file, Map<NormalizedSimpleStack, Integer> map) throws IOException
+	public static void write(File file, Map<NormalizedSimpleStack, Double> map) throws IOException
 	{
-		Type type = new TypeToken<Map<NormalizedSimpleStack, Integer>>() {}.getType();
+		Type type = new TypeToken<Map<NormalizedSimpleStack, Double>>() {}.getType();
 		FileWriter writer = new FileWriter(file);
 		gson.toJson(map, type, writer);
 		writer.close();

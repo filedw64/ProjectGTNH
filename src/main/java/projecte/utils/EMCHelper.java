@@ -36,7 +36,7 @@ public final class EMCHelper
 		IInventory inv = player.inventory;
 		LinkedHashMap<Integer, Integer> map = Maps.newLinkedHashMap();
 		boolean metRequirement = false;
-		int emcConsumed = 0;
+        double emcConsumed = 0;
 
 		for (int i = 0; i < inv.getSizeInventory(); i++)
 		{
@@ -46,10 +46,9 @@ public final class EMCHelper
 			{
 				continue;
 			}
-			else if (stack.getItem() instanceof IItemEmc)
+			else if (stack.getItem() instanceof IItemEmc itemEmc)
 			{
-				IItemEmc itemEmc = ((IItemEmc) stack.getItem());
-				if (itemEmc.getStoredEmc(stack) >= minFuel)
+                if (itemEmc.getStoredEmc(stack) >= minFuel)
 				{
 					itemEmc.extractEmc(stack, minFuel);
 					player.inventoryContainer.detectAndSendChanges();
@@ -60,8 +59,8 @@ public final class EMCHelper
 			{
 				if(FuelMapper.isStackFuel(stack))
 				{
-					int emc = getEmcValue(stack);
-					int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / (float) emc));
+                    double emc = getEmcValue(stack);
+					int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / emc));
 
 					if (stack.stackSize >= toRemove)
 					{
@@ -140,7 +139,7 @@ public final class EMCHelper
 		return doesItemHaveEmc(new ItemStack(item));
 	}
 
-	public static int getEmcValue(Block Block)
+	public static Double getEmcValue(Block Block)
 	{
 		SimpleStack stack = new SimpleStack(new ItemStack(Block));
 
@@ -149,10 +148,10 @@ public final class EMCHelper
 			return EMCMapper.getEmcValue(stack);
 		}
 
-		return 0;
+		return 0.0;
 	}
 
-	public static int getEmcValue(Item item)
+	public static Double getEmcValue(Item item)
 	{
 		SimpleStack stack = new SimpleStack(new ItemStack(item));
 
@@ -161,24 +160,24 @@ public final class EMCHelper
 			return EMCMapper.getEmcValue(stack);
 		}
 
-		return 0;
+		return 0.0;
 	}
 
 	/**
 	 * Does not consider stack size
 	 */
-	public static int getEmcValue(ItemStack stack)
+	public static double getEmcValue(ItemStack stack)
 	{
 		if (stack == null)
 		{
-			return 0;
+			return 0.0;
 		}
 
 		SimpleStack iStack = new SimpleStack(stack);
 
 		if (!iStack.isValid())
 		{
-			return 0;
+			return 0.0;
 		}
 
 		if (!EMCMapper.mapContains(iStack) && !stack.getHasSubtypes() && stack.getMaxDamage() != 0)
@@ -188,7 +187,7 @@ public final class EMCHelper
 
 			if (EMCMapper.mapContains(iStack))
 			{
-				int emc = EMCMapper.getEmcValue(iStack);
+                Double emc = EMCMapper.getEmcValue(iStack);
 
 				int relDamage = (stack.getMaxDamage() - stack.getItemDamage());
 
@@ -198,46 +197,40 @@ public final class EMCHelper
 					return emc;
 				}
 
-				long result = emc * relDamage;
-
-				if (result <= 0)
-				{
-					//Congratulations, big number is big.
-					return emc;
-				}
+                double result = emc * relDamage;
 
 				result /= stack.getMaxDamage();
 				result += getEnchantEmcBonus(stack);
 
 				result += getStoredEMCBonus(stack);
 
-				if (result > Integer.MAX_VALUE)
+				if (result > Double.MAX_VALUE)
 				{
 					return emc;
 				}
 
 				if (result <= 0)
 				{
-					return 1;
+					return 1.0;
 				}
 
-				return (int) result;
+				return result;
 			}
 		}
 		else
 		{
 			if (EMCMapper.mapContains(iStack))
 			{
-				return EMCMapper.getEmcValue(iStack) + getEnchantEmcBonus(stack) + (int)getStoredEMCBonus(stack);
+				return EMCMapper.getEmcValue(iStack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 			}
 		}
 
-		return 0;
+		return 0.0;
 	}
 
-	public static int getEnchantEmcBonus(ItemStack stack)
+	public static Double getEnchantEmcBonus(ItemStack stack)
 	{
-		int result = 0;
+        double result = 0;
 
 		Map<Integer, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
 
@@ -252,7 +245,7 @@ public final class EMCHelper
 					continue;
 				}
 
-				result += Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
+				result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
 			}
 		}
 

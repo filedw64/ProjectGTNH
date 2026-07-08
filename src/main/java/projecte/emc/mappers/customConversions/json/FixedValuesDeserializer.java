@@ -34,23 +34,23 @@ public class FixedValuesDeserializer implements JsonDeserializer<FixedValues>
 		return fixed;
 	}
 
-	Map<String, Integer> parseSetValueMapFromObject(JsonObject o, String key) {
+	Map<String, Double> parseSetValueMapFromObject(JsonObject o, String key) {
 		if (o.has(key)) {
 			return parseSetValueMap(o.getAsJsonObject(key));
 		}
 		return Maps.newHashMap();
 	}
 
-	Map<String, Integer> parseSetValueMap(JsonObject o) {
-		Map<String, Integer> out = Maps.newHashMap();
+	Map<String, Double> parseSetValueMap(JsonObject o) {
+		Map<String, Double> out = Maps.newHashMap();
 		for (Map.Entry<String, JsonElement> entry: o.entrySet()) {
 			JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
 			if (primitive.isNumber()) {
-				out.put(entry.getKey(),  primitive.getAsInt());
+				out.put(entry.getKey(),  primitive.getAsDouble());
 				continue;
 			} else if (primitive.isString()) {
-				if (primitive.getAsString().toLowerCase().equals("free")) {
-					out.put(entry.getKey(), Integer.MIN_VALUE); //TODO Get Value for 'free' from arithmetic?
+				if (primitive.getAsString().equalsIgnoreCase("free")) {
+					out.put(entry.getKey(), -Double.MAX_VALUE);
 					continue;
 				}
 			}

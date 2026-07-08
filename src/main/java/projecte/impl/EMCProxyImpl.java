@@ -18,7 +18,7 @@ public class EMCProxyImpl implements IEMCProxy
     private EMCProxyImpl() {}
 
     @Override
-    public void registerCustomEMC(ItemStack stack, int value)
+    public void registerCustomEMC(ItemStack stack, double value)
     {
         Preconditions.checkNotNull(stack);
         boolean flag = Loader.instance().isInState(LoaderState.PREINITIALIZATION) || Loader.instance().isInState(LoaderState.INITIALIZATION) || Loader.instance().isInState(LoaderState.POSTINITIALIZATION);
@@ -28,7 +28,7 @@ public class EMCProxyImpl implements IEMCProxy
     }
 
     @Override
-    public void registerCustomEMC(Object o, int value)
+    public void registerCustomEMC(Object o, double value)
     {
         Preconditions.checkNotNull(o);
         boolean flag = Loader.instance().isInState(LoaderState.PREINITIALIZATION) || Loader.instance().isInState(LoaderState.INITIALIZATION) || Loader.instance().isInState(LoaderState.POSTINITIALIZATION);
@@ -59,21 +59,21 @@ public class EMCProxyImpl implements IEMCProxy
     }
 
     @Override
-    public int getValue(Block block)
+    public double getValue(Block block)
     {
         Preconditions.checkNotNull(block);
         return EMCHelper.getEmcValue(block);
     }
 
     @Override
-    public int getValue(Item item)
+    public double getValue(Item item)
     {
         Preconditions.checkNotNull(item);
         return EMCHelper.getEmcValue(item);
     }
 
     @Override
-    public int getValue(ItemStack stack)
+    public double getValue(ItemStack stack)
     {
         Preconditions.checkNotNull(stack);
         return EMCHelper.getEmcValue(stack);

@@ -3,16 +3,16 @@
 repositories {
 	mavenLocal()
     maven {
-        url "https://nexus.gtnewhorizons.com/repository/releases/"
+        url = "https://nexus.gtnewhorizons.com/repository/releases/"
     }
     maven {
-        url "https://nexus.gtnewhorizons.com/repository/maven_cil_li/"
+        url = "https://nexus.gtnewhorizons.com/repository/maven_cil_li/"
     }
     maven {
-        url "https://repo.maven.apache.org/maven2/"
+        url = "https://repo.maven.apache.org/maven2/"
     }
     maven {
-        url "https://gregtech.overminddl1.com/"
+        url = "https://gregtech.overminddl1.com/"
     }
     mavenCentral()
 }

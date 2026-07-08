@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class AlchBagProps implements IExtendedEntityProperties
 {
-	public static final String PROP_NAME = "ProjectGTNHAlchBag";
+	public static final String PROP_NAME = "ProjectEAlchBag";
 
 	private final EntityPlayer player;
 	private final Map<Integer, ItemStack[]> bagData = Maps.newHashMap();

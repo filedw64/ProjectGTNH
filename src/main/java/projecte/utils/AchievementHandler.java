@@ -37,7 +37,7 @@ public final class AchievementHandler
 
 	public static void init()
 	{
-		AchievementPage.registerAchievementPage(new AchievementPage("ProjectGTNH", list.toArray(new Achievement[list.size()])));
+		AchievementPage.registerAchievementPage(new AchievementPage("ProjectE", list.toArray(new Achievement[list.size()])));
 	}
 
 	public static Achievement getAchievementForItem(ItemStack stack)

@@ -35,10 +35,9 @@ public class SlotLock extends Slot
 
 		super.putStack(stack);
 
-		if (stack.getItem() instanceof IItemEmc)
+		if (stack.getItem() instanceof IItemEmc itemEmc)
 		{
-			IItemEmc itemEmc = ((IItemEmc) stack.getItem());
-			int remainEmc = Constants.TILE_MAX_EMC - (int) Math.ceil(inv.emc);
+            double remainEmc = Constants.TILE_MAX_EMC - Math.ceil(inv.emc);
 
 			if (itemEmc.getStoredEmc(stack) >= remainEmc)
 			{

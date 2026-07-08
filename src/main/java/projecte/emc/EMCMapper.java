@@ -8,11 +8,14 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.math.Fraction;
 import projecte.PECore;
 import projecte.api.event.EMCRemapEvent;
+import projecte.emc.arithmetics.DoubleArithmetic;
 import projecte.emc.arithmetics.HiddenFractionArithmetic;
 import projecte.emc.arithmetics.IValueArithmetic;
+import projecte.emc.collector.DoubleCollector;
 import projecte.emc.collector.DumpToFileCollector;
 import projecte.emc.collector.IExtendedMappingCollector;
 import projecte.emc.collector.IntToFractionCollector;
+import projecte.emc.generators.DoubleGenerator;
 import projecte.emc.generators.FractionToIntGenerator;
 import projecte.emc.generators.IValueGenerator;
 import projecte.emc.mappers.APICustomConversionMapper;
@@ -40,12 +43,12 @@ import java.util.Map;
 
 public final class EMCMapper
 {
-	public static Map<SimpleStack, Integer> emc = new LinkedHashMap<>();
-	public static Map<NormalizedSimpleStack, Integer> graphMapperValues;
+	public static Map<SimpleStack, Double> emc = new LinkedHashMap<>();
+	public static Map<NormalizedSimpleStack, Double> graphMapperValues;
 
 	public static void map()
 	{
-		List<IEMCMapper<NormalizedSimpleStack, Integer>> emcMappers = Arrays.asList(
+		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
 				new OreDictionaryMapper(),
 				new LazyMapper(),
 				new Chisel2Mapper(),
@@ -57,18 +60,18 @@ public final class EMCMapper
 				new SmeltingMapper(),
 				new APICustomConversionMapper()
 		);
-		SimpleGraphMapper<NormalizedSimpleStack, Fraction, IValueArithmetic<Fraction>> mapper = new SimpleGraphMapper(new HiddenFractionArithmetic());
-		IValueGenerator<NormalizedSimpleStack, Integer> valueGenerator = new FractionToIntGenerator(mapper);
-		IExtendedMappingCollector<NormalizedSimpleStack, Integer, IValueArithmetic<Fraction>> mappingCollector = new IntToFractionCollector(mapper);
+        SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper(new DoubleArithmetic());
+		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator(mapper);
+		IExtendedMappingCollector<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mappingCollector = new DoubleCollector(mapper);
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();
 
-		if (config.getBoolean("dumpEverythingToFile", "general", false,"Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectGTNH/mappingdump.json")) {
+		if (config.getBoolean("dumpEverythingToFile", "general", false,"Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectE/mappingdump.json")) {
 			mappingCollector = new DumpToFileCollector(new File(PECore.CONFIG_DIR, "mappingdump.json"), mappingCollector);
 		}
 
-		boolean shouldUsePregenerated = config.getBoolean("pregenerate", "general", false, "When the next EMC mapping occurs write the results to config/ProjectGTNH/pregenerated_emc.json and only ever run the mapping again" +
+		boolean shouldUsePregenerated = config.getBoolean("pregenerate", "general", false, "When the next EMC mapping occurs write the results to config/ProjectE/pregenerated_emc.json and only ever run the mapping again" +
 						" when that file does not exist, this setting is set to false, or an error occurred parsing that file.");
 
 		if (shouldUsePregenerated && PECore.PREGENERATED_EMC_FILE.canRead() && PregeneratedEMC.tryRead(PECore.PREGENERATED_EMC_FILE, graphMapperValues = Maps.newHashMap()))
@@ -82,11 +85,11 @@ public final class EMCMapper
 			SimpleGraphMapper.setLogFoundExploits(config.getBoolean("logEMCExploits", "general", true,
 					"Log known EMC Exploits. This can not and will not find all possible exploits. " +
 							"This will only find exploits that result in fixed/custom emc values that the algorithm did not overwrite. " +
-							"Exploits that derive from conversions that are unknown to ProjectGTNH will not be found."
+							"Exploits that derive from conversions that are unknown to ProjectE will not be found."
 			));
 
 			PELogger.logInfo("Starting to collect Mappings...");
-			for (IEMCMapper<NormalizedSimpleStack, Integer> emcMapper : emcMappers)
+			for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers)
 			{
 				try
 				{
@@ -131,7 +134,7 @@ public final class EMCMapper
 		}
 
 
-		for (Map.Entry<NormalizedSimpleStack, Integer> entry: graphMapperValues.entrySet()) {
+		for (Map.Entry<NormalizedSimpleStack, Double> entry: graphMapperValues.entrySet()) {
 			if (entry.getKey() instanceof NormalizedSimpleStack.NSSItem)
 			{
 				NormalizedSimpleStack.NSSItem normStackItem = (NormalizedSimpleStack.NSSItem)entry.getKey();
@@ -155,9 +158,9 @@ public final class EMCMapper
 	 * Remove all entrys from the map, that are not {@link projecte.emc.NormalizedSimpleStack.NSSItem}s, have a value < 0 or WILDCARD_VALUE as metadata.
 	 * @param map
 	 */
-	static void filterEMCMap(Map<NormalizedSimpleStack, Integer> map) {
-		for(Iterator<Map.Entry<NormalizedSimpleStack, Integer>> iter = graphMapperValues.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry<NormalizedSimpleStack, Integer> entry = iter.next();
+	static void filterEMCMap(Map<NormalizedSimpleStack, Double> map) {
+		for(Iterator<Map.Entry<NormalizedSimpleStack, Double>> iter = graphMapperValues.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry<NormalizedSimpleStack, Double> entry = iter.next();
 			NormalizedSimpleStack normStack = entry.getKey();
 			if (normStack instanceof NormalizedSimpleStack.NSSItem && entry.getValue() > 0) {
 				NormalizedSimpleStack.NSSItem normStackItem = (NormalizedSimpleStack.NSSItem)normStack;
@@ -177,7 +180,7 @@ public final class EMCMapper
 		return emc.containsKey(copy);
 	}
 
-	public static int getEmcValue(SimpleStack stack)
+	public static Double getEmcValue(SimpleStack stack)
 	{
 		SimpleStack copy = stack.copy();
 		copy.qnty = 1;

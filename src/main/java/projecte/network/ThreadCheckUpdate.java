@@ -21,16 +21,14 @@ public class ThreadCheckUpdate extends Thread
 {
 	private static boolean hasRunServer = false;
 	private static boolean hasRunClient = false;
-	private final String changelogURL = "https://raw.githubusercontent.com/sinkillerj/ProjectGTNH/master/Changelog.txt";
-	private final String changelogDevURL = "https://raw.githubusercontent.com/sinkillerj/ProjectGTNH/master/ChangelogDev.txt";
-	private final String githubURL = "https://github.com/sinkillerj/ProjectGTNH";
-	private final String curseURL = "http://minecraft.curseforge.com/mc-mods/226410-projecte/files";
+	private final String changelogURL = "https://raw.githubusercontent.com/filedw64/ProjectGTNH/master/Changelog.txt";
+    private final String curseURL = "";
 	private boolean isServerSide;
 
 	public ThreadCheckUpdate(boolean isServer)
 	{
 		this.isServerSide = isServer;
-		this.setName("ProjectGTNH Update Checker " + (isServer ? "Server" : "Client"));
+		this.setName("ProjectE Update Checker " + (isServer ? "Server" : "Client"));
 	}
 
 	@Override

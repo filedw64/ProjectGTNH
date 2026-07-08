@@ -16,21 +16,11 @@ public final class Comparators
 		@Override
 		public int compare(ItemStack s1, ItemStack s2)
 		{
-			int emc1 = EMCHelper.getEmcValue(s1);
-			int emc2 = EMCHelper.getEmcValue(s2);
+            double emc1 = EMCHelper.getEmcValue(s1);
+            double emc2 = EMCHelper.getEmcValue(s2);
 
-			if (emc1 < emc2)
-			{
-				return 1;
-			}
-
-			if (emc1 > emc2)
-			{
-				return -1;
-			}
-
-			return 0;
-		}
+            return Double.compare(emc2, emc1);
+        }
 	};
 
 	public static final Comparator<ItemStack> ITEMSTACK_ASCENDING = new Comparator<ItemStack>() {
@@ -76,8 +66,8 @@ public final class Comparators
 		@Override
 		public int compare(SimpleStack s1, SimpleStack s2)
 		{
-			int emc1 = EMCMapper.getEmcValue(s1);
-			int emc2 = EMCMapper.getEmcValue(s2);
+            Double emc1 = EMCMapper.getEmcValue(s1);
+            Double emc2 = EMCMapper.getEmcValue(s2);
 
 			if (emc1 < emc2)
 			{
@@ -111,6 +101,25 @@ public final class Comparators
 			return 0;
 		}
 	};
+
+    public static final Comparator<Double> DOUBLE_DESCENDING = new Comparator<Double>()
+    {
+        @Override
+        public int compare(Double i1, Double i2)
+        {
+            if (i1 < i2)
+            {
+                return 1;
+            }
+
+            if (i1 > 2)
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
 
 	public static final Comparator<AbstractPage> PAGE_HEADER = new Comparator<AbstractPage>() {
 		@Override

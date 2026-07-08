@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Integer> {
+public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
 	Set<Class> canNotMap = Sets.newHashSet();
 	Map<Class, Integer> recipeCount = Maps.newHashMap();
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Integer> mapper, final Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
 		recipeCount.clear();
 		canNotMap.clear();
 		recipeloop: for (IRecipe recipe : (Iterable<IRecipe>) CraftingManager.getInstance().getRecipeList()) {
@@ -269,7 +269,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Integer
 
 		@Override
 		public String getDescription() {
-			return "Maps custom IRecipe's from ProjectGTNH";
+			return "Maps custom IRecipe's from ProjectE";
 		}
 
 		@Override

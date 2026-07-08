@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IValueArithmetic<V>> extends AbstractMappingCollector<T,V, A>  {
+public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IValueArithmetic<V>> extends AbstractMappingCollector<T,V,A>  {
 	protected static final boolean DEBUG_GRAPHMAPPER = false;
 
 	protected A arithmetic;
@@ -163,14 +163,13 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		}
 
 		public String toString() {
-			return "" + value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
+			return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
 		}
 
 		public String ingredientsToString() {
-			if (ingredientsWithAmount == null || ingredientsWithAmount.size() == 0) return "nothing";
+			if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) return "nothing";
 			StringBuilder sb = new StringBuilder();
-			boolean first = true;
-			Iterator<Map.Entry<T,Integer>> iter = ingredientsWithAmount.entrySet().iterator();
+            Iterator<Map.Entry<T,Integer>> iter = ingredientsWithAmount.entrySet().iterator();
 			if (iter.hasNext()) {
 				Map.Entry<T, Integer> entry = iter.next();
 				sb.append(entry.getValue()).append("*").append(entry.getKey().toString());
@@ -186,8 +185,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 
 		public boolean equals(Conversion other) {
 			if (output.equals(other.output) && value.equals(other.value)) {
-				if (ingredientsWithAmount == null || ingredientsWithAmount.size() == 0) {
-					return other.ingredientsWithAmount == null || other.ingredientsWithAmount.size() == 0;
+				if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) {
+					return other.ingredientsWithAmount == null || other.ingredientsWithAmount.isEmpty();
 				} else {
 					return ingredientsWithAmount.equals(other.ingredientsWithAmount);
 				}

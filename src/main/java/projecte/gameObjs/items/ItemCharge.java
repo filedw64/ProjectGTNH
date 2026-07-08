@@ -54,7 +54,11 @@ public class ItemCharge extends ItemPE implements IItemCharge
 	@Override
 	public byte getCharge(ItemStack stack)
 	{
-		return stack.stackTagCompound.getByte("Charge");
+        try {
+            return stack.stackTagCompound.getByte("Charge");
+        } catch (Exception e) {
+            return 0;
+        }
 	}
 
 	@Override

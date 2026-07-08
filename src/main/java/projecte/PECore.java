@@ -36,7 +36,7 @@ import projecte.integration.Integration;
 import projecte.network.PacketHandler;
 import projecte.network.ThreadCheckUUID;
 import projecte.network.ThreadCheckUpdate;
-import projecte.network.commands.ProjectGTNHCMD;
+import projecte.network.commands.ProjectECMD;
 import projecte.playerData.Transmutation;
 import projecte.playerData.TransmutationOffline;
 import projecte.proxies.IProxy;
@@ -52,17 +52,17 @@ import java.util.UUID;
 @Mod(modid = PECore.MODID, name = PECore.MODNAME, version = PECore.VERSION)
 public class PECore
 {
-	public static final String MODID = "ProjectGTNH";
-	public static final String MODNAME = "ProjectGTNH";
-	public static final String VERSION = "@VERSION@";
-	public static final GameProfile FAKEPLAYER_GAMEPROFILE = new GameProfile(UUID.fromString("590e39c7-9fb6-471b-a4c2-c0e539b2423d"), "[ProjectGTNH]");
+	public static final String MODID = "ProjectE";
+	public static final String MODNAME = "ProjectE";
+	public static final String VERSION = "1.7.10-PE1.11.0";
+	public static final GameProfile FAKEPLAYER_GAMEPROFILE = new GameProfile(UUID.fromString("590e39c7-9fb6-471b-a4c2-c0e539b2423d"), "[ProjectE]");
 	public static File CONFIG_DIR;
 	public static File PREGENERATED_EMC_FILE;
 
 	@Instance(MODID)
 	public static PECore instance;
 
-	@SidedProxy(clientSide = "projectgtnh.proxies.ClientProxy", serverSide = "projectgtnh.proxies.ServerProxy")
+	@SidedProxy(clientSide = "projecte.proxies.ClientProxy", serverSide = "projecte.proxies.ServerProxy")
 	public static IProxy proxy;
 
 	public static final List<String> uuids = Lists.newArrayList();
@@ -70,7 +70,7 @@ public class PECore
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		CONFIG_DIR = new File(event.getModConfigurationDirectory(), "ProjectGTNH");
+		CONFIG_DIR = new File(event.getModConfigurationDirectory(), "ProjectE");
 
 		if (!CONFIG_DIR.exists())
 		{
@@ -78,7 +78,7 @@ public class PECore
 		}
 
 		PREGENERATED_EMC_FILE = new File(CONFIG_DIR, "pregenerated_emc.json");
-		ProjectEConfig.init(new File(CONFIG_DIR, "ProjectGTNH.cfg"));
+		ProjectEConfig.init(new File(CONFIG_DIR, "ProjectE.cfg"));
 
 		CustomEMCParser.init();
 
@@ -122,7 +122,7 @@ public class PECore
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
-		event.registerServerCommand(new ProjectGTNHCMD());
+		event.registerServerCommand(new ProjectECMD());
 
 		if (!ThreadCheckUpdate.hasRunServer())
 		{
@@ -144,7 +144,7 @@ public class PECore
 
 		PELogger.logInfo("Registered " + EMCMapper.emc.size() + " EMC values. (took " + (System.currentTimeMillis() - start) + " ms)");
 
-		File dir = new File(event.getServer().getEntityWorld().getSaveHandler().getWorldDirectory(), "ProjectGTNH");
+		File dir = new File(event.getServer().getEntityWorld().getSaveHandler().getWorldDirectory(), "ProjectE");
 
 		if (!dir.exists())
 		{
@@ -207,11 +207,11 @@ public class PECore
 						if (remappedItem != null)
 						{
 							mapping.remap(remappedItem);
-							PELogger.logInfo(String.format("Remapped ProjectGTNH ItemBlock from %s to %s", mapping.name, PECore.MODID + ":" + newSubName));
+							PELogger.logInfo(String.format("Remapped ProjectE ItemBlock from %s to %s", mapping.name, PECore.MODID + ":" + newSubName));
 						}
 						else
 						{
-							PELogger.logFatal("Failed to remap ProjectGTNH ItemBlock: " + mapping.name);
+							PELogger.logFatal("Failed to remap ProjectE ItemBlock: " + mapping.name);
 						}
 					}
 				}
@@ -224,7 +224,7 @@ public class PECore
 					if (remappedBlock != null)
 					{
 						mapping.remap(remappedBlock);
-						PELogger.logInfo(String.format("Remapped ProjectGTNH Block from %s to %s", mapping.name, PECore.MODID + ":" + newSubName));
+						PELogger.logInfo(String.format("Remapped ProjectE Block from %s to %s", mapping.name, PECore.MODID + ":" + newSubName));
 					}
 					else
 					{

@@ -106,7 +106,7 @@ public final class WorldTransmutations
 		}
 		else
 		{
-			MAP.put(origin, new MetaBlock[]{result1});
+			MAP.put(origin, new MetaBlock[]{result1, result1});
 		}
 	}
 }

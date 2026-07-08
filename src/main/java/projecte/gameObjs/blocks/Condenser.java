@@ -40,12 +40,6 @@ public class Condenser extends AlchemicalChest
 	}
 
 	@Override
-	public boolean hasTileEntity(int meta)
-	{
-		return true;
-	}
-
-	@Override
 	public TileEntity createTileEntity(World world, int meta)
 	{
 		return new CondenserTile();

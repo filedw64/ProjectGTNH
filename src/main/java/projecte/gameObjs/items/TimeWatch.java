@@ -40,7 +40,7 @@ import java.util.Set;
 public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPedestalItem
 {
 	private static Set<String> internalBlacklist = Sets.newHashSet(
-			"projectgtnh.gameObjs.tiles.DMPedestalTile",
+			"projecte.gameObjs.tiles.DMPedestalTile",
 			"Reika.ChromatiCraft.TileEntity.AOE.TileEntityAccelerator",
 			"com.sci.torcherino.tile.TileTorcherino",
 			"com.sci.torcherino.tile.TileCompressedTorcherino"

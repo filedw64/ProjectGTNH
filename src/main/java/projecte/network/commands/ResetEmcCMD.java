@@ -7,7 +7,7 @@ import net.minecraft.util.ChatComponentTranslation;
 import projecte.config.CustomEMCParser;
 import projecte.utils.MathUtils;
 
-public class ResetEmcCMD extends ProjectGTNHBaseCMD
+public class ResetEmcCMD extends ProjectEBaseCMD
 {
 	@Override
 	public String getCommandName()

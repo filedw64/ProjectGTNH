@@ -45,8 +45,7 @@ public final class CustomEMCParser
 			{
 				PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
 				e.printStackTrace();
-				return;
-			}
+            }
 		}
 		else
 		{
@@ -78,7 +77,7 @@ public final class CustomEMCParser
 		}
 	}
 
-	public static Map<NormalizedSimpleStack, Integer> userValues = Maps.newHashMap();
+	public static Map<NormalizedSimpleStack, Double> userValues = Maps.newHashMap();
 
 	public static void readUserData()
 	{
@@ -116,7 +115,7 @@ public final class CustomEMCParser
 					{
 						PELogger.logInfo("Registered custom EMC for: " + entry.name + "(" + entry.emc + ")");
 					}
-					userValues.put(NormalizedSimpleStack.getFor(stack), entry.emc > 0 ? entry.emc  : 0);
+					userValues.put(NormalizedSimpleStack.getFor(stack), entry.emc > 0 ? entry.emc  : 0.0);
 				}
 				else
 				{
@@ -366,8 +365,7 @@ public final class CustomEMCParser
 						continue;
 					}
 
-					meta = 0;
-					metaIndex = reader.getLineNumber();
+                    metaIndex = reader.getLineNumber();
 
 					try
 					{
@@ -387,12 +385,12 @@ public final class CustomEMCParser
 					continue;
 				}
 
-				int emc = 0;
+                Double emc;
 				int emcIndex = reader.getLineNumber();
 
 				try
 				{
-					emc = Integer.valueOf(line.substring(2));
+					emc = Double.valueOf(line.substring(2));
 				}
 				catch (NumberFormatException e)
 				{
@@ -453,12 +451,12 @@ public final class CustomEMCParser
 	{
 		public String name;
 		public int meta;
-		public int emc;
+		public Double emc;
 		public int nameIndex;
 		public int metaIndex;
 		public int emcIndex;
 
-		public Entry(String name, int meta, int emc, int nameIndex, int metaIndex, int emcIndex)
+		public Entry(String name, int meta, Double emc, int nameIndex, int metaIndex, int emcIndex)
 		{
 			this.name = name;
 			this.meta = meta;

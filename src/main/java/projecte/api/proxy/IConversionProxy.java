@@ -13,9 +13,9 @@ public interface IConversionProxy
 	/**
 	 * Add a Conversion to the EMC Calculation.
 	 *
-	 * Adding a Conversion allows ProjectGTNH to calculate the EMC value for the output based on the specified ingredients.
+	 * Adding a Conversion allows ProjectE to calculate the EMC value for the output based on the specified ingredients.
 	 * These do not need to be actually Conversions. You can use it to make the EMC value of an item relative to the EMC value of other items.
-	 * ProjectGTNH will automatically select the Conversion with the lowest EMC value.
+	 * ProjectE will automatically select the Conversion with the lowest EMC value.
 	 *
 	 * Has to be called after {@code FMLInitializationEvent} and before {@code FMLServerStartingEvent}.
 	 *

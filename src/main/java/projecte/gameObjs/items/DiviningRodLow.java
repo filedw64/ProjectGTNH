@@ -69,8 +69,8 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 		if (mop != null && mop.typeOfHit.equals(MovingObjectType.BLOCK))
 		{
 			PlayerHelper.swingItem(player);
-			List<Integer> emcValues = Lists.newArrayList();
-			long totalEmc = 0;
+			List<Double> emcValues = Lists.newArrayList();
+            double totalEmc = 0;
 			int numBlocks = 0;
 
 			byte mode = getMode(stack);
@@ -90,13 +90,13 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 
 						List<ItemStack> drops = block.getDrops(world, i, j, k, world.getBlockMetadata(i, j, k), 0);
 
-						if (drops.size() == 0)
+						if (drops.isEmpty())
 						{
 							continue;
 						}
 
 						ItemStack blockStack = drops.get(0);
-						int blockEmc = EMCHelper.getEmcValue(blockStack);
+                        double blockEmc = EMCHelper.getEmcValue(blockStack);
 
 						if (blockEmc == 0)
 						{
@@ -111,7 +111,7 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 
 								if (ItemHelper.areItemStacksEqualIgnoreNBT(entry.getKey(), blockStack))
 								{
-									int currentValue = EMCHelper.getEmcValue(entry.getValue());
+                                    double currentValue = EMCHelper.getEmcValue(entry.getValue());
 
 									if (currentValue != 0)
 									{
@@ -144,16 +144,16 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 				return stack;
 			}
 
-			int[] maxValues = new int[3];
+            double[] maxValues = new double[3];
 
 			for (int i = 0; i < 3; i++)
 			{
 				maxValues[i] = 1;
 			}
 
-			Collections.sort(emcValues, Comparators.INT_DESCENDING);
+			emcValues.sort(Comparators.DOUBLE_DESCENDING);
 
-			int num = emcValues.size() >= 3 ? 3 : emcValues.size();
+			int num = Math.min(emcValues.size(), 3);
 
 			for (int i = 0; i < num; i++)
 			{

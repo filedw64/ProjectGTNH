@@ -66,7 +66,7 @@ public class TransmutationStone extends Block
 	{
 		TileEntity tile = world.getTileEntity(x, y, z);
 
-		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectGTNHBlock") && tile instanceof TileEmc)
+		if (stack.hasTagCompound() && stack.stackTagCompound.getBoolean("ProjectEBlock") && tile instanceof TileEmc)
 		{
 			stack.stackTagCompound.setInteger("x", x);
 			stack.stackTagCompound.setInteger("y", y);

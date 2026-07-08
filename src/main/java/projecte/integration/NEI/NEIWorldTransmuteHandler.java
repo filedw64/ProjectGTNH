@@ -99,11 +99,11 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 		{
 			if (NEIServerUtils.areStacksSameTypeCrafting(entry.getValue()[0].toItemStack(), result))
 			{
-				if (entry != null && entry.getValue() != null)
+				if (entry.getValue() != null)
 					arecipes.add(new CachedTransmutationRecipe(entry.getKey(), false));
 			} else if (NEIServerUtils.areStacksSameTypeCrafting(entry.getValue()[1].toItemStack(), result))
 			{
-				if (entry != null && entry.getValue() != null)
+				if (entry.getValue() != null)
 					arecipes.add(new CachedTransmutationRecipe(entry.getKey(), true));
 			}
 		}
@@ -116,12 +116,9 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 		{
 			if (NEIServerUtils.areStacksSameTypeCrafting(entry.getKey().toItemStack(), ingredient))
 			{
-				if (entry != null)
-				{
-					if (entry.getValue()[0] != null) arecipes.add(new CachedTransmutationRecipe(entry.getKey(), false));
-					if (entry.getValue()[1] != null) arecipes.add(new CachedTransmutationRecipe(entry.getKey(), true));
-				}
-			}
+                if (entry.getValue()[0] != null) arecipes.add(new CachedTransmutationRecipe(entry.getKey(), false));
+                if (entry.getValue()[1] != null) arecipes.add(new CachedTransmutationRecipe(entry.getKey(), true));
+            }
 		}
 	}
 

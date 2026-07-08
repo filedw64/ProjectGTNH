@@ -77,7 +77,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			}
 			else
 			{
-				int emcVal = EMCHelper.getEmcValue(stack);
+                double emcVal = EMCHelper.getEmcValue(stack);
 
 				if (emcVal > 0 && (this.getStoredEmc() + emcVal) <= this.getMaximumEmc())
 				{
@@ -164,18 +164,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-		if ((starEmc + toSend) <= maxStarEmc)
-		{
-			itemEmc.addEmc(chargeable, toSend);
-			this.removeEMC(toSend);
-		}
-		else
-		{
-			toSend = maxStarEmc - starEmc;
-			itemEmc.addEmc(chargeable, toSend);
-			this.removeEMC(toSend);
-		}
-	}
+        if (!((starEmc + toSend) <= maxStarEmc)) {
+            toSend = maxStarEmc - starEmc;
+        }
+        itemEmc.addEmc(chargeable, toSend);
+        this.removeEMC(toSend);
+    }
 
 	public int getEmcScaled(int i)
 	{
@@ -231,7 +225,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			return (int) Math.round(displayRawEmc * i / ((IItemEmc) inventory[0].getItem()).getMaximumEmc(inventory[0]));
 		}
 
-		int emc = EMCHelper.getEmcValue(inventory[0]);
+        double emc = EMCHelper.getEmcValue(inventory[0]);
 
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
 	}

@@ -7,12 +7,10 @@ import java.util.Map;
 
 public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic> implements IExtendedMappingCollector<T, V, A>
 {
-
 	A defaultArithmetic;
 	public AbstractMappingCollector(A defaultArithmetic) {
 		this.defaultArithmetic = defaultArithmetic;
 	}
-
 
 	public void addConversion(int outnumber, T output, Iterable<T> ingredients) {
 		addConversion(outnumber, output, listToMapOfCounts(ingredients));
@@ -26,8 +24,7 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 		Map<T, Integer> map = new HashMap<>();
 		for (T ingredient : iterable) {
 			if (map.containsKey(ingredient)) {
-				int amount = map.get(ingredient);
-				map.put(ingredient, amount + 1);
+                map.compute(ingredient, (k, amount) -> amount + 1);
 			} else {
 				map.put(ingredient, 1);
 			}

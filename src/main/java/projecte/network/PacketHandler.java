@@ -67,10 +67,10 @@ public final class PacketHandler
 
 	public static void sendFragmentedEmcPacket(EntityPlayerMP player)
 	{
-		ArrayList<Integer[]> list = Lists.newArrayList();
+		ArrayList<Object[]> list = Lists.newArrayList();
 		int counter = 0;
 
-		for (Map.Entry<SimpleStack, Integer> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
+		for (Map.Entry<SimpleStack, Double> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
 		{
 			SimpleStack stack = entry.getKey();
 
@@ -79,7 +79,7 @@ public final class PacketHandler
 				continue;
 			}
 
-			Integer[] data = new Integer[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+            Object[] data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
 			list.add(data);
 
 			if (list.size() >= MAX_PKT_SIZE)
@@ -90,7 +90,7 @@ public final class PacketHandler
 			}
 		}
 
-		if (list.size() > 0)
+		if (!list.isEmpty())
 		{
 			PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
 			list.clear();
@@ -103,10 +103,10 @@ public final class PacketHandler
 
 	public static void sendFragmentedEmcPacketToAll()
 	{
-		ArrayList<Integer[]> list = Lists.newArrayList();
+		ArrayList<Object[]> list = Lists.newArrayList();
 		int counter = 0;
 
-		for (Map.Entry<SimpleStack, Integer> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
+		for (Map.Entry<SimpleStack, Double> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
 		{
 			SimpleStack stack = entry.getKey();
 
@@ -115,7 +115,7 @@ public final class PacketHandler
 				continue;
 			}
 
-			Integer[] data = new Integer[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+            Object[] data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
 			list.add(data);
 
 			if (list.size() >= MAX_PKT_SIZE)
@@ -126,7 +126,7 @@ public final class PacketHandler
 			}
 		}
 
-		if (list.size() > 0)
+		if (!list.isEmpty())
 		{
 			PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
 			list.clear();

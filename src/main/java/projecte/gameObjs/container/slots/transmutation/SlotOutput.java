@@ -21,7 +21,7 @@ public class SlotOutput extends Slot
 	{
 		ItemStack stack = getStack().copy();
 		stack.stackSize = amount;
-		int emcValue = amount * EMCHelper.getEmcValue(stack);
+        double emcValue = amount * EMCHelper.getEmcValue(stack);
 		if (emcValue > inv.emc) {
 			//Requesting more emc than available
 			//Can not return `null` here or NPE in Container! Container expects stacksize=0-Itemstack for 'nothing'

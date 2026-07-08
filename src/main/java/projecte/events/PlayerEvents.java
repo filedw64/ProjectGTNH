@@ -57,10 +57,9 @@ public class PlayerEvents
 	@SubscribeEvent
 	public void onEntityJoinWorld(EntityJoinWorldEvent event)
 	{
-		if (!event.entity.worldObj.isRemote && event.entity instanceof EntityPlayerMP)
+		if (!event.entity.worldObj.isRemote && event.entity instanceof EntityPlayerMP player)
 		{
-			EntityPlayerMP player = ((EntityPlayerMP) event.entity);
-			Transmutation.sync(player);
+            Transmutation.sync(player);
 			AlchemicalBags.syncFull(player);
 		}
 	}
