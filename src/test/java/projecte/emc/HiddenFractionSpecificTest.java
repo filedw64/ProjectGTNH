@@ -3,13 +3,14 @@ package projecte.emc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import projecte.emc.arithmetics.FullFractionArithmetic;
-import projecte.emc.arithmetics.HiddenFractionArithmetic;
-import projecte.emc.arithmetics.IValueArithmetic;
-import projecte.emc.collector.IExtendedMappingCollector;
-import projecte.emc.collector.IntToFractionCollector;
-import projecte.emc.generators.FractionToIntGenerator;
-import projecte.emc.generators.IValueGenerator;
+import moze_intel.projecte.emc.SimpleGraphMapper;
+import moze_intel.projecte.emc.arithmetics.FullFractionArithmetic;
+import moze_intel.projecte.emc.arithmetics.HiddenFractionArithmetic;
+import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
+import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
+import moze_intel.projecte.emc.collector.IntToFractionCollector;
+import moze_intel.projecte.emc.generators.FractionToIntGenerator;
+import moze_intel.projecte.emc.generators.IValueGenerator;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.math.Fraction;

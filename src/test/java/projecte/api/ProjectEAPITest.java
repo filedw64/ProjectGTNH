@@ -2,6 +2,7 @@ package projecte.api;
 
 import static org.junit.Assert.*;
 
+import moze_intel.projecte.api.ProjectEAPI;
 import org.junit.Test;
 
 public class ProjectEAPITest

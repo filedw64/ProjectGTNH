@@ -2,15 +2,15 @@ package projecte.emc.mappers.customConversions;
 
 import static org.junit.Assert.*;
 
-import projecte.emc.mappers.customConversions.json.ConversionGroup;
-import projecte.emc.mappers.customConversions.json.CustomConversion;
-import projecte.emc.mappers.customConversions.json.CustomConversionFile;
+import moze_intel.projecte.emc.mappers.customConversions.CustomConversionMapper;
+import moze_intel.projecte.emc.mappers.customConversions.json.ConversionGroup;
+import moze_intel.projecte.emc.mappers.customConversions.json.CustomConversion;
+import moze_intel.projecte.emc.mappers.customConversions.json.CustomConversionFile;
 
 import org.junit.Test;
 
 import java.io.StringReader;
 import java.util.List;
-import java.util.Optional;
 
 public class CustomConversionMapperTest
 {
@@ -40,7 +40,7 @@ public class CustomConversionMapperTest
 		assertTrue("Map contains key for group", f.groups.containsKey("groupa"));
 		ConversionGroup group = f.groups.get("groupa");
 		assertNotNull(group);
-		assertEquals("Group contains specific comment", group.comment, "A conversion group for something");
+		assertEquals("Group contains specific comment", "A conversion group for something", group.comment);
 		assertEquals(0, group.conversions.size());
 	}
 
@@ -109,10 +109,10 @@ public class CustomConversionMapperTest
 						"}";
 		CustomConversionFile f = CustomConversionMapper.parseJson(new StringReader(simpleFile));
 		assertNotNull(f.values);
-		assertEquals(1.0, (double) f.values.setValueBefore.get("a"), 1e-7);
-		assertEquals(2.0, (double) f.values.setValueBefore.get("b"), 1e-7);
-		assertEquals(-Double.MAX_VALUE, (double) f.values.setValueBefore.get("c"), 1e-7);
-		assertEquals(3.0, (double) f.values.setValueAfter.get("d"), 1e-7);
+		assertEquals(1.0, f.values.setValueBefore.get("a"), 1e-7);
+		assertEquals(2.0, f.values.setValueBefore.get("b"), 1e-7);
+		assertEquals(-Double.MAX_VALUE, f.values.setValueBefore.get("c"), 1e-7);
+		assertEquals(3.0, f.values.setValueAfter.get("d"), 1e-7);
 
 	}
 

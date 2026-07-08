@@ -8,8 +8,8 @@
 	  "logoFile": "assets/projecte/logo.png",
 	  "url": "https://github.com/filedw64/ProjectGTNH/",
 	  "updateUrl": "",
-	  "authorList": [ "filedw64" ],
-	  "credits": "Thanks to:\nsinkillerj, Moze_Intel - ProjectE creator.",
+	  "authorList": [ "filedw64", "sinkillerj", "Moze_Intel" ],
+	  "credits": "Thanks to:\nsinkillerj, Moze_Intel - ProjectE creator.\nx3n0ph0b3 - EE2 creator. Allowed use of EE2 assets.\nMidnightLightning - EE2 GUI Textures.\nMagic Banana - Original ProjectE textures.\nMaPePeR - Assistant developer.\nWilliewillus - Assistant developer.\nLilylicious - Assistant developer.",
 	  "parent": "",
 	  "screenshots": [],
 	  "dependencies": []

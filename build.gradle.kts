@@ -7,5 +7,5 @@ tasks.wrapper {
     distributionUrl = "https://mirrors.cloud.tencent.com/gradle/gradle-9.4.0-bin.zip"
 }
 tasks.reobfJar {
-    archiveFileName.set("projecte-${project.properties["modVersion"]}.jar")
+    archiveFileName.set("ProjectE-${project.properties["modVersion"]}.jar")
 }

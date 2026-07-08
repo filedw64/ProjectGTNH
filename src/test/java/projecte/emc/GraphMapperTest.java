@@ -1,16 +1,17 @@
 package projecte.emc;
 
+import moze_intel.projecte.emc.SimpleGraphMapper;
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
-import projecte.emc.arithmetics.HiddenFractionArithmetic;
-import projecte.emc.arithmetics.IValueArithmetic;
-import projecte.emc.collector.IExtendedMappingCollector;
-import projecte.emc.collector.IntToFractionCollector;
-import projecte.emc.collector.MappingCollector;
-import projecte.emc.generators.FractionToIntGenerator;
-import projecte.emc.generators.IValueGenerator;
+import moze_intel.projecte.emc.arithmetics.HiddenFractionArithmetic;
+import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
+import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
+import moze_intel.projecte.emc.collector.IntToFractionCollector;
+import moze_intel.projecte.emc.collector.MappingCollector;
+import moze_intel.projecte.emc.generators.FractionToIntGenerator;
+import moze_intel.projecte.emc.generators.IValueGenerator;
 
 import java.util.Arrays;
 import java.util.HashMap;
