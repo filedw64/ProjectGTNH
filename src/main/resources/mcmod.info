@@ -3,7 +3,7 @@
 	  "modid": "${modId}",
 	  "name": "${modName}",
 	  "description": "A rewrite version of ProjectE for GTNH.",
-	  "version": "1.7.10-1.11.0-GTNH",
+	  "version": "1.11.0-GTNH",
 	  "mcversion": "${minecraftVersion}",
 	  "logoFile": "assets/projecte/logo.png",
 	  "url": "https://github.com/filedw64/ProjectGTNH/",

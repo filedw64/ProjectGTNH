@@ -44,7 +44,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 	}
 
 	protected boolean canOverride(T something, V value) {
-		if (OVERWRITE_FIXED_VALUES) return  true;
+		if (OVERWRITE_FIXED_VALUES) return true;
 		if (fixValueBeforeInherit.containsKey(something)) {
 			return fixValueBeforeInherit.get(something).compareTo(value) == 0;
 		}
@@ -56,10 +56,10 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		Map<T, V> values = Maps.newHashMap();
 		Map<T, V> newValueFor = Maps.newHashMap();
 		Map<T, V> nextValueFor = Maps.newHashMap();
-		Map<T,Object> reasonForChange = Maps.newHashMap();
+		Map<T, Object> reasonForChange = Maps.newHashMap();
 
 
-		for (Map.Entry<T,V> entry: fixValueBeforeInherit.entrySet()) {
+		for (Map.Entry<T, V> entry: fixValueBeforeInherit.entrySet()) {
 			newValueFor.put(entry.getKey(),entry.getValue());
 			reasonForChange.put(entry.getKey(), "fixValueBefore");
 		}
@@ -73,7 +73,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 						//We have a new value for 'entry.getKey()' now we need to update everything that uses it as an ingredient.
 						for (Conversion conversion : getUsesFor(entry.getKey())) {
 							if (overwriteConversion.containsKey(conversion.output) && overwriteConversion.get(conversion.output) != conversion) {
-								//There is a "SetValue-Conversion" for this item and its not this one, so we skip it.
+								//There is a "SetValue-Conversion" for this item and its, not this one, so we skip it.
 								continue;
 							}
 							//Calculate how much the conversion-output costs with the new Value for entry.getKey
@@ -169,10 +169,10 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		try {
 			return valueForConversionUnsafe(values, conversion);
 		} catch (ArithmeticException e) {
-			PELogger.logWarn(String.format("Could not calculate value for %s: %s", conversion.toString(), e.toString()));
+			PELogger.logWarn(String.format("Could not calculate value for %s: %s", conversion.toString(), e));
 			return ZERO;
 		} catch (Exception e) {
-			PELogger.logWarn(String.format("Could not calculate value for %s: %s", conversion.toString(), e.toString()));
+			PELogger.logWarn(String.format("Could not calculate value for %s: %s", conversion.toString(), e));
 			e.printStackTrace();
 			return ZERO;
 		}

@@ -36,7 +36,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	protected Map<T, V> fixValueAfterInherit = Maps.newHashMap();
 	protected Map<T, Integer> noDependencyConversionCount = Maps.newHashMap();
 
-	public static <K, V> List<V> getOrCreateList(Map<K, List<V>> map, K key) {
+	public static <T, V> List<V> getOrCreateList(Map<T, List<V>> map, T key) {
 		List<V> list;
 		if (map.containsKey(key)) {
 			list = map.get(key);
@@ -88,7 +88,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		conversion.arithmeticForConversion = arithmeticForConversion;
 		if (getConversionsFor(output).contains(conversion)) return;
 		getConversionsFor(output).add(conversion);
-		if (ingredientsWithAmount.size() == 0) increaseNoDependencyConversionCountFor(output);
+		if (ingredientsWithAmount.isEmpty()) increaseNoDependencyConversionCountFor(output);
 		addConversionToIngredientUsages(conversion);
 	}
 
@@ -133,10 +133,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		overwriteConversion.put(something, conversion);
 	}
 
-
-	abstract public Map<T, V> generateValues();
-
-	protected class Conversion {
+    protected class Conversion {
 		public T output;
 
 		public int outnumber = 1;
@@ -154,15 +151,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 			this.ingredientsWithAmount = ingredientsWithAmount;
 		}
 
-		public void markInvalid() {
-			if (this.ingredientsWithAmount != null) {
-				this.ingredientsWithAmount.clear();
-				this.ingredientsWithAmount = null;
-			}
-			this.value = arithmetic.getZero();
-		}
-
-		public String toString() {
+        public String toString() {
 			return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
 		}
 

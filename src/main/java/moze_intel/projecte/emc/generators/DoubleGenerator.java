@@ -15,9 +15,9 @@ public class DoubleGenerator<T> implements IValueGenerator<T, Double>
 	@Override
 	public Map<T, Double> generateValues()
 	{
-		Map<T, Double> innerReslt = inner.generateValues();
+		Map<T, Double> innerResult = inner.generateValues();
 		Map<T, Double> myResult = Maps.newHashMap();
-		for (Map.Entry<T, Double> entry: innerReslt.entrySet())
+		for (Map.Entry<T, Double> entry: innerResult.entrySet())
 		{
             Double value = entry.getValue();
 			if (value > 0)

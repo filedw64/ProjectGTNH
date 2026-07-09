@@ -62,7 +62,7 @@ public class PECore
 	@Instance(MODID)
 	public static PECore instance;
 
-	@SidedProxy(clientSide = "projecte.proxies.ClientProxy", serverSide = "projecte.proxies.ServerProxy")
+	@SidedProxy(clientSide = "moze_intel.projecte.proxies.ClientProxy", serverSide = "moze_intel.projecte.proxies.ServerProxy")
 	public static IProxy proxy;
 
 	public static final List<String> uuids = Lists.newArrayList();

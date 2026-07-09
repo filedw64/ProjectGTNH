@@ -1,3 +1,6 @@
+###Version 1.11.0-GTNH
+* NEW: Double EMC support!
+
 ###Version 1.7.10-PE1.10.1
 * NOTICE: 1.7 is now a legacy build and will no longer be officially supported. Minor fixes may come in the future but are not guaranteed. Development and support will continue for 1.10 and above
 * NOTICE: As of PE1.9.3 legacy save conversion code has been removed. If you are upgrading from PE1.7.1 or below you will need to run PE1.9.2 once before upgrading further
@@ -190,7 +193,7 @@
 * CHANGE: ProjectE commands have been unified
 * CHANGE: Harvest Goddess Band no longer passively grows flowers and tall grass on grass blocks by default. A config option has been added to revert this
 * CHANGE: Gem of Eternal Density is now faster thanks to a change that makes it work more like its EE2 counterpart
-* CHANGE: Pick AOE config now applies to the Morning Star as well 
+* CHANGE: Pick AOE config now applies to the Morning Star as well
 
 ###Version 1.7.10-PE1.4.6
 * NEW: More EE2 sounds added
@@ -342,7 +345,7 @@
 ###Version Alpha 0.2d-dev9
 * NEW: Optimized energy condensers
 * NEW: Energy condenser lock slot is now a "ghost" slot
-* NEW: Added dev changelogs 
+* NEW: Added dev changelogs
 * FIX: Energy condensers duping items infinitely after user EMC value change
 
 ###Version Alpha 0.2c
@@ -448,7 +451,7 @@
 * NEW: Added reverse recipes for matter/fuel blocks
 * NEW: zh_CN.lang
 * FIX: Transmutation table knowledge reset on player death
-* FIX: Fuel mapping initialization 
+* FIX: Fuel mapping initialization
 
 ###Version Alpha 0.1c
 * FIX: Major client-packet leak

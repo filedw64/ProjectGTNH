@@ -1,7 +1,16 @@
 package moze_intel.projecte.emc;
 
 import com.google.common.collect.Maps;
-import moze_intel.projecte.emc.mappers.*;
+import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
+import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
+import moze_intel.projecte.emc.mappers.Chisel2Mapper;
+import moze_intel.projecte.emc.mappers.CraftingMapper;
+import moze_intel.projecte.emc.mappers.CustomEMCMapper;
+import moze_intel.projecte.emc.mappers.FluidMapper;
+import moze_intel.projecte.emc.mappers.IEMCMapper;
+import moze_intel.projecte.emc.mappers.LazyMapper;
+import moze_intel.projecte.emc.mappers.OreDictionaryMapper;
+import moze_intel.projecte.emc.mappers.SmeltingMapper;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -50,15 +59,15 @@ public final class EMCMapper
 				new SmeltingMapper(),
 				new APICustomConversionMapper()
 		);
-        SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper(new DoubleArithmetic());
-		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator(mapper);
-		IExtendedMappingCollector<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mappingCollector = new DoubleCollector(mapper);
+        SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
+		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator<>(mapper);
+		IExtendedMappingCollector<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mappingCollector = new DoubleCollector<>(mapper);
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();
 
 		if (config.getBoolean("dumpEverythingToFile", "general", false,"Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectE/mappingdump.json")) {
-			mappingCollector = new DumpToFileCollector(new File(PECore.CONFIG_DIR, "mappingdump.json"), mappingCollector);
+			mappingCollector = new DumpToFileCollector<>(new File(PECore.CONFIG_DIR, "mappingdump.json"), mappingCollector);
 		}
 
 		boolean shouldUsePregenerated = config.getBoolean("pregenerate", "general", false, "When the next EMC mapping occurs write the results to config/ProjectE/pregenerated_emc.json and only ever run the mapping again" +

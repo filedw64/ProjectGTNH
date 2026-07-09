@@ -2,6 +2,7 @@ package moze_intel.projecte.emc.mappers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -13,12 +14,12 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.tuple.Pair;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.arithmetics.FullFractionArithmetic;
 import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.PELogger;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
@@ -96,11 +97,11 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		}
 
 		if (!(mapper instanceof IExtendedMappingCollector)) throw new RuntimeException("Cannot add Extended Fluid Mappings to mapper!");
-		IExtendedMappingCollector emapper = (IExtendedMappingCollector) mapper;
-		FullFractionArithmetic fluidArithmetic = new FullFractionArithmetic();
+        IExtendedMappingCollector<NormalizedSimpleStack, Double, DoubleArithmetic> emapper = (IExtendedMappingCollector<NormalizedSimpleStack, Double, DoubleArithmetic>) mapper;
+        DoubleArithmetic fluidArithmetic = new DoubleArithmetic();
 
 		for (Pair<NormalizedSimpleStack, FluidStack> pair: melting) {
-			emapper.addConversion(pair.getValue().amount, NormalizedSimpleStack.getFor(pair.getValue().getFluid()), Arrays.asList(pair.getKey()), fluidArithmetic);
+			emapper.addConversion(pair.getValue().amount, NormalizedSimpleStack.getFor(pair.getValue().getFluid()), Collections.singletonList(pair.getKey()), fluidArithmetic);
 		}
 
 		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
