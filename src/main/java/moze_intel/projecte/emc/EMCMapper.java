@@ -8,6 +8,7 @@ import moze_intel.projecte.emc.mappers.CraftingMapper;
 import moze_intel.projecte.emc.mappers.CustomEMCMapper;
 import moze_intel.projecte.emc.mappers.FluidMapper;
 import moze_intel.projecte.emc.mappers.IEMCMapper;
+import moze_intel.projecte.emc.mappers.IntegrationMapper;
 import moze_intel.projecte.emc.mappers.LazyMapper;
 import moze_intel.projecte.emc.mappers.OreDictionaryMapper;
 import moze_intel.projecte.emc.mappers.SmeltingMapper;
@@ -24,8 +25,6 @@ import moze_intel.projecte.emc.collector.DumpToFileCollector;
 import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
 import moze_intel.projecte.emc.generators.DoubleGenerator;
 import moze_intel.projecte.emc.generators.IValueGenerator;
-import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
-import moze_intel.projecte.emc.mappers.CustomEMCMapper;
 import moze_intel.projecte.emc.mappers.customConversions.CustomConversionMapper;
 import moze_intel.projecte.emc.pregenerated.PregeneratedEMC;
 import moze_intel.projecte.playerData.Transmutation;
@@ -48,16 +47,17 @@ public final class EMCMapper
 	public static void map()
 	{
 		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
-				new OreDictionaryMapper(),
-				new LazyMapper(),
-				new Chisel2Mapper(),
-				APICustomEMCMapper.instance,
-				new CustomConversionMapper(),
-				new CustomEMCMapper(),
-				new CraftingMapper(),
-				new FluidMapper(),
-				new SmeltingMapper(),
-				new APICustomConversionMapper()
+            new OreDictionaryMapper(),
+            new LazyMapper(),
+            new Chisel2Mapper(),
+            APICustomEMCMapper.instance,
+            new CustomConversionMapper(),
+            new CustomEMCMapper(),
+            new CraftingMapper(),
+            new FluidMapper(),
+            new SmeltingMapper(),
+            new APICustomConversionMapper(),
+            IntegrationMapper.instance
 		);
         SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
 		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator<>(mapper);
@@ -79,14 +79,11 @@ public final class EMCMapper
 		}
 		else
 		{
-
-
 			SimpleGraphMapper.setLogFoundExploits(config.getBoolean("logEMCExploits", "general", true,
 					"Log known EMC Exploits. This can not and will not find all possible exploits. " +
 							"This will only find exploits that result in fixed/custom emc values that the algorithm did not overwrite. " +
 							"Exploits that derive from conversions that are unknown to ProjectE will not be found."
 			));
-
 			PELogger.logInfo("Starting to collect Mappings...");
 			for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers)
 			{
@@ -115,14 +112,14 @@ public final class EMCMapper
 			config.save();
 
 			graphMapperValues = valueGenerator.generateValues();
-			PELogger.logInfo("Generated Values...");
+			PELogger.logInfo("EMC Values Generated!");
 
 			filterEMCMap(graphMapperValues);
+            NormalizedSimpleStack.NSSFake.clearMap();
 
 			if (shouldUsePregenerated) {
 				//Should have used pregenerated, but the file was not read => regenerate.
-				try
-				{
+				try {
 					PregeneratedEMC.write(PECore.PREGENERATED_EMC_FILE, graphMapperValues);
 					PELogger.logInfo("Wrote Pregen-file!");
 				} catch (IOException e)
@@ -131,7 +128,6 @@ public final class EMCMapper
 				}
 			}
 		}
-
 
 		for (Map.Entry<NormalizedSimpleStack, Double> entry: graphMapperValues.entrySet()) {
 			if (entry.getKey() instanceof NormalizedSimpleStack.NSSItem normStackItem)
@@ -153,17 +149,18 @@ public final class EMCMapper
 	}
 
 	/**
-	 * Remove all entrys from the map, that are not {@link NormalizedSimpleStack.NSSItem}s, have a value < 0 or WILDCARD_VALUE as metadata.
+	 * Remove all entrys from the map, that are not {@link NormalizedSimpleStack.NSSItem}s, have a value <= 0 or WILDCARD_VALUE as metadata.
 	 * @param map
 	 */
 	static void filterEMCMap(Map<NormalizedSimpleStack, Double> map) {
-		for(Iterator<Map.Entry<NormalizedSimpleStack, Double>> iter = graphMapperValues.entrySet().iterator(); iter.hasNext();) {
+		for(Iterator<Map.Entry<NormalizedSimpleStack, Double>> iter = map.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry<NormalizedSimpleStack, Double> entry = iter.next();
 			NormalizedSimpleStack normStack = entry.getKey();
 			if (normStack instanceof NormalizedSimpleStack.NSSItem normStackItem && entry.getValue() > 0) {
                 if (normStackItem.damage != OreDictionary.WILDCARD_VALUE) {
 					continue;
 				}
+                //PELogger.logDebug(normStackItem.itemName + " : emc = " + entry.getValue());
 			}
 			iter.remove();
 		}

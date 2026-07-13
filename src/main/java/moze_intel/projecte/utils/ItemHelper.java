@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Helpers for Inventories, ItemStacks, Items, and the Ore Dictionary
+ * Helpers for Inventories, ItemStacks, Items, and the Ore Dictionary.
  * Notice: Please try to keep methods tidy and alphabetically ordered. Thanks!
  */
 public final class ItemHelper

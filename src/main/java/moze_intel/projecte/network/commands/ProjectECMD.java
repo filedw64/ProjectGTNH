@@ -30,7 +30,7 @@ public class ProjectECMD extends ProjectEBaseCMD
 	@Override
 	public String getCommandUsage(ICommandSender sender)
 	{
-		return "pe.command.main.usage";
+        return setemccmd.canCommandSenderUseCommand(sender)?"pe.command.main.usage":"pe.command.main.guest.usage";
 	}
 
 	@Override

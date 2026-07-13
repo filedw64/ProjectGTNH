@@ -106,7 +106,7 @@ public abstract class NormalizedSimpleStack {
 			entry.getValue().add(0);
 			NormalizedSimpleStack stackWildcard = new NSSItem(entry.getKey(), OreDictionary.WILDCARD_VALUE);
 			for (int metadata : entry.getValue()) {
-				mapper.addConversion(1, stackWildcard, Arrays.asList((NormalizedSimpleStack)new NSSItem(entry.getKey(), metadata)));
+				mapper.addConversion(1, stackWildcard, Arrays.asList(new NSSItem(entry.getKey(), metadata)));
 			}
 		}
 
@@ -156,10 +156,8 @@ public abstract class NormalizedSimpleStack {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (obj instanceof NSSItem) {
-				NSSItem other = (NSSItem) obj;
-
-				return this.itemName.equals(other.itemName) && this.damage == other.damage;
+			if (obj instanceof NSSItem other) {
+                return this.itemName.equals(other.itemName) && this.damage == other.damage;
 			}
 
 			return false;
@@ -191,11 +189,21 @@ public abstract class NormalizedSimpleStack {
 		public final String description;
 		public final int counter;
 		private static int fakeItemCounter = 0;
-		public NSSFake(String description)
-		{
-			this.counter = fakeItemCounter++;
-			this.description = description;
+        private static Map<String, Integer> counterMap = Maps.newHashMap();
+		public NSSFake(String description){
+            this.description = description;
+            if(counterMap.containsKey(description)) {
+                this.counter = counterMap.get(description);
+            }
+            else {
+                this.counter = (++fakeItemCounter);
+                counterMap.put(description, this.counter);
+            }
 		}
+
+        public static void clearMap() {
+            counterMap = null;
+        }
 
 		public boolean equals(Object o) {
 			if (o instanceof NSSFake) {

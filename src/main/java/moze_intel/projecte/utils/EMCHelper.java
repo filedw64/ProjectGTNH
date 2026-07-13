@@ -197,34 +197,22 @@ public final class EMCHelper
 					return emc;
 				}
 
-                double result = emc * relDamage;
+                double result = emc / stack.getMaxDamage() * relDamage;
 
-				result /= stack.getMaxDamage();
-				result += getEnchantEmcBonus(stack);
+				result += getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 
-				result += getStoredEMCBonus(stack);
-
-				if (result > Double.MAX_VALUE)
+				if (result > 1e300)
 				{
 					return emc;
-				}
-
-				if (result <= 0)
-				{
-					return 1.0;
 				}
 
 				return result;
 			}
 		}
-		else
+		else if (EMCMapper.mapContains(iStack))
 		{
-			if (EMCMapper.mapContains(iStack))
-			{
-				return EMCMapper.getEmcValue(iStack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
-			}
+            return EMCMapper.getEmcValue(iStack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 		}
-
 		return 0.0;
 	}
 
@@ -252,7 +240,7 @@ public final class EMCHelper
 		return result;
 	}
 
-	public static int getKleinStarMaxEmc(ItemStack stack)
+	public static double getKleinStarMaxEmc(ItemStack stack)
 	{
 		return Constants.MAX_KLEIN_EMC[stack.getItemDamage()];
 	}

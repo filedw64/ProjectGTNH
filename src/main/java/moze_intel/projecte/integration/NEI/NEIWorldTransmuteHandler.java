@@ -16,9 +16,8 @@ import java.util.Map.Entry;
 
 public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 {
-
 	private static String name = StatCollector.translateToLocal("pe.nei.worldtransmute");
-	private static String id = "worldTransmutation";
+	private static final String id = "worldTransmutation";
 
 	@Override
 	public String getRecipeName()
@@ -34,18 +33,15 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 
 	public class CachedTransmutationRecipe extends CachedRecipe
 	{
-
 		private MetaBlock input;
 		private MetaBlock output;
 		public boolean sneaking;
 
 		public CachedTransmutationRecipe(MetaBlock in, boolean sneak)
 		{
-
 			input = in;
 			sneaking = sneak;
 			output = WorldTransmutations.getWorldTransmutation(in, sneaking);
-
 		}
 
 		@Override
@@ -53,16 +49,13 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 		{
 			ItemStack is = input.toItemStack();
 			return new PositionedStack(is, 22, 23);
-
 		}
-
 
 		@Override
 		public PositionedStack getResult()
 		{
 			ItemStack result = output.toItemStack();
 			return new PositionedStack(result, 128, 23);
-
 		}
 
 		@Override
@@ -70,7 +63,6 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 		{
 			return new PositionedStack(new ItemStack(ObjHandler.philosStone), 60, 23);
 		}
-
 	}
 
 	@Override
@@ -134,12 +126,8 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 
 	}
 
-
 	@Override
-	public void loadTransferRects()
-	{
-		this.transferRects.add(new TemplateRecipeHandler.RecipeTransferRect(new Rectangle(83, 23, 25, 10), id));
-	}
-
-
+	public void loadTransferRects() {
+        this.transferRects.add(new TemplateRecipeHandler.RecipeTransferRect(new Rectangle(83, 23, 25, 10), id));
+    }
 }

@@ -78,13 +78,11 @@ public class MetaBlock
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof MetaBlock)
+		if (obj instanceof MetaBlock mblock)
 		{
-			MetaBlock block = (MetaBlock) obj;
-
-			if (this.block == block.getBlock())
+            if (this.block == mblock.getBlock())
 			{
-				return this.meta == block.meta || this.block.damageDropped(this.meta) == block.block.damageDropped(block.meta);
+				return this.meta == mblock.meta || this.block.damageDropped(this.meta) == mblock.block.damageDropped(mblock.meta);
 			}
 		}
 

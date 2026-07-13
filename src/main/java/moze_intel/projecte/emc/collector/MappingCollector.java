@@ -40,7 +40,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		List<V> list;
 		if (map.containsKey(key)) {
 			list = map.get(key);
-		} else {
+		}
+        else {
 			list = new LinkedList<>();
 			map.put(key, list);
 		}
@@ -58,7 +59,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	protected int getNoDependencyConversionCountFor(T something) {
 		Integer count = noDependencyConversionCount.get(something);
 		if (count == null) return 0;
-		else return count;
+		return count;
 	}
 
 	protected void increaseNoDependencyConversionCountFor(T something) {
@@ -67,10 +68,9 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 
 	protected void addConversionToIngredientUsages(Conversion conversion) {
 		for (Map.Entry<T, Integer> ingredient : conversion.ingredientsWithAmount.entrySet()) {
-			List<Conversion> usesForIngredient = getUsesFor(ingredient.getKey());
-			if (ingredient.getValue() == null)
-				throw new IllegalArgumentException("ingredient amount value has to be != null");
-			usesForIngredient.add(conversion);
+            if (ingredient.getValue() == null)
+                throw new IllegalArgumentException("ingredient amount value has to be != null");
+			getUsesFor(ingredient.getKey()).add(conversion);
 		}
 	}
 
@@ -86,9 +86,12 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		Conversion conversion = new Conversion(output, outnumber, ingredientsWithAmount);
 		conversion.value = arithmetic.getZero();
 		conversion.arithmeticForConversion = arithmeticForConversion;
-		if (getConversionsFor(output).contains(conversion)) return;
-		getConversionsFor(output).add(conversion);
-		if (ingredientsWithAmount.isEmpty()) increaseNoDependencyConversionCountFor(output);
+        List<Conversion> conversionsForOut = getConversionsFor(output);
+		if (conversionsForOut.contains(conversion))
+            return;
+        conversionsForOut.add(conversion);
+		if (ingredientsWithAmount.isEmpty())
+            increaseNoDependencyConversionCountFor(output);
 		addConversionToIngredientUsages(conversion);
 	}
 
@@ -97,7 +100,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		if (something == null) return;
 		if (fixValueBeforeInherit.containsKey(something))
 			PELogger.logWarn("Overwriting fixValueBeforeInherit for " + something + ":" + fixValueBeforeInherit.get(something) + " to " + value);
-		fixValueBeforeInherit.put(something, value);
+        fixValueBeforeInherit.put(something, value);
 		fixValueAfterInherit.remove(something);
 	}
 

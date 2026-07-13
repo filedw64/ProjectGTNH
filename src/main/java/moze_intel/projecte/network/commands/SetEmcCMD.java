@@ -54,61 +54,36 @@ public class SetEmcCMD extends ProjectEBaseCMD
 			meta = heldItem.getItemDamage();
 			emc = MathUtils.parseDouble(params[0]);
 
-			if (emc < 0)
-			{
-				sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
-			}
-		}
+        }
 		else
 		{
 			name = params[0];
 			meta = 0;
 			boolean isOD = !name.contains(":");
 
-			if (!isOD)
+			if (!isOD && params.length > 2)
 			{
-				if (params.length > 2)
-				{
-					meta = MathUtils.parseInteger(params[1]);
+                meta = MathUtils.parseInteger(params[1]);
 
-					if (meta < 0)
-					{
-						sendError(sender, new ChatComponentTranslation("pe.command.set.invalidmeta", params[1]));
-						return;
-					}
+                if (meta < 0)
+                {
+                    sendError(sender, new ChatComponentTranslation("pe.command.set.invalidmeta", params[1]));
+                    return;
+                }
 
-					emc = MathUtils.parseDouble(params[2]);
-
-					if (emc < 0)
-					{
-						sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
-						return;
-					}
-				}
-				else
-				{
-					emc = MathUtils.parseDouble(params[1]);
-
-					if (emc < 0)
-					{
-						sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
-						return;
-					}
-				}
-			}
+                emc = MathUtils.parseDouble(params[2]);
+            }
 			else
 			{
 				emc = MathUtils.parseDouble(params[1]);
-
-				if (emc < 0)
-				{
-					sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
-					return;
-				}
-			}
-		}
-
-		if (CustomEMCParser.addToFile(name, meta, emc))
+            }
+        }
+        if (emc < 0 || emc > 1e300)
+        {
+            sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
+            return;
+        }
+        if (CustomEMCParser.addToFile(name, meta, emc))
 		{
 			sender.addChatMessage(new ChatComponentTranslation("pe.command.set.success", name, emc));
 			sender.addChatMessage(new ChatComponentTranslation("pe.command.reload.notice"));

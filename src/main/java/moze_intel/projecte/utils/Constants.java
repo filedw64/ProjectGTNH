@@ -12,7 +12,7 @@ public final class Constants
 	public static final DecimalFormat EMC_FORMATTER = new DecimalFormat("##.##");
 	public static final float PLAYER_WALK_SPEED = 0.1F;
 
-	public static final int[] MAX_KLEIN_EMC = new int[] {50000, 200000, 800000, 3200000, 12800000, 51200000};
+	public static final double[] MAX_KLEIN_EMC = new double[] {5e4, 2e5, 8e5, 3.2e6, 1.28e7, 5.12e7};
 	public static final int[] RELAY_KLEIN_CHARGE_RATE = new int[] {16, 48, 160};
 	public static final float[] COLLECTOR_LIGHT_VALS = new float[] {0.4375F, 0.6875F, 1.0F};
 

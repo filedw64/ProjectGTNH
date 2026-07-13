@@ -65,7 +65,7 @@ public class RecipesCovalenceRepair implements IRecipe
 			}
 		}
 
-		if (tool == null || !foundItem || dustCounter == 0)
+		if (tool == null || dustCounter == 0)
 		{
 			return false;
 		}
@@ -106,17 +106,15 @@ public class RecipesCovalenceRepair implements IRecipe
 			return dustCounter == 3;
 		}
 
-		if (toRepair instanceof ItemArmor)
+		if (toRepair instanceof ItemArmor armor)
 		{
-			ItemArmor armor = ((ItemArmor) toRepair);
-			switch(armor.armorType)
-			{
-				case 0: return dustCounter == 5;
-				case 1: return dustCounter == 8;
-				case 2: return dustCounter == 7;
-				case 3: return dustCounter == 4;
-				default: return false;
-			}
+            return switch (armor.armorType) {
+                case 0 -> dustCounter == 5;
+                case 1 -> dustCounter == 8;
+                case 2 -> dustCounter == 7;
+                case 3 -> dustCounter == 4;
+                default -> false;
+            };
 		}
 
 		return dustCounter == 3;

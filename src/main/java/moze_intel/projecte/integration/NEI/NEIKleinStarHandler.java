@@ -3,7 +3,7 @@ package moze_intel.projecte.integration.NEI;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.ShapedRecipeHandler;
+import codechicken.nei.recipe.ShapelessRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class NEIKleinStarHandler extends ShapedRecipeHandler
+public class NEIKleinStarHandler extends ShapelessRecipeHandler
 {
-	private static String id = "crafting";
+	private static final String id = "crafting";
 
 	public int[][] stackorder = new int[][]{
 			{0, 0},
@@ -75,7 +75,7 @@ public class NEIKleinStarHandler extends ShapedRecipeHandler
 		@Override
 		public List<PositionedStack> getIngredients()
 		{
-			return getCycledIngredients(cycleticks / 20, ingredients);
+			return ingredients;
 		}
 
 		@Override
@@ -88,13 +88,8 @@ public class NEIKleinStarHandler extends ShapedRecipeHandler
 		public PositionedStack result;
 	}
 
-	public String getRecipeName()
-	{
-		return NEIClientUtils.translate("recipe.shapeless");
-	}
 
-
-	@Override
+    @Override
 	public void loadCraftingRecipes(String outputId, Object... results)
 	{
 		if (outputId.equals(id) && getClass() == NEIKleinStarHandler.class)
@@ -149,13 +144,7 @@ public class NEIKleinStarHandler extends ShapedRecipeHandler
 		}
 	}
 
-	@Override
-	public boolean isRecipe2x2(int recipe)
-	{
-		return getIngredientStacks(recipe).size() <= 4;
-	}
-
-	@Override
+    @Override
 	public void loadTransferRects()
 	{
 		this.transferRects.add(new TemplateRecipeHandler.RecipeTransferRect(new Rectangle(83, 23, 25, 10), id));

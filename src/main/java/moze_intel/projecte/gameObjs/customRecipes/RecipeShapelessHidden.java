@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 public class RecipeShapelessHidden implements IRecipe
 {
 	private ItemStack output = null;
-	private ArrayList<Object> input = new ArrayList<Object>();
+	private ArrayList<Object> input = new ArrayList<>();
 
 	public RecipeShapelessHidden(Block result, Object... recipe)
 	{
@@ -70,7 +70,7 @@ public class RecipeShapelessHidden implements IRecipe
 	{
 		output = recipe.getRecipeOutput();
 
-		for (ItemStack ingred : ((List<ItemStack>) recipe.recipeItems))
+		for (ItemStack ingred : recipe.recipeItems)
 		{
 			Object finalObj = ingred;
 			for (Entry<ItemStack, String> replace : replacements.entrySet())
@@ -116,7 +116,7 @@ public class RecipeShapelessHidden implements IRecipe
 	@Override
 	public boolean matches(InventoryCrafting inv, World world)
 	{
-		ArrayList<Object> required = new ArrayList<Object>(input);
+		ArrayList<Object> required = new ArrayList<>(input);
 
 		double storedEMC = 0;
 		for (int i = 0; i < inv.getSizeInventory(); i++)
@@ -144,33 +144,25 @@ public class RecipeShapelessHidden implements IRecipe
 			if (slot != null)
 			{
 				boolean inRecipe = false;
-				Iterator<Object> req = required.iterator();
 
-				while (req.hasNext())
-				{
-					boolean match = false;
+                for (Object next : required) {
+                    boolean match = false;
 
-					Object next = req.next();
+                    if (next instanceof ItemStack) {
+                        match = OreDictionary.itemMatches((ItemStack) next, slot, false);
+                    } else if (next instanceof ArrayList) {
+                        Iterator<ItemStack> itr = ((ArrayList<ItemStack>) next).iterator();
+                        while (itr.hasNext() && !match) {
+                            match = OreDictionary.itemMatches(itr.next(), slot, false);
+                        }
+                    }
 
-					if (next instanceof ItemStack)
-					{
-						match = OreDictionary.itemMatches((ItemStack) next, slot, false);
-					} else if (next instanceof ArrayList)
-					{
-						Iterator<ItemStack> itr = ((ArrayList<ItemStack>) next).iterator();
-						while (itr.hasNext() && !match)
-						{
-							match = OreDictionary.itemMatches(itr.next(), slot, false);
-						}
-					}
-
-					if (match)
-					{
-						inRecipe = true;
-						required.remove(next);
-						break;
-					}
-				}
+                    if (match) {
+                        inRecipe = true;
+                        required.remove(next);
+                        break;
+                    }
+                }
 
 				if (!inRecipe)
 				{
@@ -184,7 +176,7 @@ public class RecipeShapelessHidden implements IRecipe
 
 	/**
 	 * Returns the input for this recipe, any mod accessing this value should never
-	 * manipulate the values in this array as it will effect the recipe itself.
+	 * manipulate the values in this array as it will affect the recipe itself.
 	 *
 	 * @return The recipes input vales.
 	 */

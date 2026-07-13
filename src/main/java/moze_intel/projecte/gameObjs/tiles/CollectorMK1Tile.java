@@ -220,7 +220,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			double toSend = this.getStoredEmc() < emcGen ? this.getStoredEmc() : emcGen;
 
 			double starEmc = ItemPE.getEmc(inventory[0]);
-			int maxStarEmc = EMCHelper.getKleinStarMaxEmc(inventory[0]);
+			double maxStarEmc = EMCHelper.getKleinStarMaxEmc(inventory[0]);
 
 			if ((starEmc + toSend) > maxStarEmc)
 			{

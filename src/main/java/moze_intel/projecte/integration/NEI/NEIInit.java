@@ -4,7 +4,6 @@ import codechicken.nei.api.API;
 
 public class NEIInit
 {
-
 	public static void init()
 	{
 		API.registerRecipeHandler(new NEIWorldTransmuteHandler());

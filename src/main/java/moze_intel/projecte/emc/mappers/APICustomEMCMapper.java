@@ -111,17 +111,12 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		}
 
 		List<String> modIds = new ArrayList<>(modIdSet);
-		Collections.sort(modIds, new Comparator<String>()
-		{
-			@Override
-			public int compare(String a, String b)
-			{
-				//a < b => -1
-				//a > b => +1
-				//Reverse sorting so high priority comes first
-				return -(priorityMap.get(a) - priorityMap.get(b));
-			}
-		});
+		modIds.sort((a, b) -> {
+            //a < b => -1
+            //a > b => +1
+            //Reverse sorting so high priority comes first
+            return -(priorityMap.get(a) - priorityMap.get(b));
+        });
 
 
 		for(String modId : modIds) {

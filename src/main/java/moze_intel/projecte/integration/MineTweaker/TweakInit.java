@@ -8,8 +8,6 @@ import java.util.List;
 
 public class TweakInit
 {
-
-
 	public static void init()
 	{
 		MineTweakerAPI.registerClass(PhiloStone.class);

@@ -190,8 +190,7 @@ public class TransmutationInventory implements IInventory
 				{
 					pagecounter++;
 					iter.remove();
-					continue;
-				}
+                }
 			}
 		}
 		else
@@ -218,8 +217,7 @@ public class TransmutationInventory implements IInventory
 				{
 					pagecounter++;
 					iter.remove();
-					continue;
-				}
+                }
 			}
 		}
 

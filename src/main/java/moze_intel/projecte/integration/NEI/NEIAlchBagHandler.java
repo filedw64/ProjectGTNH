@@ -18,7 +18,7 @@ import java.util.List;
 
 public class NEIAlchBagHandler extends ShapelessRecipeHandler
 {
-	private static String id = "crafting";
+	private static final String id = "crafting";
 
 	public int[][] stackorder = new int[][]{
 			{0, 0},
@@ -82,12 +82,7 @@ public class NEIAlchBagHandler extends ShapelessRecipeHandler
 		public PositionedStack result;
 	}
 
-	public String getRecipeName()
-	{
-		return NEIClientUtils.translate("recipe.shapeless");
-	}
-
-	@Override
+    @Override
 	public void loadCraftingRecipes(String outputId, Object... results)
 	{
 		if (outputId.equals("crafting") && getClass() == NEIAlchBagHandler.class)
@@ -180,13 +175,7 @@ public class NEIAlchBagHandler extends ShapelessRecipeHandler
 		}
 	}
 
-	@Override
-	public boolean isRecipe2x2(int recipe)
-	{
-		return getIngredientStacks(recipe).size() <= 4;
-	}
-
-	@Override
+    @Override
 	public void loadTransferRects()
 	{
 		this.transferRects.add(new RecipeTransferRect(new Rectangle(83, 23, 25, 10), id));

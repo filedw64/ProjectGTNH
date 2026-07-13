@@ -58,16 +58,16 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		Map<T, V> nextValueFor = Maps.newHashMap();
 		Map<T, Object> reasonForChange = Maps.newHashMap();
 
-
 		for (Map.Entry<T, V> entry: fixValueBeforeInherit.entrySet()) {
 			newValueFor.put(entry.getKey(),entry.getValue());
 			reasonForChange.put(entry.getKey(), "fixValueBefore");
 		}
+
 		while (!newValueFor.isEmpty()) {
 			while (!newValueFor.isEmpty()) {
 				debugPrintln("Loop");
 				for (Map.Entry<T, V> entry : newValueFor.entrySet()) {
-					if (canOverride(entry.getKey(),entry.getValue()) && updateMapWithMinimum(values, entry.getKey(), entry.getValue())) {
+					if (canOverride(entry.getKey(), entry.getValue()) && updateMapWithMinimum(values, entry.getKey(), entry.getValue())) {
 						//The new Value is now set in 'values'
 						debugFormat("Set Value for %s to %s because %s", entry.getKey(), entry.getValue(), reasonForChange.get(entry.getKey()));
 						//We have a new value for 'entry.getKey()' now we need to update everything that uses it as an ingredient.
@@ -93,13 +93,11 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 				}
 
 				//Swap nextValueFor into newValueFor and clear newValueFor
-				{
-					newValueFor.clear();
-					Map<T, V> tmp = nextValueFor;
-					nextValueFor = newValueFor;
-					newValueFor = tmp;
-				}
-			}
+                newValueFor.clear();
+                Map<T, V> tmp = nextValueFor;
+                nextValueFor = newValueFor;
+                newValueFor = tmp;
+            }
 			//Iterate over all Conversions for a single conversion output
 			for (Map.Entry<T, List<Conversion>> entry : conversionsFor.entrySet()) {
 				V minConversionValue = null;
@@ -145,16 +143,9 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 			}
 		}
 		debugPrintln("");
-		for (Map.Entry<T, V> fixedValueAfterInherit : fixValueAfterInherit.entrySet()) {
-			values.put(fixedValueAfterInherit.getKey(), fixedValueAfterInherit.getValue());
-		}
+        values.putAll(fixValueAfterInherit);
 		//Remove all 'free' items from the output-values
-		for (Iterator<T> iter = values.keySet().iterator(); iter.hasNext();) {
-			T something = iter.next();
-			if (arithmetic.isFree(values.get(something))) {
-				iter.remove();
-			}
-		}
+        values.keySet().removeIf(something -> arithmetic.isFree(values.get(something)));
 		return values;
 	}
 
@@ -183,7 +174,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		V value = conversion.value;
 		boolean allIngredientsAreFree = true;
 		boolean hasPositiveIngredientValues = false;
-		for (Map.Entry<T, Integer> entry:conversion.ingredientsWithAmount.entrySet()) {
+		for (Map.Entry<T, Integer> entry : conversion.ingredientsWithAmount.entrySet()) {
 			if (values.containsKey(entry.getKey())) {
 				//The ingredient has a value
 				if (entry.getValue() == 0)
@@ -193,22 +184,22 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 				}
 				//value = value + amount * ingredientcost
 				V ingredientValue = conversion.arithmeticForConversion.mul(entry.getValue(),values.get(entry.getKey()));
-				if (ingredientValue.compareTo(ZERO) != 0) {
-					if (!conversion.arithmeticForConversion.isFree(ingredientValue)) {
-						value = conversion.arithmeticForConversion.add(value, ingredientValue);
-						if (ingredientValue.compareTo(ZERO) > 0 && entry.getValue() > 0) hasPositiveIngredientValues = true;
-						allIngredientsAreFree = false;
-					}
-				} else {
-					//There is an ingredient with value = 0 => we cannot calculate the combined ingredient cost.
-					return ZERO;
+				if (ingredientValue.compareTo(ZERO) == 0) {
+                    //There is an ingredient with value = 0 => we cannot calculate the combined ingredient cost.
+                    return ZERO;
 				}
-			} else {
+                if (!conversion.arithmeticForConversion.isFree(ingredientValue)) {
+                    value = conversion.arithmeticForConversion.add(value, ingredientValue);
+                    if (ingredientValue.compareTo(ZERO) > 0 && entry.getValue() > 0) hasPositiveIngredientValues = true;
+                    allIngredientsAreFree = false;
+                }
+			}
+            else {
 				//There is an ingredient that does not have a value => we cannot calculate the combined ingredient cost.
 				return ZERO;
 			}
 		}
-		//When all the ingredients for are 'free' or ingredients with negative amount made the Conversion have a value <= 0 this item should be free
+		//When all the ingredients are free or ingredients with negative amount made the Conversion have a value <= 0, this item should be free
 		if (allIngredientsAreFree || (hasPositiveIngredientValues && value.compareTo(ZERO) <= 0)) return conversion.arithmeticForConversion.getFree();
 		return value;
 	}

@@ -12,8 +12,12 @@ import java.util.Set;
 
 public class OreDictionaryMapper extends LazyMapper {
 	private static final Set<String> BLACKLIST_EXCEPTIONS = Sets.newHashSet(
-		"dustPlastic"
+		"dustPlastic", "dustRedstone"
 	);
+
+    public static void addBlacklistException(String str) {
+        BLACKLIST_EXCEPTIONS.add(str);
+    }
 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
@@ -21,10 +25,7 @@ public class OreDictionaryMapper extends LazyMapper {
 		if (config.getBoolean("blacklistOresAndDusts", "", true, "Set EMC=0 for everything that has an OD Name that starts with `ore`, `dust` or `crushed` besides `dustPlastic`")) {
 			//Black-list all ores/dusts
 			for (String s : OreDictionary.getOreNames()) {
-				if (s == null)
-				{
-					continue;
-				}
+				if (s == null) continue;
 
 				if (s.startsWith("ore") || s.startsWith("dust") || s.startsWith("crushed")) {
 					//Some exceptions in the black-listing

@@ -67,6 +67,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 			addMapping(new ItemStack(Blocks.stained_hardened_clay, 1, i), 64);
 		}
 
+        addMapping(new ItemStack(Blocks.sponge), 128);
 		addMapping(new ItemStack(Items.apple), 128);
 		//Cocoa beans
 		addMapping(new ItemStack(Items.dye, 1, 3), 128);

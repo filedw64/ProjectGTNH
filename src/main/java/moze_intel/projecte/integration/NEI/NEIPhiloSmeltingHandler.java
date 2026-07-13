@@ -21,7 +21,7 @@ public class NEIPhiloSmeltingHandler extends ShapedRecipeHandler
 {
 	private static String name = StatCollector.translateToLocal("pe.nei.philo");
 
-	private static String id = "philoSmelting";
+	private static final String id = "philoSmelting";
 
 	public int[][] stackorder = new int[][]{
 			{0, 0},
@@ -77,7 +77,7 @@ public class NEIPhiloSmeltingHandler extends ShapedRecipeHandler
 		@Override
 		public List<PositionedStack> getIngredients()
 		{
-			return getCycledIngredients(cycleticks / 20, ingredients);
+			return ingredients;
 		}
 
 		@Override

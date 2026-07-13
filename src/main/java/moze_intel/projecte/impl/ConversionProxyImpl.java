@@ -75,7 +75,7 @@ public class ConversionProxyImpl implements IConversionProxy
 		return activeMod == null ? "unknown Mod" : activeMod.getModId();
 	}
 
-	public class APIConversion
+	public static class APIConversion
 	{
 		public final int amount;
 		public final NormalizedSimpleStack output;

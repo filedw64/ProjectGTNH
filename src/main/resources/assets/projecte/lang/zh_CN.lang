@@ -155,9 +155,10 @@ pe.bhb.pedestal2=可存入邻近的容器中
 pe.body.pedestal1=恢复附近玩家的饥饿值
 pe.body.pedestal2=每%s恢复半格饥饿值
 
-# pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, reloadEMC, removeEMC, resetEMC>
+pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, reloadEMC, removeEMC, resetEMC>
+pe.command.main.guest.usage=/projecte <changelog>
 
-pe.command.changelog.uptodate=当前使用的ProjectE为最新版本.
+pe.command.changelog.uptodate=当前使用的 ProjectGTNH 为最新版本.
 pe.command.clearknowledge.error=无法清空玩家 %s 的转化知识.
 pe.command.clearknowledge.notify=你的转化知识已被 %s 全部清空!
 pe.command.clearknowledge.playernotfound=未找到名为"%s"的玩家.
@@ -178,11 +179,11 @@ pe.command.reset.nochange=错误："%s:%s"的EMC值未作任何修改！
 pe.command.reset.success=成功修改"%s"的EMC值。
 pe.command.reset.usage=/projecte resetEMC <内部名或矿物辞典名> [meta] (不加参数则对当前手持物品有效)
 
-pe.command.set.invalidemc=错误：EMC值"%s"无效.
+pe.command.set.invalidemc=错误：EMC值只能介于 0 和 1e300.
 pe.command.set.invaliditem=错误：未找到物品"%s".
 pe.command.set.invalidmeta=错误：meta数据"%s"无效.
 pe.command.set.success=已将 %s 的EMC值设为 %s.
-pe.command.set.usage=/projecte setEMC [内部名或矿物辞典名] [meta] [EMC值] 或 /projecte setEMC [EMC value] (对当前手持物品有效)
+pe.command.set.usage=/projecte setEMC <内部名或矿物辞典名> <meta> <EMC值> 或 /projecte setEMC <EMC值> (对当前手持物品有效)
 
 pe.darkpick.mode1=普通模式
 pe.darkpick.mode2=3x 竖直模式
