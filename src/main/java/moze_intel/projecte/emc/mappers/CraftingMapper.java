@@ -66,7 +66,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     //stack does not have a wildcard damage value
                     try {
                         if (stack.getItem().hasContainerItem(stack)) {
-                            if (stack.getItem().getContainerItem() == stack.getItem() && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
+                            if (stack.getItem().getContainerItem(stack) == stack && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
                                 continue;
                             }
                             ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);
@@ -85,7 +85,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                         if (stack == null || stack.getItem() == null) continue;
                         IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
                         if (stack.getItem().hasContainerItem(stack)) {
-                            if (stack.getItem().getContainerItem() == stack.getItem() && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
+                            if (stack.getItem().getContainerItem(stack) == stack && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
                                 continue;
                             }
                             groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);

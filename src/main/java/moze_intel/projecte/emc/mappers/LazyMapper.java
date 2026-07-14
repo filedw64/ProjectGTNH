@@ -69,8 +69,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
         addMapping(new ItemStack(Blocks.sponge), 128);
 		addMapping(new ItemStack(Items.apple), 128);
-		//Cocoa beans
-		addMapping(new ItemStack(Items.dye, 1, 3), 128);
+
+		addMapping(new ItemStack(Items.dye, 1, 3), 128);//Cocoa beans
 		addMapping(new ItemStack(Blocks.pumpkin), 144);
 		addMapping(new ItemStack(Items.bone), 144);
 
@@ -93,6 +93,11 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.record_wait), 2048);
 		addMapping(new ItemStack(Items.record_ward), 2048);
 		addMapping(new ItemStack(Items.string), 12);
+
+        for (int i = 1; i < 16; i++) {
+            mapper.addConversion(1, NormalizedSimpleStack.getFor(Blocks.wool, i), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.wool), 1));
+        }
+
 		addMapping(new ItemStack(Items.rotten_flesh), 32);
 		addMapping(new ItemStack(Items.slime_ball), 32);
 		addMapping(new ItemStack(Items.egg), 32);
@@ -144,6 +149,10 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Blocks.packed_ice), 4);
 		addMapping(new ItemStack(Items.snowball), 1);
 		addMapping(new ItemStack(Items.filled_map), 1472);
+
+        addMapping(new ItemStack(Items.skull, 1, 0), 256);
+        addMapping(new ItemStack(Items.skull, 1, 2), 256);
+        addMapping(new ItemStack(Items.skull, 1, 4), 256);
 
 		addMapping("appliedenergistics2:item.ItemMultiMaterial", 1, 256);
 	}

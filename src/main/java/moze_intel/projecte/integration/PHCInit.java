@@ -18,6 +18,5 @@ public class PHCInit {
                 IntegrationMapper.addMapping(id.replace("seed",""),0, 64);
             }
         }
-
     }
 }

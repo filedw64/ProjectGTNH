@@ -47,7 +47,7 @@ public final class EMCMapper
 	public static void map()
 	{
 		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
-            new OreDictionaryMapper(),
+            //new OreDictionaryMapper(),
             new LazyMapper(),
             new Chisel2Mapper(),
             APICustomEMCMapper.instance,
