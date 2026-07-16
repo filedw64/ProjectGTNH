@@ -30,7 +30,7 @@ If you set a value for a fake item the value will only be used in conversions th
   "comment": "Optional comment describing the file",
   "groups": {
     "a name describing the group of conversions": {
-      "comment":"An optional comment for the group of conversions",
+      "comment": "An optional comment for the group of conversions",
       "conversions": [
         /* List of Conversions
 

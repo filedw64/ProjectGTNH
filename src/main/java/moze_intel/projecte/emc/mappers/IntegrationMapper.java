@@ -31,13 +31,6 @@ public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Doub
         }
     }
 
-    public static void addOreMapping(String oreName, double value) {
-        for (ItemStack stack : ItemHelper.getODItems(oreName)) {
-            if (stack == null) continue;
-            addMapping(stack, value);
-        }
-    }
-
     public static void addMapping(NormalizedSimpleStack nss, double value) {
         if (nss == null) return;
         instance.values.put(nss, value);

@@ -74,7 +74,7 @@ public class Integration
         }
 
         if (EFR) {
-            PELogger.logInfo("Try to integrate with  ");
+            PELogger.logInfo("Try to integrate with Et Futurum Requiem");
             try {
                 EFRInit.init();
             } catch (Throwable e) {

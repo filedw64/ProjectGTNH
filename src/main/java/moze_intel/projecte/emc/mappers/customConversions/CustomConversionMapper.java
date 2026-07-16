@@ -34,7 +34,6 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 {
 	public static final ImmutableList<String> defaultfilenames = ImmutableList.of("metals", "example", "ODdefaults");
 
-
 	@Override
 	public String getName()
 	{
@@ -228,14 +227,14 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			return;
 		}
 		try {
-		if (f.createNewFile() && f.canWrite())
-		{
-			InputStream stream = CustomConversionMapper.class.getClassLoader().getResourceAsStream("defaultCustomConversions/" + filename + ".json");
-			OutputStream outputStream = new FileOutputStream(f);
-			IOUtils.copy(stream, outputStream);
-			stream.close();
-			outputStream.close();
-		}
+            if (f.createNewFile() && f.canWrite())
+            {
+                InputStream stream = CustomConversionMapper.class.getClassLoader().getResourceAsStream("defaultCustomConversions/" + filename + ".json");
+                OutputStream outputStream = new FileOutputStream(f);
+                IOUtils.copy(stream, outputStream);
+                stream.close();
+                outputStream.close();
+            }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

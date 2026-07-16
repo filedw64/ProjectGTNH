@@ -6,11 +6,11 @@
     },
     "conversion": [
       /*
-      We register some of the base metals as multiplies of iron.
-      The "evalOD": true flag copys the value-conversion from the OreDictionary entry to the actual items.
-      This is needed, so the nugget recipes don't cause the value to be rounded down to multiplies of 9.
-      Normal recipe conversions don't need to be defined here, but in the Conversion Groups above.
-      Normally you also don't need 'evalOD'.
+        We register some of the base metals as multiplies of iron.
+        The "evalOD": true flag copys the value-conversion from the OreDictionary entry to the actual items.
+        This is needed, so the nugget recipes don't cause the value to be rounded down to multiplies of 9.
+        Normal recipe conversions don't need to be defined here, but in the Conversion Groups above.
+        Normally you also don't need 'evalOD'.
       */
       {"evalOD": true, "o": "OD|ingotGold", "c": 1, "i": {"OD|ingotIron":8}},
       {"evalOD": true, "o": "OD|ingotCopper", "c": 2, "i": {"OD|ingotIron":1}},
@@ -56,4 +56,3 @@
     ]
   }
 }
-

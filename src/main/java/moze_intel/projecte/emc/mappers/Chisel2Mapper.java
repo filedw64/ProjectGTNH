@@ -34,11 +34,12 @@ public class Chisel2Mapper implements IEMCMapper<NormalizedSimpleStack, Double> 
 
 	@Override
 	public boolean isAvailable() {
-		return Loader.isModLoaded("chisel");
+		return true;
 	}
 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+        if(!Loader.isModLoaded("chisel")) return;
 		ICarvingRegistry carvingRegistry = CarvingUtils.getChiselRegistry();
 		if (carvingRegistry == null) return;
 		for (String name: chiselBlockNames) {
