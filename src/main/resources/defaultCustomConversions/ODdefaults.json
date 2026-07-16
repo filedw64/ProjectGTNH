@@ -9,7 +9,6 @@
       "OD|stickWood": 4,
       "OD|treeLeaves": 1,
 
-      "OD|blockGlass": 1,
       "OD|blockCloth": 48,
 
       //building stuff
@@ -26,8 +25,10 @@
 
       /*TC*/
       "OD|ingotThaumium": 2048,
+
       /*Ender IO*/
       "OD|itemSilicon": 32,
+
       /*Mekanism*/
       "OD|ingotOsmium": 512,
 
