@@ -47,9 +47,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 		for (int i = 0; i <= 5; i++) {
 			if (i == 2 || i == 3) {
-				continue;
+                addMapping(new ItemStack(Blocks.double_plant, 1, i), 1);
 			}
-
 			addMapping(new ItemStack(Blocks.double_plant, 1, i), 32);
 		}
 
@@ -128,6 +127,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.redstone), 64);
 		addMapping(new ItemStack(Items.glowstone_dust), 384);
 		addMapping(new ItemStack(Items.quartz), 256);
+
 		//Lapis Lazuli
 		addMapping(new ItemStack(Items.dye, 1, 4), 864);
 
@@ -141,11 +141,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.iron_horse_armor), ImmutableMap.of(NormalizedSimpleStack.getFor(Items.iron_ingot), 8));
 		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.golden_horse_armor), ImmutableMap.of(NormalizedSimpleStack.getFor(Items.gold_ingot), 8));
 		addMapping(new ItemStack(Items.diamond_horse_armor), 40960);
-		addMapping(new ItemStack(Blocks.tallgrass), 1);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 1), 1);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 2), 1);
-		addMapping(new ItemStack(Blocks.double_plant, 1, 2), 1);
-		addMapping(new ItemStack(Blocks.double_plant, 1, 3), 1);
 		addMapping(new ItemStack(Blocks.packed_ice), 4);
 		addMapping(new ItemStack(Items.snowball), 1);
 		addMapping(new ItemStack(Items.filled_map), 1472);
