@@ -171,8 +171,7 @@ public class ManualPageHandler
     private static void generateDummyIndexPages()
     {
         List<IndexPage> toAdd = Lists.newArrayList();
-        int numIndexPages = Math.round(((float) ManualPageHandler.pages.size()) / GUIManual.ENTRIES_PER_PAGE);
-        PELogger.logDebug("" + (float) ManualPageHandler.pages.size() / GUIManual.ENTRIES_PER_PAGE);
+        int numIndexPages = ManualPageHandler.pages.size() / GUIManual.ENTRIES_PER_PAGE;
         for (int i = 0; i < numIndexPages; i++)
         {
             toAdd.add(new IndexPage());

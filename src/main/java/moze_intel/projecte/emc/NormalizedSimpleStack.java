@@ -130,7 +130,7 @@ public abstract class NormalizedSimpleStack {
 		if (oreDictStacks.containsKey(oreDictionaryName))
 			return oreDictStacks.get(oreDictionaryName);
 		List<ItemStack> list = OreDictionary.getOres(oreDictionaryName);
-		if (list == null || list.size() == 0) {
+		if (list == null || list.isEmpty()) {
 			return null;
 		}
 		NormalizedSimpleStack nss = new NSSOreDictionary(oreDictionaryName);
@@ -202,7 +202,7 @@ public abstract class NormalizedSimpleStack {
 		}
 
         public static void clearMap() {
-            counterMap = null;
+            counterMap = Maps.newHashMap();
         }
 
 		public boolean equals(Object o) {

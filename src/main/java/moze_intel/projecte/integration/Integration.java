@@ -9,7 +9,8 @@ import moze_intel.projecte.utils.PELogger;
 public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
-        PHC = false, PHN = false, CCC = false, EFR = false;
+        PHC = false, PHN = false, CCC = false, EFR = false,
+        nutura = false;
 
 	public static void modChecks()
 	{
@@ -54,6 +55,15 @@ public class Integration
             }
         }
 
+        if (PHN) {
+            PELogger.logInfo("Try to integrate with Pam's Harvest the Nether");
+            try {
+                PHNInit.init();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
         if (CCC) {
             PELogger.logInfo("Try to integrate with CodeChicken Core");
             try {
@@ -64,7 +74,7 @@ public class Integration
         }
 
         if (EFR) {
-            PELogger.logInfo("Try to integrate with Et Futurum Requiem");
+            PELogger.logInfo("Try to integrate with  ");
             try {
                 EFRInit.init();
             } catch (Throwable e) {

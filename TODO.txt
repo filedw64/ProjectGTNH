@@ -1,0 +1,45 @@
+Natura:Rare Tree/1 银铃树原木 logWood
+Natura:Rare Tree/2 紫檀树原木 logWood
+Natura:Rare Tree/3 核桃树原木 logWood
+
+Chisel
+
+Applied Energistics 2
+有序合成、无序合成
+
+GT++
+工业搅拌机
+
+GregTech
+卷板机、流体灌装机、板材切割机、流体固化器、匠魂弩箭固化、压模机、压缩机、聚爆压缩机、电动聚爆压缩机、激光蚀刻机
+gregtech:gt.GregTech_FluidDisplay
+gregtech:gt.GregTech_FluidDisplay/122
+gregtech:gt.GregTech_FluidDisplay/734
+
+要解决的工作台合成配方:
+mods.railcraft.common.carts.LocomotivePaintingRecipe
+mods.railcraft.common.util.crafting.RoutingTicketCopyRecipe
+vazkii.botania.common.crafting.recipe.HelmRevealingRecipe
+com.rwtema.extrautils.multipart.microblock.RecipeMicroBlocks
+com.rwtema.extrautils.crafting.RecipeSoul
+com.rwtema.extrautils.crafting.RecipeUnsigil
+appeng.recipes.game.ShapedRecipe
+mods.battlegear2.recipies.QuiverRecipie2
+appeng.recipes.game.ShapelessRecipe
+forestry.lepidopterology.recipes.MatingRecipe
+mods.battlegear2.heraldry.KnightArmourRecipie
+net.malisis.doors.recipe.BigDoorRecipe
+remoteio.common.recipe.RecipeRemoteInventory
+mods.battlegear2.recipies.ShieldRemoveArrowRecipie
+WayofTime.alchemicalWizardry.api.items.ShapelessBloodOrbRecipe
+WayofTime.alchemicalWizardry.api.items.ShapedBloodOrbRecipe
+net.bdew.gendustry.forestry.GeneRecipe
+codechicken.enderstorage.common.EnderStorageRecipe
+mrtjp.projectred.core.libmc.recipe.ShapedBuilderRecipe
+mrtjp.projectred.core.libmc.recipe.ShapelessBuilderRecipe
+codechicken.microblock.MicroRecipe$
+logisticspipes.recipes.ShapelessResetRecipe
+pcl.openprinter.items.PrinterPaperRollRecipe
+mrtjp.projectred.fabrication.FabricationRecipes$$anon$1
+ic2.core.AdvRecipe
+com.dreammaster.scripts.ScriptEFR$ShulkerNBTRecipe

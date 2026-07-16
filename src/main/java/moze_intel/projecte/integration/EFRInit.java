@@ -3,6 +3,7 @@ package moze_intel.projecte.integration;
 import moze_intel.projecte.emc.mappers.IntegrationMapper;
 
 public class EFRInit {
+
     public static void init() {
         IntegrationMapper.addMapping("etfuturum:honeycomb", 0, 16);
         IntegrationMapper.addMapping("etfuturum:bamboo", 0, 32);
@@ -29,10 +30,11 @@ public class EFRInit {
         IntegrationMapper.addMapping("etfuturum:glow_lichen", 0, 8);
         IntegrationMapper.addMapping("etfuturum:glow_berries_item", 0, 16);
         IntegrationMapper.addMapping("etfuturum:wither_rose", 0, 16);
-        //IntegrationMapper.addMapping("etfuturum:concrete", 0, 4);
+
         for (int i = 0; i < 16; i++) {
             IntegrationMapper.addMapping("etfuturum:concrete", i, 4);
         }
+
         IntegrationMapper.addMapping("etfuturum:magma", 0, 128);
         IntegrationMapper.addMapping("etfuturum:soul_torch", 0, 21);
         IntegrationMapper.addMapping("etfuturum:lily_of_the_valley", 0, 16);
@@ -42,8 +44,24 @@ public class EFRInit {
         IntegrationMapper.addMapping("etfuturum:pink_petals", 0, 4);
         IntegrationMapper.addMapping("etfuturum:crying_obsidian", 0, 768);
         IntegrationMapper.addMapping("etfuturum:chorus_plant", 0, 64);
+        IntegrationMapper.addMapping("etfuturum:chorus_flower", 0, 96);
         IntegrationMapper.addMapping("etfuturum:calcite", 0, 32);
         IntegrationMapper.addMapping("etfuturum:grass_path", 0, 1);
         IntegrationMapper.addMapping("etfuturum:sponge", 1, 128);
+        IntegrationMapper.addMapping("etfuturum:red_netherbrick", 1, 4);
+        IntegrationMapper.addMapping("etfuturum:cornflower", 1, 16);
+
+        String str = "etfuturum:copper_block";
+        for (int i = 1; i <= 3; i++) {
+            IntegrationMapper.addSingleConversion(str, 0, str, i);
+        }
+
+        IntegrationMapper.addSingleConversion("etfuturum:copper_door", 0, "etfuturum:exposed_copper_door", 0);
+        IntegrationMapper.addSingleConversion("etfuturum:copper_door", 0, "etfuturum:weathered_copper_door", 0);
+        IntegrationMapper.addSingleConversion("etfuturum:copper_door", 0, "etfuturum:oxidized_copper_door", 0);
+
+        IntegrationMapper.addSingleConversion("etfuturum:copper_trapdoor", 0, "etfuturum:exposed_copper_trapdoor", 0);
+        IntegrationMapper.addSingleConversion("etfuturum:copper_trapdoor", 0, "etfuturum:weathered_copper_trapdoor", 0);
+        IntegrationMapper.addSingleConversion("etfuturum:copper_trapdoor", 0, "etfuturum:oxidized_copper_trapdoor", 0);
     }
 }

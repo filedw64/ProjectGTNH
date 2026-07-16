@@ -8,7 +8,7 @@ import moze_intel.projecte.config.ProjectEConfig;
 
 public final class PELogger
 {
-	private static Logger logger = LogManager.getLogger(PECore.MODID);
+	private static final Logger logger = LogManager.getLogger(PECore.MODID);
 
 	public static void log(Level level, String msg)
 	{
@@ -29,6 +29,11 @@ public final class PELogger
 	{
 		logger.fatal(msg);
 	}
+
+    public static void logTrace(String msg)
+    {
+        logger.trace(msg);
+    }
 
 	public static void logDebug(String msg)
 	{
@@ -57,10 +62,15 @@ public final class PELogger
 		logger.warn(String.format(msg, args));
 	}
 
-	public static void logFatal(String msg, Object... args)
-	{
-		logger.fatal(String.format(msg, args));
-	}
+    public static void logFatal(String msg, Object... args)
+    {
+        logger.fatal(String.format(msg, args));
+    }
+
+    public static void logTrace(String msg, Object... args)
+    {
+        logger.trace(String.format(msg, args));
+    }
 
 	public static void logDebug(String msg, Object... args)
 	{

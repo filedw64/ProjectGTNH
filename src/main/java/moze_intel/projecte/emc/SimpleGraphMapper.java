@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArithmetic<V>> extends MappingCollector<T, V, A> implements IValueGenerator<T, V>
 {
-	static boolean OVERWRITE_FIXED_VALUES = false;
+	private static final boolean OVERWRITE_FIXED_VALUES = false;
 	protected V ZERO;
 
 	private static boolean logFoundExploits = true;
@@ -117,7 +117,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 							minConversionValue = conversionValueSingle;
 						}
 					}
-					//the cost for the ingredients is greater zero, but smaller than the value that the output has.
+					//the cost for the ingredients is greater than zero, but smaller than the value that the output has.
 					//This is a Loophole. We remove it by setting the value to 0.
 					if (ZERO.compareTo(conversionValue) < 0 && conversionValueSingle.compareTo(resultValueSingle) < 0) {
 						if (overwriteConversion.containsKey(conversion.output) && overwriteConversion.get(conversion.output) != conversion) {
@@ -142,7 +142,6 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 				}
 			}
 		}
-		debugPrintln("");
         values.putAll(fixValueAfterInherit);
 		//Remove all 'free' items from the output-values
         values.keySet().removeIf(something -> arithmetic.isFree(values.get(something)));

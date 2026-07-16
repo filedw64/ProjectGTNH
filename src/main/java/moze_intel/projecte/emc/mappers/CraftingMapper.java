@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
-	List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
+	public static List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
 	Set<Class> canNotMap = Sets.newHashSet();
 	Map<Class, Integer> recipeCount = Maps.newHashMap();
 
@@ -38,6 +39,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
 		recipeCount.clear();
 		canNotMap.clear();
+        boolean emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
 		recipeloop:
         for (IRecipe recipe : CraftingManager.getInstance().getRecipeList()) {
 			boolean handled = false;
@@ -55,7 +57,9 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     PELogger.logWarn("RecipeMapper " + recipeMapper + " failed to map Recipe" + recipe);
                     break;
                 }
+
                 IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
+
                 for (ItemStack stack : ingredients.fixedIngredients) {
                     if (stack == null || stack.getItem() == null) continue;
                     if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
@@ -65,11 +69,18 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     }
                     //stack does not have a wildcard damage value
                     try {
+                        String id = Item.itemRegistry.getNameForObject(stack.getItem());
+                        if (id.startsWith("gregtech:gt.metatool")) {
+                            if (emcDependencyForUnconsumedItems)
+                                ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
+                            continue;
+                        }
                         if (stack.getItem().hasContainerItem(stack)) {
-                            if (stack.getItem().getContainerItem(stack) == stack && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
+                            if (stack.getItem().getContainerItem(stack) == stack && !emcDependencyForUnconsumedItems) {
                                 continue;
                             }
-                            ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);
+                            if (stack.getItem().getContainerItem(stack) != null)
+                                ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);
                         }
                         ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 1);
                     } catch (Exception e) {
@@ -78,17 +89,27 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                         continue recipeloop;
                     }
                 }
+
                 for (Iterable<ItemStack> multiIngredient : ingredients.multiIngredients) {
                     NormalizedSimpleStack nss = NormalizedSimpleStack.createFake(multiIngredient.toString());
                     ingredientMap.addIngredient(nss, 1);
                     for (ItemStack stack : multiIngredient) {
                         if (stack == null || stack.getItem() == null) continue;
                         IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
+                        String id = Item.itemRegistry.getNameForObject(stack.getItem());
+                        if (id.startsWith("gregtech:gt.metatool")) {
+                            if (emcDependencyForUnconsumedItems)
+                                groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
+                            mapper.addConversion(1, nss, groupIngredientMap.getMap());
+                            continue;
+                        }
                         if (stack.getItem().hasContainerItem(stack)) {
-                            if (stack.getItem().getContainerItem(stack) == stack && !config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)")){
+                            if (stack.getItem().getContainerItem(stack) == stack && !emcDependencyForUnconsumedItems) {
+                                mapper.addConversion(1, nss, groupIngredientMap.getMap());
                                 continue;
                             }
-                            groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);
+                            if (stack.getItem().getContainerItem(stack) != null)
+                                groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack.getItem().getContainerItem(stack)), -1);
                         }
                         groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 1);
                         mapper.addConversion(1, nss, groupIngredientMap.getMap());

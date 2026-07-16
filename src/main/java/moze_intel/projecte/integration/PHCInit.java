@@ -14,7 +14,7 @@ public class PHCInit {
                 continue;
             String id = Item.itemRegistry.getNameForObject(stack.getItem());
             if (id.startsWith("harvestcraft:") && id.endsWith("seedItem")) {
-                IntegrationMapper.addMapping(stack, 32);
+                IntegrationMapper.addMapping(stack, 16);
                 IntegrationMapper.addMapping(id.replace("seed",""),0, 64);
             }
         }

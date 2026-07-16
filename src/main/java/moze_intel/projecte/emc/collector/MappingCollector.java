@@ -22,7 +22,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 
 	protected static void debugFormat(String format, Object... args) {
 		if (DEBUG_GRAPHMAPPER)
-			PELogger.logInfo(String.format(format, args));
+			PELogger.logTrace(format, args);
 	}
 
 	protected static void debugPrintln(String s) {
@@ -98,7 +98,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	@Override
 	public void setValueBefore(T something, V value) {
 		if (something == null) return;
-		if (fixValueBeforeInherit.containsKey(something))
+		if (fixValueBeforeInherit.containsKey(something) && fixValueBeforeInherit.get(something) != value)
 			PELogger.logWarn("Overwriting fixValueBeforeInherit for " + something + ":" + fixValueBeforeInherit.get(something) + " to " + value);
         fixValueBeforeInherit.put(something, value);
 		fixValueAfterInherit.remove(something);
@@ -107,12 +107,10 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	@Override
 	public void setValueAfter(T something, V value) {
 		if (something == null) return;
-		if (fixValueAfterInherit.containsKey(something))
+		if (fixValueAfterInherit.containsKey(something) && fixValueAfterInherit.get(something) != value)
 			PELogger.logWarn("Overwriting fixValueAfterInherit for " + something + ":" + fixValueAfterInherit.get(something) + " to " + value);
 		fixValueAfterInherit.put(something, value);
 	}
-
-
 
 	@Override
 	public void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount)
