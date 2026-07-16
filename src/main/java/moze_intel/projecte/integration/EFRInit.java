@@ -49,7 +49,7 @@ public class EFRInit {
         IntegrationMapper.addMapping("etfuturum:grass_path", 0, 1);
         IntegrationMapper.addMapping("etfuturum:sponge", 1, 128);
         IntegrationMapper.addMapping("etfuturum:red_netherbrick", 1, 4);
-        IntegrationMapper.addMapping("etfuturum:cornflower", 1, 16);
+        IntegrationMapper.addMapping("etfuturum:cornflower", 0, 16);
 
         String str = "etfuturum:copper_block";
         for (int i = 1; i <= 3; i++) {
