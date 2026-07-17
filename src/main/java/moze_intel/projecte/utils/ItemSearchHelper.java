@@ -11,26 +11,26 @@ public abstract class ItemSearchHelper
 	public static ItemSearchHelper create(String searchString) {
 		if (Loader.isModLoaded("NotEnoughItems")) {
 			return new ItemSearchHelperNEI(searchString);
-		} else {
-			return new DefaultSearch(searchString);
 		}
+		return new DefaultSearch(searchString);
 	}
 
-	public final String searchString;
+	public String searchString;
 	public ItemSearchHelper(String searchString) {
 		this.searchString = searchString;
 	}
 
 	public final boolean doesItemMatchFilter(ItemStack itemStack) {
+        if (itemStack == null || itemStack.getItem() == null) return false;
 		try {
-			return this.doesItemMatchFilter_(itemStack);
+			return this.match(itemStack);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return true;
 	}
 
-	protected abstract boolean doesItemMatchFilter_(ItemStack itemStack);
+	protected abstract boolean match(ItemStack itemStack);
 
 	private static class DefaultSearch extends ItemSearchHelper
 	{
@@ -39,29 +39,19 @@ public abstract class ItemSearchHelper
 			super(searchString);
 		}
 
-		public boolean doesItemMatchFilter_(ItemStack stack)
+		public boolean match(ItemStack stack)
 		{
-			String displayName;
-
+            String displayName;
 			try
 			{
-				displayName = stack.getDisplayName().toLowerCase(Locale.ROOT);
-			} catch (Exception e)
-			{
+				displayName = stack.getDisplayName();
+			} catch (Exception e) {
 				e.printStackTrace();
 				//From old code... Not sure if intended to not remove items that crash on getDisplayName
 				return true;
 			}
 
-			if (displayName == null)
-			{
-				return false;
-			}
-			else if (searchString.length() > 0 && !displayName.contains(searchString))
-			{
-				return false;
-			}
-			return true;
-		}
+            return searchString.isEmpty() || displayName.contains(searchString);
+        }
 	}
 }

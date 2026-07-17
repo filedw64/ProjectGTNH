@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
+import moze_intel.projecte.utils.EnchantmentBlacklist;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -39,18 +40,21 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
 		recipeCount.clear();
 		canNotMap.clear();
-        boolean emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled items that are made by crafting, with unconsumed ingredients, should only get an emc value, if the unconsumed item also has a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
-		recipeloop:
+        boolean emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled, items that are made by crafting, with unconsumed ingredients, should only get an emc value, if unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
+        for (IRecipeMapper recipeMapper : recipeMappers) {
+            recipeMapper.setEnabled(config.getBoolean("enable" + recipeMapper.getName(), "IRecipeImplementations", true, recipeMapper.getDescription()));
+        }
+        recipeloop:
         for (IRecipe recipe : CraftingManager.getInstance().getRecipeList()) {
 			boolean handled = false;
 			ItemStack recipeOutput = recipe.getRecipeOutput();
 			if (recipeOutput == null) continue;
+            if (recipeOutput.isItemEnchanted()) {
+                EnchantmentBlacklist.add(recipeOutput);
+            }
 			NormalizedSimpleStack recipeOutputNorm = NormalizedSimpleStack.getFor(recipeOutput);
 			for (IRecipeMapper recipeMapper : recipeMappers) {
-				if (!config.getBoolean("enable" + recipeMapper.getName(), "IRecipeImplementations", true, recipeMapper.getDescription()))
-					continue;
-                if (!recipeMapper.canHandle(recipe))
-                    continue;
+				if (!recipeMapper.isEnabled() || !recipeMapper.canHandle(recipe)) continue;
                 handled = true;
                 CraftingIngredients ingredients = recipeMapper.getIngredientsFor(recipe);
                 if (ingredients == null) {
@@ -71,8 +75,6 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     try {
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
-                            if (emcDependencyForUnconsumedItems)
-                                ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
                             continue;
                         }
                         if (stack.getItem().hasContainerItem(stack)) {
@@ -98,8 +100,6 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                         IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
-                            if (emcDependencyForUnconsumedItems)
-                                groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
                             mapper.addConversion(1, nss, groupIngredientMap.getMap());
                             continue;
                         }
@@ -121,6 +121,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                 else {
                     PELogger.logWarn("Ignoring Recipe because outnumber <= 0: " + ingredientMap.getMap().toString() + " -> " + recipeOutput);
                 }
+                break;
             }
 			if (!handled) {
 				if (!canNotMap.contains(recipe.getClass())) {
@@ -162,10 +163,26 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 	public interface IRecipeMapper {
 		String getName();
 		String getDescription();
+        boolean isEnabled();
+        void setEnabled(boolean flag);
 		boolean canHandle(IRecipe recipe);
 
 		CraftingIngredients getIngredientsFor(IRecipe recipe);
 	}
+
+    public abstract static class AbstractRecipeMapper implements IRecipeMapper{
+        private boolean enabled = true;
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public void setEnabled(boolean flag) {
+            enabled = flag;
+        }
+    }
 
 	public static class CraftingIngredients {
 		public Iterable<ItemStack> fixedIngredients;
@@ -176,7 +193,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 		}
 	}
 
-	protected static class VanillaRecipeMapper implements IRecipeMapper {
+	protected static class VanillaRecipeMapper extends AbstractRecipeMapper {
 
 		@Override
 		public String getName() {
@@ -217,7 +234,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 	}
 
-	protected static class VanillaOreRecipeMapper implements IRecipeMapper {
+	protected static class VanillaOreRecipeMapper extends AbstractRecipeMapper {
 
 		@Override
 		public String getName() {
@@ -280,7 +297,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 		}
 	}
 
-	protected static class PECustomRecipeMapper implements IRecipeMapper {
+	protected static class PECustomRecipeMapper extends AbstractRecipeMapper {
 
 		@Override
 		public String getName() {

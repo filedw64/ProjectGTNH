@@ -41,6 +41,7 @@ import java.util.Map;
 
 public final class EMCMapper
 {
+    public static boolean enableNBTprocess = true;
 	public static Map<SimpleStack, Double> emc = new LinkedHashMap<>();
 	public static Map<NormalizedSimpleStack, Double> graphMapperValues;
 
@@ -65,6 +66,8 @@ public final class EMCMapper
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();
+
+        enableNBTprocess = config.getBoolean("enableNBTprocess", "general", true, "Process items that have different NBT tags as different items.");
 
 		if (config.getBoolean("dumpEverythingToFile", "general", false,"Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectE/mappingdump.json")) {
 			mappingCollector = new DumpToFileCollector<>(new File(PECore.CONFIG_DIR, "mappingdump.json"), mappingCollector);

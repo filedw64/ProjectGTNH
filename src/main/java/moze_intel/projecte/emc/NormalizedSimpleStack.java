@@ -124,7 +124,7 @@ public abstract class NormalizedSimpleStack {
 	public abstract String json();
 
 
-	private static Map<String, NormalizedSimpleStack> oreDictStacks = Maps.newHashMap();
+	private static final Map<String, NormalizedSimpleStack> oreDictStacks = Maps.newHashMap();
 	public static NormalizedSimpleStack forOreDictionary(String oreDictionaryName)
 	{
 		if (oreDictStacks.containsKey(oreDictionaryName))

@@ -1,6 +1,7 @@
 package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
+import moze_intel.projecte.integration.GregTech.GregTechInit;
 import moze_intel.projecte.integration.MineTweaker.TweakInit;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.utils.PELogger;
@@ -10,7 +11,7 @@ public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
-        Natura = false;
+        natura = false, gregtech = false;
 
 	public static void modChecks()
 	{
@@ -20,7 +21,8 @@ public class Integration
         PHN = Loader.isModLoaded("harvestthenether");
         CCC = Loader.isModLoaded("CodeChickenCore");
         EFR = Loader.isModLoaded("etfuturum");
-        Natura = Loader.isModLoaded("Natura");
+        natura = Loader.isModLoaded("Natura");
+        gregtech = Loader.isModLoaded("gregtech");
 	}
 
 	public static void init()
@@ -83,10 +85,19 @@ public class Integration
             }
         }
 
-        if (Natura) {
+        if (natura) {
             PELogger.logInfo("Try to integrate with Natura");
             try {
                 NaturaInit.init();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (gregtech) {
+            PELogger.logInfo("Try to integrate with GregTech");
+            try {
+                GregTechInit.init();
             } catch (Throwable e) {
                 e.printStackTrace();
             }

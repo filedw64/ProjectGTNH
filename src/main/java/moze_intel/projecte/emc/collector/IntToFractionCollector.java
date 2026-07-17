@@ -5,7 +5,7 @@ import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 
 import java.util.Map;
 
-public class IntToFractionCollector<T, A extends IValueArithmetic> extends AbstractMappingCollector<T, Integer, A>
+public class IntToFractionCollector<T, A extends IValueArithmetic<?>> extends AbstractMappingCollector<T, Integer, A>
 {
 	IExtendedMappingCollector<T, Fraction, A> inner;
 	public IntToFractionCollector(IExtendedMappingCollector<T, Fraction, A> inner) {

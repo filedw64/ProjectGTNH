@@ -30,13 +30,8 @@ public final class Transmutation
 	{
 		for (SimpleStack stack : EMCMapper.emc.keySet())
 		{
-			if (!stack.isValid())
-			{
-				continue;
-			}
-
-			try
-			{
+			if (!stack.isValid()) continue;
+			try {
 				ItemStack s = stack.toItemStack();
 				s.stackSize = 1;
 
@@ -48,7 +43,7 @@ public final class Transmutation
 			}
 			catch (Exception e)
 			{
-				PELogger.logInfo("Failed to cache knowledge for " + stack + ": " + e.toString());
+				PELogger.logInfo("Failed to cache knowledge for " + stack + ": " + e);
 			}
 		}
 	}
@@ -56,7 +51,6 @@ public final class Transmutation
 	public static List<ItemStack> getKnowledge(EntityPlayer player)
 	{
 		TransmutationProps data = TransmutationProps.getDataFor(player);
-
 		return data.getKnowledge();
 	}
 
@@ -112,11 +106,16 @@ public final class Transmutation
 		TransmutationProps data = TransmutationProps.getDataFor(player);
 		for (ItemStack s : data.getKnowledge())
 		{
-//			if (ItemHelper.basicAreStacksEqual(s, stack))
-            if (ItemHelper.areItemStacksEqual(s, stack))
-			{
-				return true;
-			}
+            if (EMCMapper.enableNBTprocess) {
+                if (ItemHelper.areItemStacksEqual(s, stack)) {
+                    return true;
+                }
+            }
+            else {
+                if (ItemHelper.basicAreStacksEqual(s, stack)) {
+                    return true;
+                }
+            }
 		}
 		return false;
 	}

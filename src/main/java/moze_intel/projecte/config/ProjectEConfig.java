@@ -44,7 +44,7 @@ public final class ProjectEConfig
 	public static float katarDeathAura;
 	public static int projectileCooldown;
 	public static boolean disableAllRadiusMining;
-	public static int gemChestCooldown;
+    public static int gemChestCooldown;
 
 	public static void init(File configFile)
 	{
@@ -108,7 +108,7 @@ public final class ProjectEConfig
 			pickaxeAoeVeinMining = config.getBoolean("pickaxeAoeVeinMining", "items", false, "Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you like it did in ProjectE before version 1.4.4.");
 			harvBandGrass = config.getBoolean("harvBandGrass", "items", false, "Allows the Harvest Goddess Band to passively grow tall grass, flowers, etc, on top of grass blocks.");
 			disableAllRadiusMining = config.getBoolean("disableAllRadiusMining", "items", false, "If set to true, disables all radius-based mining functionaliy (right click of tools)");
-			PELogger.logInfo("Loaded configuration file.");
+			PELogger.logInfo("Configuration file loaded .");
 		}
 		catch (Exception e)
 		{

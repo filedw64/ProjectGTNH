@@ -1,6 +1,7 @@
 package moze_intel.projecte.gameObjs.container.inventory;
 
 import com.google.common.collect.Lists;
+import moze_intel.projecte.emc.EMCMapper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -12,6 +13,7 @@ import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ItemSearchHelper;
+import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -20,11 +22,11 @@ import java.util.List;
 public class TransmutationInventory implements IInventory
 {
 	public double emc;
-	private EntityPlayer player = null;
+	private final EntityPlayer player;
 	private static final int LOCK_INDEX = 8;
 	private static final int[] MATTER_INDEXES = new int[] {12, 11, 13, 10, 14, 21, 15, 20, 16, 19, 17, 18};
 	private static final int[] FUEL_INDEXES = new int[] {22, 23, 24, 25};
-	private ItemStack[] inventory = new ItemStack[27];
+	private final ItemStack[] inventory = new ItemStack[27];
 	public int learnFlag = 0;
 	public int unlearnFlag = 0;
 	public String filter = "";
@@ -51,6 +53,7 @@ public class TransmutationInventory implements IInventory
 		if (!Transmutation.hasKnowledgeForStack(stack, player))
 		{
 			learnFlag = 300;
+            unlearnFlag = 0;
 
 			if (stack.getItem() == ObjHandler.tome)
 			{
@@ -58,11 +61,8 @@ public class TransmutationInventory implements IInventory
 			}
 			else
 			{
-				/*if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
-				{
-					stack.stackTagCompound = null;
-				}*/
-
+                if (!EMCMapper.enableNBTprocess)
+                    stack.stackTagCompound = null;
 				Transmutation.addKnowledge(stack, player);
 			}
 
@@ -90,11 +90,10 @@ public class TransmutationInventory implements IInventory
 		if (Transmutation.hasKnowledgeForStack(stack, player))
 		{
 			unlearnFlag = 300;
+            learnFlag = 0;
 
-			/*if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
-			{
-				stack.stackTagCompound = null;
-			}*/
+            if (!EMCMapper.enableNBTprocess)
+                stack.stackTagCompound = null;
 
 			Transmutation.removeKnowledge(stack, player);
 
@@ -125,10 +124,12 @@ public class TransmutationInventory implements IInventory
 	}
 	public void updateOutputs(boolean async)
 	{
-		if (!this.player.worldObj.isRemote) {
+		if (!player.worldObj.isRemote) {
 			return;
 		}
-		knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
+
+        if (async)
+		    knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
 
 		for (int i : MATTER_INDEXES)
 		{
@@ -148,17 +149,10 @@ public class TransmutationInventory implements IInventory
 		{
             double reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
 
-			if (this.emc < reqEmc)
-			{
-				return;
-			}
-
 			lockCopy = ItemHelper.getNormalizedStack(inventory[LOCK_INDEX]);
 
-			/*if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
-			{
-				lockCopy.setTagCompound(new NBTTagCompound());
-			}*/
+            if (!EMCMapper.enableNBTprocess)
+                lockCopy.setTagCompound(new NBTTagCompound());
 
 			Iterator<ItemStack> iter = knowledge.iterator();
 			int pagecounter = 0;
@@ -167,25 +161,22 @@ public class TransmutationInventory implements IInventory
 			{
 				ItemStack stack = iter.next();
 
-				if (EMCHelper.getEmcValue(stack) > reqEmc)
-				{
+				if (EMCHelper.getEmcValue(stack) > reqEmc) {
 					iter.remove();
 					continue;
 				}
 
-				if (ItemHelper.basicAreStacksEqual(lockCopy, stack))
-				{
-					iter.remove();
-					continue;
-				}
+                if (ItemHelper.areItemStacksEqual(lockCopy, stack)) {
+                    iter.remove();
+                    continue;
+                }
 
 				if (!searchHelper.doesItemMatchFilter(stack)) {
 					iter.remove();
 					continue;
 				}
 
-				if (pagecounter < (searchpage * 12))
-				{
+				if (pagecounter < (searchpage * 12)) {
 					pagecounter++;
 					iter.remove();
                 }
@@ -200,8 +191,7 @@ public class TransmutationInventory implements IInventory
 			{
 				ItemStack stack = iter.next();
 
-				if (emc < EMCHelper.getEmcValue(stack))
-				{
+				if (emc < EMCHelper.getEmcValue(stack)) {
 					iter.remove();
 					continue;
 				}
@@ -211,8 +201,7 @@ public class TransmutationInventory implements IInventory
 					continue;
 				}
 
-				if (pagecounter < (searchpage * 12))
-				{
+				if (pagecounter < (searchpage * 12)) {
 					pagecounter++;
 					iter.remove();
                 }
@@ -243,7 +232,6 @@ public class TransmutationInventory implements IInventory
 				if (fuelCounter < 4)
 				{
 					inventory[FUEL_INDEXES[fuelCounter]] = stack;
-
 					fuelCounter++;
 				}
 			}
@@ -252,7 +240,6 @@ public class TransmutationInventory implements IInventory
 				if (matterCounter < 12)
 				{
 					inventory[MATTER_INDEXES[matterCounter]] = stack;
-
 					matterCounter++;
  				}
 			}
@@ -366,7 +353,7 @@ public class TransmutationInventory implements IInventory
 		emc = Transmutation.getEmc(player);
 		ItemStack[] inputLocks = Transmutation.getInputsAndLock(player);
 		System.arraycopy(inputLocks, 0, inventory, 0, 9);
-		if (this.player.worldObj.isRemote)
+		if (player.worldObj.isRemote)
 		{
 			updateOutputs(true);
 		}

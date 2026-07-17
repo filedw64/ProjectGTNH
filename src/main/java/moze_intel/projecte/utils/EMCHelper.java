@@ -43,11 +43,11 @@ public final class EMCHelper
 		{
 			ItemStack stack = inv.getStackInSlot(i);
 
-			if (stack == null)
+			if (stack == null || stack.getItem() == null)
 			{
 				continue;
 			}
-			else if (stack.getItem() instanceof IItemEmc itemEmc)
+			if (stack.getItem() instanceof IItemEmc itemEmc)
 			{
                 if (itemEmc.getStoredEmc(stack) >= minFuel)
 				{
@@ -169,7 +169,7 @@ public final class EMCHelper
 	 */
 	public static double getEmcValue(ItemStack stack)
 	{
-		if (stack == null)
+		if (stack == null || stack.getItem() == null)
 		{
 			return 0.0;
 		}

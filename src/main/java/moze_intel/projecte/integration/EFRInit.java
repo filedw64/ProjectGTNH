@@ -3,7 +3,6 @@ package moze_intel.projecte.integration;
 import moze_intel.projecte.emc.mappers.IntegrationMapper;
 
 public class EFRInit {
-
     public static void init() {
 
         IntegrationMapper.addMapping("etfuturum:honeycomb", 0, 16);

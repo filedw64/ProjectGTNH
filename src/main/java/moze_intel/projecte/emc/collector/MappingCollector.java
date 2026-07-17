@@ -3,6 +3,7 @@ package moze_intel.projecte.emc.collector;
 
 import com.google.common.collect.Maps;
 
+import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.utils.PELogger;
 
@@ -75,7 +76,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	}
 
 	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion) {
-		ingredientsWithAmount = Maps.newHashMap(ingredientsWithAmount);
+        ingredientsWithAmount = Maps.newHashMap(ingredientsWithAmount);
 		if (output == null || ingredientsWithAmount.containsKey(null)) {
 			PELogger.logWarn(String.format("Ignoring Recipe because of invalid ingredient or output: %s -> %dx%s", ingredientsWithAmount, outnumber, output));
 			return;

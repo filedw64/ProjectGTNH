@@ -11,6 +11,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -105,7 +106,7 @@ public final class ItemHelper
 	public static boolean containsItemStack(List<ItemStack> list, ItemStack toSearch)
 	{
 		for (ItemStack stack : list) {
-			if (stack == null) {
+			if (stack == null || stack.getItem() == null) {
 				continue;
 			}
 

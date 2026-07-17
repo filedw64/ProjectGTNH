@@ -10,7 +10,6 @@ import java.util.List;
 
 public class ItemSearchHelperNEI extends ItemSearchHelper
 {
-
 	ItemFilter filter;
 	public ItemSearchHelperNEI(String searchString)
 	{
@@ -35,7 +34,7 @@ public class ItemSearchHelperNEI extends ItemSearchHelper
 	}
 
 	@Override
-	public boolean doesItemMatchFilter_(ItemStack itemStack)
+	public boolean match(ItemStack itemStack)
 	{
 		return filter.matches(itemStack);
 	}
