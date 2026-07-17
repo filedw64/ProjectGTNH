@@ -98,7 +98,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 	@Override
 	public void setValueBefore(T something, V value) {
 		if (something == null) return;
-		if (fixValueBeforeInherit.containsKey(something) && fixValueBeforeInherit.get(something) != value)
+		if (fixValueBeforeInherit.containsKey(something) && fixValueBeforeInherit.get(something).compareTo(value) != 0)
 			PELogger.logWarn("Overwriting fixValueBeforeInherit for " + something + ":" + fixValueBeforeInherit.get(something) + " to " + value);
         fixValueBeforeInherit.put(something, value);
 		fixValueAfterInherit.remove(something);

@@ -59,6 +59,13 @@ public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Doub
         instance.conversions.add(new IntegrationConversion(1, output, ImmutableMap.of(input, 1)));
     }
 
+    public static void addSingleConversion(String in, int inMeta, int inNum, String out, int outMeta, int outNum) {
+        NormalizedSimpleStack output = NormalizedSimpleStack.getFor(out, outMeta),
+            input = NormalizedSimpleStack.getFor(in, inMeta);
+        if (output == null || input == null) return;
+        instance.conversions.add(new IntegrationConversion(outNum, output, ImmutableMap.of(input, inNum)));
+    }
+
     @Override
     public String getName() {
         return "IntegrationMapper";

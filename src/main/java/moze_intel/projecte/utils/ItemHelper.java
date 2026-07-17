@@ -202,7 +202,7 @@ public final class ItemHelper
 					catch (Exception e)
 					{
 						PELogger.logFatal("Couldn't retrieve OD items for: " + oreName);
-						PELogger.logFatal("Caused by: " + e.toString());
+						PELogger.logFatal("Caused by: " + e);
 
 						result.addAll(list);
 						break;

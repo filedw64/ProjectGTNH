@@ -1,5 +1,6 @@
 ###Version 1.11.0-GTNH
-* NEW: Double EMC support!
+* NEW: Double type EMC value support (Up to 1.79e308)
+* NEW: Add many mods integration
 
 ###Version 1.7.10-PE1.10.1
 * NOTICE: 1.7 is now a legacy build and will no longer be officially supported. Minor fixes may come in the future but are not guaranteed. Development and support will continue for 1.10 and above
@@ -20,7 +21,7 @@
 * NEW: More Book of the Alchemist entries have been added. Item is still WIP
 * FIXED: A dupe bug with the Condenser
 * FIXED: A issue causing the Void Ring blacklist to reset
-* FIXED: Auto stepping when it shouldnt happen
+* FIXED: Auto stepping when it shouldn't happen
 * FIXED: Morning Star can now break matter blocks
 * CHANGE: Minor change to Watch of Flowing Time tick distribution
 

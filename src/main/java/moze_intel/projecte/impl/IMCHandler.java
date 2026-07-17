@@ -19,8 +19,6 @@ public class IMCHandler
             blacklist(false, msg);
         } else if ("swrgblacklist".equals(messageKey) && msg.isStringMessage()) {
             blacklist(true, msg);
-        } else if ("nbtwhitelist".equals(messageKey) && msg.isItemStackMessage()) {
-            whitelistNBT(msg);
         } else if ("timewatchblacklist".equals(messageKey) && msg.isStringMessage()) {
             blacklistWatch(msg);
         } else {
@@ -51,15 +49,6 @@ public class IMCHandler
         if (clazz != null)
         {
             ((BlacklistProxyImpl) BlacklistProxyImpl.instance).doBlacklistTimewatch(clazz, msg.getSender());
-        }
-    }
-
-    private static void whitelistNBT(FMLInterModComms.IMCMessage msg)
-    {
-        ItemStack s = msg.getItemStackValue();
-        if (s != null)
-        {
-            ((BlacklistProxyImpl) BlacklistProxyImpl.instance).doWhitelistNBT(s, msg.getSender());
         }
     }
 

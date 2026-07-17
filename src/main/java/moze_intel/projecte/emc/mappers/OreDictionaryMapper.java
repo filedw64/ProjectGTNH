@@ -23,7 +23,6 @@ public class OreDictionaryMapper extends LazyMapper {
                 }
 			}
 		}
-
 	}
 
 	@Override

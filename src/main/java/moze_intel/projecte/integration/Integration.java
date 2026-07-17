@@ -10,7 +10,7 @@ public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
-        nutura = false;
+        Natura = false;
 
 	public static void modChecks()
 	{
@@ -20,6 +20,7 @@ public class Integration
         PHN = Loader.isModLoaded("harvestthenether");
         CCC = Loader.isModLoaded("CodeChickenCore");
         EFR = Loader.isModLoaded("etfuturum");
+        Natura = Loader.isModLoaded("Natura");
 	}
 
 	public static void init()
@@ -77,6 +78,15 @@ public class Integration
             PELogger.logInfo("Try to integrate with Et Futurum Requiem");
             try {
                 EFRInit.init();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (Natura) {
+            PELogger.logInfo("Try to integrate with Natura");
+            try {
+                NaturaInit.init();
             } catch (Throwable e) {
                 e.printStackTrace();
             }

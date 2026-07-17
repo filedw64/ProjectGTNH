@@ -1,20 +1,12 @@
-Natura:Rare Tree/1 银铃树原木 logWood
-Natura:Rare Tree/2 紫檀树原木 logWood
-Natura:Rare Tree/3 核桃树原木 logWood
-
-Chisel
-
-Applied Energistics 2
+Applied Energistics 2:
 有序合成、无序合成
 
-GT++
+GT++:
 工业搅拌机
 
-GregTech
+GregTech:
 卷板机、流体灌装机、板材切割机、流体固化器、匠魂弩箭固化、压模机、压缩机、聚爆压缩机、电动聚爆压缩机、激光蚀刻机
 gregtech:gt.GregTech_FluidDisplay
-gregtech:gt.GregTech_FluidDisplay/122
-gregtech:gt.GregTech_FluidDisplay/734
 
 要解决的工作台合成配方:
 mods.railcraft.common.carts.LocomotivePaintingRecipe

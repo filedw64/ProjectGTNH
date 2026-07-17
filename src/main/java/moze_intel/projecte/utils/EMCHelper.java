@@ -1,6 +1,7 @@
 package moze_intel.projecte.utils;
 
 import com.google.common.collect.Maps;
+import moze_intel.projecte.PECore;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -218,24 +219,24 @@ public final class EMCHelper
 
 	public static Double getEnchantEmcBonus(ItemStack stack)
 	{
-        double result = 0;
+        if (EnchantmentBlacklist.contains(stack)) return 0.0;
 
+        double result = 0;
 		Map<Integer, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
 
-		if (!enchants.isEmpty())
-		{
-			for (Map.Entry<Integer, Integer> entry : enchants.entrySet())
-			{
-				Enchantment ench = Enchantment.enchantmentsList[entry.getKey()];
+		if (enchants.isEmpty()) return 0.0;
 
-				if (ench.getWeight() == 0)
-				{
-					continue;
-				}
+        for (Map.Entry<Integer, Integer> entry : enchants.entrySet())
+        {
+            Enchantment ench = Enchantment.enchantmentsList[entry.getKey()];
 
-				result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
-			}
-		}
+            if (ench.getWeight() == 0)
+            {
+                continue;
+            }
+
+            result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
+        }
 
 		return result;
 	}

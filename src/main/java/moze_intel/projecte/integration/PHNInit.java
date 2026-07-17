@@ -5,7 +5,7 @@ import moze_intel.projecte.emc.mappers.IntegrationMapper;
 public class PHNInit {
     public static void init() {
         IntegrationMapper.addMapping("harvestthenether:netherLog", 0, 32);
-        IntegrationMapper.addMapping("harvestthenether:quartzingotItem", 0, 1024);
+        IntegrationMapper.addMapping("harvestthenether:quartzingotItem", 0, 512);
         IntegrationMapper.addMapping("harvestthenether:glowFlower", 0, 256);
         IntegrationMapper.addMapping("harvestthenether:netherGarden", 0, 384);
 
