@@ -22,7 +22,6 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import moze_intel.projecte.config.CustomEMCParser;
-import moze_intel.projecte.config.NBTWhitelistParser;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.events.ConnectionHandler;
@@ -82,8 +81,6 @@ public class PECore
 
 		CustomEMCParser.init();
 
-		NBTWhitelistParser.init();
-
 		PacketHandler.register();
 
 		NetworkRegistry.INSTANCE.registerGuiHandler(PECore.instance, new GuiHandler());
@@ -113,7 +110,6 @@ public class PECore
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		ObjHandler.registerPhiloStoneSmelting();
-		NBTWhitelistParser.readUserData();
 		proxy.initializeManual();
 
 		Integration.init();

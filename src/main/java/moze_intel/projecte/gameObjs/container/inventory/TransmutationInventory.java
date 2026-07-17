@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.playerData.Transmutation;
@@ -13,7 +12,6 @@ import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ItemSearchHelper;
-import moze_intel.projecte.utils.NBTWhitelist;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -60,10 +58,10 @@ public class TransmutationInventory implements IInventory
 			}
 			else
 			{
-				if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
+				/*if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
 				{
 					stack.stackTagCompound = null;
-				}
+				}*/
 
 				Transmutation.addKnowledge(stack, player);
 			}
@@ -93,10 +91,10 @@ public class TransmutationInventory implements IInventory
 		{
 			unlearnFlag = 300;
 
-			if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
+			/*if (stack.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(stack))
 			{
 				stack.stackTagCompound = null;
-			}
+			}*/
 
 			Transmutation.removeKnowledge(stack, player);
 
@@ -157,10 +155,10 @@ public class TransmutationInventory implements IInventory
 
 			lockCopy = ItemHelper.getNormalizedStack(inventory[LOCK_INDEX]);
 
-			if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
+			/*if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
 			{
 				lockCopy.setTagCompound(new NBTTagCompound());
-			}
+			}*/
 
 			Iterator<ItemStack> iter = knowledge.iterator();
 			int pagecounter = 0;

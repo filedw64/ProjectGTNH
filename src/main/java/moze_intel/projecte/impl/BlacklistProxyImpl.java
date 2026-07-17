@@ -8,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import moze_intel.projecte.api.proxy.IBlacklistProxy;
 import moze_intel.projecte.gameObjs.items.TimeWatch;
-import moze_intel.projecte.utils.NBTWhitelist;
 import moze_intel.projecte.utils.PELogger;
 import moze_intel.projecte.utils.WorldHelper;
 
@@ -42,14 +41,6 @@ public class BlacklistProxyImpl implements IBlacklistProxy
         doBlacklistTimewatch(clazz, Loader.instance().activeModContainer().getModId());
     }
 
-    @Override
-    public void whitelistNBT(ItemStack stack)
-    {
-        Preconditions.checkNotNull(stack);
-        Preconditions.checkState(Loader.instance().isInState(LoaderState.POSTINITIALIZATION), "Mod %s registering NBT whitelist at incorrect time!", Loader.instance().activeModContainer().getModId());
-        doWhitelistNBT(stack, Loader.instance().activeModContainer().getModId());
-    }
-
     /**
      * Split actual doing of whitelisting/blacklisting apart in order to log it properly from IMC
      */
@@ -70,11 +61,5 @@ public class BlacklistProxyImpl implements IBlacklistProxy
     {
         TimeWatch.blacklist(clazz);
         PELogger.logInfo("Mod %s blacklisted %s for Time Watch acceleration", modName, clazz.getCanonicalName());
-    }
-
-    protected void doWhitelistNBT(ItemStack s, String modName)
-    {
-        NBTWhitelist.register(s);
-        PELogger.logInfo("Mod %s whitelisted %s for NBT duping", modName, s.toString());
     }
 }

@@ -16,7 +16,6 @@ import moze_intel.projecte.network.packets.CondenserSyncPKT;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.NBTWhitelist;
 
 public class CondenserTile extends TileEmcDirection implements IInventory, ISidedInventory, IEmcAcceptor
 {
@@ -141,10 +140,10 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		{
 			ItemStack lockCopy = lock.copy();
 
-			if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
+			/*if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
 			{
 				lockCopy.setTagCompound(new NBTTagCompound());
-			}
+			}*/
 
 			inventory[slot] = lockCopy;
 		}
@@ -202,12 +201,12 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			return false;
 		}
 
-		if (NBTWhitelist.shouldDupeWithNBT(lock))
+		//if (NBTWhitelist.shouldDupeWithNBT(lock))
 		{
 			return ItemHelper.areItemStacksEqual(lock, stack);
 		}
 
-		return ItemHelper.areItemStacksEqualIgnoreNBT(lock, stack);
+		//return ItemHelper.areItemStacksEqualIgnoreNBT(lock, stack);
 	}
 
 	public int getProgressScaled()
