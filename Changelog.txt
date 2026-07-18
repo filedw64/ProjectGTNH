@@ -1,6 +1,7 @@
 ###Version 1.11.0-GTNH
 * NEW: Double type EMC value support (Up to 1.79e308)
 * NEW: Add many mods integration
+* FIXED: Transmutation table search error when NEI is loaded
 
 ###Version 1.7.10-PE1.10.1
 * NOTICE: 1.7 is now a legacy build and will no longer be officially supported. Minor fixes may come in the future but are not guaranteed. Development and support will continue for 1.10 and above
