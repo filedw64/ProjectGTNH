@@ -128,8 +128,7 @@ public class TransmutationInventory implements IInventory
 			return;
 		}
 
-        if (async)
-		    knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
+        knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
 
 		for (int i : MATTER_INDEXES)
 		{

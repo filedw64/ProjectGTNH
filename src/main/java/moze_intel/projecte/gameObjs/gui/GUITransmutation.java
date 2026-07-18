@@ -1,5 +1,6 @@
 package moze_intel.projecte.gameObjs.gui;
 
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -154,7 +155,7 @@ public class GUITransmutation extends GuiContainer
 	@Override
 	protected void actionPerformed(GuiButton button)
 	{
-		String srch = this.textBoxFilter.getText().toLowerCase(Locale.ROOT);
+		String srch = this.textBoxFilter.getText();
 
 		if (button.id == 1)
 		{
