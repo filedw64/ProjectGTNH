@@ -41,6 +41,13 @@ public class BlacklistProxyImpl implements IBlacklistProxy
         doBlacklistTimewatch(clazz, Loader.instance().activeModContainer().getModId());
     }
 
+    @Override
+    @Deprecated
+    public void whitelistNBT(ItemStack stack)
+    {
+        PELogger.logInfo("Mod %s try to add whitelist for NBT duping, ignoring", Loader.instance().activeModContainer().getModId());
+    }
+
     /**
      * Split actual doing of whitelisting/blacklisting apart in order to log it properly from IMC
      */

@@ -27,4 +27,12 @@ public interface IBlacklistProxy
      * @param clazz The TileEntity to blacklist
      */
     void blacklistTimeWatch(Class<? extends TileEntity> clazz);
+
+    /**
+     * Whitelist an ItemStack, allowing stacks of its kind to dupe NBT during Transmutation and Condensation
+     * Call this during the postinit phase
+     * @param stack The stack to whitelist
+     */
+    @Deprecated
+    void whitelistNBT(ItemStack stack);
 }
