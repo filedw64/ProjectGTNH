@@ -3,6 +3,8 @@ package moze_intel.projecte.emc;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cpw.mods.fml.common.registry.GameRegistry;
+import moze_intel.projecte.integration.GregTech.GTHelper;
+import moze_intel.projecte.integration.GregTech.GTNSSItem;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -12,6 +14,7 @@ import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,21 +80,20 @@ public abstract class NormalizedSimpleStack {
 		return identifier;
 	}
 
-	public static NormalizedSimpleStack getFor(Item item, int meta) {
+    public static NormalizedSimpleStack getFor(Item item, int meta) {
+        return getFor(getUniqueIdentifierOrNull(item), meta);
+    }
 
-		return getFor(getUniqueIdentifierOrNull(item), meta);
-	}
-
-	private static NormalizedSimpleStack getFor(GameRegistry.UniqueIdentifier uniqueIdentifier, int damage)
-	{
-		if (uniqueIdentifier == null) return null;
-		return getFor(uniqueIdentifier.modId + ":" + uniqueIdentifier.name, damage);
-	}
-
-
+    private static NormalizedSimpleStack getFor(GameRegistry.UniqueIdentifier uniqueIdentifier, int damage)
+    {
+        if (uniqueIdentifier == null) return null;
+        return getFor(uniqueIdentifier.modId + ":" + uniqueIdentifier.name, damage);
+    }
 
 	public static NormalizedSimpleStack getFor(ItemStack stack) {
 		if (stack == null || stack.getItem() == null) return null;
+        if (GTHelper.isGTtool(stack))
+            return new GTNSSItem(stack);
 		return getFor(stack.getItem(), stack.getItemDamage());
 	}
 
@@ -124,7 +126,7 @@ public abstract class NormalizedSimpleStack {
 	public abstract String json();
 
 
-	private static final Map<String, NormalizedSimpleStack> oreDictStacks = Maps.newHashMap();
+	private static final Map<String, NormalizedSimpleStack> oreDictStacks = new HashMap<>();
 	public static NormalizedSimpleStack forOreDictionary(String oreDictionaryName)
 	{
 		if (oreDictStacks.containsKey(oreDictionaryName))
@@ -141,11 +143,11 @@ public abstract class NormalizedSimpleStack {
 	public static class NSSItem extends NormalizedSimpleStack {
 		public final String itemName;
 		public final int damage;
-		private NSSItem(String itemName, int damage) {
-			this.itemName = itemName;
+		protected NSSItem(String itemName, int damage) {
 			if (Item.itemRegistry.getObject(itemName) == null) {
 				throw new IllegalArgumentException("Invalid Item with itemName = " + itemName);
 			}
+            this.itemName = itemName;
 			this.damage = damage;
 		}
 
@@ -166,7 +168,7 @@ public abstract class NormalizedSimpleStack {
 		@Override
 		public String json()
 		{
-			return String.format("%s|%s", itemName,  damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
+			return String.format("%s|%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
 		}
 
 		@Override
@@ -189,7 +191,7 @@ public abstract class NormalizedSimpleStack {
 		public final String description;
 		public final int counter;
 		private static int fakeItemCounter = 0;
-        private static Map<String, Integer> counterMap = Maps.newHashMap();
+        private static Map<String, Integer> counterMap = new HashMap<>();
 		public NSSFake(String description){
             this.description = description;
             if(counterMap.containsKey(description)) {
@@ -202,7 +204,7 @@ public abstract class NormalizedSimpleStack {
 		}
 
         public static void clearMap() {
-            counterMap = Maps.newHashMap();
+            counterMap = new HashMap<>();
         }
 
 		public boolean equals(Object o) {
@@ -289,29 +291,34 @@ public abstract class NormalizedSimpleStack {
 	}
 
 	public static NormalizedSimpleStack fromSerializedItem(String serializedItem) {
-		int pipeIndex = serializedItem.lastIndexOf('|');
+		int pipeIndex = serializedItem.indexOf('|');
 		if (pipeIndex < 0)
 		{
 			throw new IllegalArgumentException(String.format("Cannot parse '%s' as itemstack. Missing | to separate metadata.", serializedItem));
 		}
 		String itemName = serializedItem.substring(0, pipeIndex);
-		String itemDamageString = serializedItem.substring(pipeIndex + 1);
-		int itemDamage;
-		if (itemDamageString.equals("*"))
-		{
-			itemDamage = OreDictionary.WILDCARD_VALUE;
-		}
-		else
-		{
-			try
-			{
-				itemDamage = Integer.parseInt(itemDamageString);
-			} catch (NumberFormatException e)
-			{
-				throw new IllegalArgumentException(String.format("Could not parse '%s' to metadata-integer", itemDamageString), e);
-			}
-		}
-
-		return NormalizedSimpleStack.getFor(itemName, itemDamage);
+        String metaAndNbt = serializedItem.substring(pipeIndex + 1);
+        int braceIndex = metaAndNbt.indexOf('{');
+        String itemDamageString;
+        if (braceIndex >= 0) {
+            itemDamageString = metaAndNbt.substring(0, braceIndex);
+        } else {
+            itemDamageString = metaAndNbt;
+        }
+        if (itemDamageString.isEmpty()) {
+            throw new IllegalArgumentException("Metadata is empty");
+        }
+        int itemDamage;
+        if (itemDamageString.equals("*")) {
+            itemDamage = OreDictionary.WILDCARD_VALUE;
+        }
+        else {
+            try {
+                itemDamage = Integer.parseInt(itemDamageString);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(String.format("Could not parse '%s' to metadata-integer", itemDamageString), e);
+            }
+        }
+        return NormalizedSimpleStack.getFor(itemName, itemDamage);
 	}
 }

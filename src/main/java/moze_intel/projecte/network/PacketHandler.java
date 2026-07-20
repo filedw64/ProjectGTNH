@@ -7,6 +7,7 @@ import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraftforge.common.util.FakePlayer;
@@ -67,7 +68,7 @@ public final class PacketHandler
 
 	public static void sendFragmentedEmcPacket(EntityPlayerMP player)
 	{
-		ArrayList<Object[]> list = Lists.newArrayList();
+		ArrayList<Object[]> list = new ArrayList<>();
 		int counter = 0;
 
 		for (Map.Entry<SimpleStack, Double> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
@@ -79,8 +80,12 @@ public final class PacketHandler
 				continue;
 			}
 
-            Object[] data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
-			list.add(data);
+            Object[] data;
+            if (stack instanceof GTSimpleStack gts)
+                data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), gts.primary, gts.secondary};
+            else data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+
+            list.add(data);
 
 			if (list.size() >= MAX_PKT_SIZE)
 			{
@@ -90,12 +95,9 @@ public final class PacketHandler
 			}
 		}
 
-		if (!list.isEmpty())
-		{
-			PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
-			list.clear();
-			counter++;
-		}
+        PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
+        list.clear();
+        counter++;
 
 		PELogger.logInfo("Sent EMC data packets to: " + player.getCommandSenderName());
 		PELogger.logDebug("Total packets: " + counter);
@@ -103,7 +105,7 @@ public final class PacketHandler
 
 	public static void sendFragmentedEmcPacketToAll()
 	{
-		ArrayList<Object[]> list = Lists.newArrayList();
+		ArrayList<Object[]> list = new ArrayList<>();
 		int counter = 0;
 
 		for (Map.Entry<SimpleStack, Double> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
@@ -115,7 +117,11 @@ public final class PacketHandler
 				continue;
 			}
 
-            Object[] data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+            Object[] data;
+            if (stack instanceof GTSimpleStack gts)
+                data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), gts.primary, gts.secondary};
+            else data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+
 			list.add(data);
 
 			if (list.size() >= MAX_PKT_SIZE)
@@ -126,12 +132,9 @@ public final class PacketHandler
 			}
 		}
 
-		if (!list.isEmpty())
-		{
-			PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
-			list.clear();
-			counter++;
-		}
+        PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
+        list.clear();
+        counter++;
 
 		PELogger.logInfo("Sent EMC data packets to all players.");
 		PELogger.logDebug("Total packets per player: " + counter);
@@ -178,7 +181,7 @@ public final class PacketHandler
 
 	/**
 	 * Send a packet to all the players in the specified dimension.<br>
-	 *  Must be called Server side.
+	 * Must be called Server side.
 	 */
 	public static void sendToDimension(IMessage msg, int dimension)
 	{
