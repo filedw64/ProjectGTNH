@@ -1,7 +1,8 @@
 package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
-import moze_intel.projecte.integration.GregTech.GregTechInit;
+import moze_intel.projecte.integration.EtFuturum.EFRInit;
+import moze_intel.projecte.integration.GregTech.GTInit;
 import moze_intel.projecte.integration.MineTweaker.TweakInit;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.utils.PELogger;
@@ -97,7 +98,7 @@ public class Integration
         if (gregtech) {
             PELogger.logInfo("Try to integrate with GregTech");
             try {
-                GregTechInit.init();
+                GTInit.init();
             } catch (Throwable e) {
                 e.printStackTrace();
             }

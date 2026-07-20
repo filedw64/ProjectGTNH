@@ -12,6 +12,8 @@ import moze_intel.projecte.emc.mappers.IntegrationMapper;
 import moze_intel.projecte.emc.mappers.LazyMapper;
 import moze_intel.projecte.emc.mappers.OreDictionaryMapper;
 import moze_intel.projecte.emc.mappers.SmeltingMapper;
+import moze_intel.projecte.integration.GregTech.GTNSSItem;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -133,14 +135,24 @@ public final class EMCMapper
 		}
 
 		for (Map.Entry<NormalizedSimpleStack, Double> entry: graphMapperValues.entrySet()) {
-			if (entry.getKey() instanceof NormalizedSimpleStack.NSSItem normStackItem)
+            if (entry.getKey() instanceof GTNSSItem gtnssItem) {
+                Object obj = Item.itemRegistry.getObject(gtnssItem.itemName);
+                if (obj != null) {
+                    int id = Item.itemRegistry.getIDForObject(obj);
+                    emc.put(new GTSimpleStack(id, 1, gtnssItem.damage, gtnssItem.primary, gtnssItem.secondary), entry.getValue());
+                }
+                else {
+                    PELogger.logWarn("Could not add EMC value for %s|%s. Can not get ItemID!", gtnssItem.itemName, gtnssItem.damage);
+                }
+            }
+			else if (entry.getKey() instanceof NormalizedSimpleStack.NSSItem normStackItem)
 			{
                 Object obj = Item.itemRegistry.getObject(normStackItem.itemName);
-				if (obj != null)
-				{
+				if (obj != null) {
 					int id = Item.itemRegistry.getIDForObject(obj);
 					emc.put(new SimpleStack(id, 1, normStackItem.damage), entry.getValue());
-				} else {
+				}
+                else {
 					PELogger.logWarn("Could not add EMC value for %s|%s. Can not get ItemID!", normStackItem.itemName, normStackItem.damage);
 				}
 			}
@@ -163,7 +175,6 @@ public final class EMCMapper
                 if (normStackItem.damage != OreDictionary.WILDCARD_VALUE) {
 					continue;
 				}
-                //PELogger.logDebug(normStackItem.itemName + " : emc = " + entry.getValue());
 			}
 			iter.remove();
 		}
@@ -173,7 +184,6 @@ public final class EMCMapper
 	{
 		SimpleStack copy = key.copy();
 		copy.qnty = 1;
-
 		return emc.containsKey(copy);
 	}
 
