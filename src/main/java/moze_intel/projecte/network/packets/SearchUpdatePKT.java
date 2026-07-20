@@ -40,10 +40,9 @@ public class SearchUpdatePKT implements IMessage
 		@Override
 		public IMessage onMessage(final SearchUpdatePKT pkt, final MessageContext ctx)
 		{
-			if (ctx.getServerHandler().playerEntity.openContainer instanceof TransmutationContainer)
+			if (ctx.getServerHandler().playerEntity.openContainer instanceof TransmutationContainer container)
 			{
-				TransmutationContainer container = ((TransmutationContainer) ctx.getServerHandler().playerEntity.openContainer);
-				container.transmutationInventory.writeIntoOutputSlot(pkt.slot, pkt.itemStack);
+                container.transmutationInventory.writeIntoOutputSlot(pkt.slot, pkt.itemStack);
 			}
 
 			return null;

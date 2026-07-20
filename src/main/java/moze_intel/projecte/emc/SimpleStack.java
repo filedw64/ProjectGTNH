@@ -19,7 +19,7 @@ public class SimpleStack
 
 	public SimpleStack(ItemStack stack)
 	{
-		if (stack == null)
+		if (stack == null || stack.getItem() == null)
 		{
 			id = -1;
 		}
@@ -44,7 +44,8 @@ public class SimpleStack
 
 			if (item != null)
 			{
-				return new ItemStack(Item.getItemById(id), qnty, damage);
+                ItemStack is = new ItemStack(item, qnty, damage);
+				return is;
 			}
 		}
 
@@ -65,17 +66,13 @@ public class SimpleStack
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof SimpleStack)
+		if (obj instanceof SimpleStack other)
 		{
-			SimpleStack other = (SimpleStack) obj;
-
-			if (this.damage == OreDictionary.WILDCARD_VALUE || other.damage == OreDictionary.WILDCARD_VALUE)
+            if (this.damage == OreDictionary.WILDCARD_VALUE || other.damage == OreDictionary.WILDCARD_VALUE)
 			{
-				//return this.id == other.id;
 				return this.qnty == other.qnty && this.id == other.id;
 			}
 
-			//return this.id == other.id && this.damage == other.damage;
 			return this.id == other.id && this.qnty == other.qnty && this.damage == other.damage;
 		}
 

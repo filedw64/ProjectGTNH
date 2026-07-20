@@ -85,26 +85,30 @@ public class TransmutationContainer extends Container
 		ItemStack stack = slot.getStack();
 		ItemStack newStack = stack.copy();
 
-		if (slotIndex <= 7) //Input Slots
+		if (slotIndex <= 8 || slotIndex == 26) // Input Slots, Lock Slot, and Unlearn Slot
 		{
-			return null;
+            if (ItemHelper.hasSpace(player.inventory.mainInventory, stack)) {
+                ItemHelper.pushStackInInv(player.inventory, ItemHelper.getNormalizedStack(newStack));
+                transmutationInventory.setInventorySlotContents(slotIndex, null);
+            }
 		}
 		else if (slotIndex >= 10 && slotIndex <= 25) // Output Slots
 		{
             double emc = EMCHelper.getEmcValue(newStack);
 
 			int stackSize = 0;
+            int maxStackSize = newStack.getMaxStackSize();
 
-			while (transmutationInventory.emc >= emc && stackSize < newStack.getMaxStackSize() && ItemHelper.hasSpace(player.inventory.mainInventory, newStack))
+			while (transmutationInventory.emc >= emc && stackSize < maxStackSize && ItemHelper.hasSpace(player.inventory.mainInventory, newStack))
 			{
 				transmutationInventory.removeEmc(emc);
-				ItemHelper.pushStackInInv(player.inventory, ItemHelper.getNormalizedStack(newStack));
+				ItemHelper.pushStackInInv(player.inventory, newStack);
 				stackSize++;
 			}
 
 			transmutationInventory.updateOutputs();
 		}
-		else if (slotIndex >= 26) //Unlearn Slot and Player Inventory
+		else if (slotIndex >= 27) // Player Inventory
 		{
             double emc = EMCHelper.getEmcValue(stack);
 
@@ -113,7 +117,7 @@ public class TransmutationContainer extends Container
 				return null;
 			}
 
-			while(!transmutationInventory.hasMaxedEmc() && stack.stackSize > 0)
+			while (!transmutationInventory.hasMaxedEmc() && stack.stackSize > 0)
 			{
 				transmutationInventory.addEmc(emc);
 				--stack.stackSize;
@@ -176,7 +180,7 @@ public class TransmutationContainer extends Container
 	@Override
 	public boolean canDragIntoSlot(Slot slot)
 	{
-		if (slot instanceof SlotConsume || slot instanceof SlotUnlearn || slot instanceof SlotInput || slot instanceof SlotLock||slot instanceof SlotOutput) return false;
+		if (slot instanceof SlotConsume || slot instanceof SlotUnlearn || slot instanceof SlotInput || slot instanceof SlotLock || slot instanceof SlotOutput) return false;
 		return true;
 	}
 }

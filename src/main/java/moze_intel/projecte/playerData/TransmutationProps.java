@@ -79,14 +79,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 
 	private void pruneStaleKnowledge()
 	{
-		Iterator<ItemStack> iter = knowledge.iterator();
-		while (iter.hasNext())
-		{
-			if (!EMCHelper.doesItemHaveEmc(iter.next()))
-			{
-				iter.remove();
-			}
-		}
+        knowledge.removeIf(itemStack -> !EMCHelper.doesItemHaveEmc(itemStack));
 	}
 
 	protected NBTTagCompound saveForPacket()

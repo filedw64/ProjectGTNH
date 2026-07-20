@@ -68,13 +68,13 @@ import java.util.Set;
  */
 public final class WorldHelper
 {
-	public static final ImmutableList<Class<? extends EntityLiving>> peacefuls = ImmutableList.<Class<? extends EntityLiving>>of(
+	public static final ImmutableList<Class<? extends EntityLiving>> peacefuls = ImmutableList.of(
 			EntitySheep.class, EntityPig.class, EntityCow.class,
 			EntityMooshroom.class, EntityChicken.class, EntityBat.class,
 			EntityVillager.class, EntitySquid.class, EntityOcelot.class,
 			EntityWolf.class, EntityHorse.class
 	);
-	public static final ImmutableList<Class<? extends EntityLiving>> mobs = ImmutableList.<Class<? extends EntityLiving>>of(
+	public static final ImmutableList<Class<? extends EntityLiving>> mobs = ImmutableList.of(
 			EntityZombie.class, EntitySkeleton.class, EntityCreeper.class,
 			EntitySpider.class, EntityEnderman.class, EntitySilverfish.class,
 			EntityPigZombie.class, EntityGhast.class, EntityBlaze.class,
