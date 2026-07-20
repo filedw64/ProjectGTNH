@@ -2,6 +2,7 @@ package moze_intel.projecte.gameObjs.container.inventory;
 
 import com.google.common.collect.Lists;
 import moze_intel.projecte.emc.EMCMapper;
+import moze_intel.projecte.integration.EtFuturum.EFRHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -61,8 +62,8 @@ public class TransmutationInventory implements IInventory
 			}
 			else
 			{
-                if (!EMCMapper.enableNBTprocess)
-                    stack.stackTagCompound = null;
+                if (EFRHelper.isShulkerBox(stack))
+                    stack.stackTagCompound.removeTag("Items");
 				Transmutation.addKnowledge(stack, player);
 			}
 
@@ -122,6 +123,7 @@ public class TransmutationInventory implements IInventory
 	public void updateOutputs() {
 		updateOutputs(false);
 	}
+
 	public void updateOutputs(boolean async)
 	{
 		if (!player.worldObj.isRemote) {
@@ -247,7 +249,6 @@ public class TransmutationInventory implements IInventory
 
 	public void writeIntoOutputSlot(int slot, ItemStack item)
 	{
-
 		if (EMCHelper.doesItemHaveEmc(item) && EMCHelper.getEmcValue(item) <= this.emc && Transmutation.hasKnowledgeForStack(item, player))
 		{
 			inventory[slot] = item;
@@ -382,7 +383,7 @@ public class TransmutationInventory implements IInventory
 	{
 		emc += value;
 
-		if (emc >= Constants.TILE_MAX_EMC || emc < 0)
+		if (emc > Constants.TILE_MAX_EMC)
 		{
 			emc = Constants.TILE_MAX_EMC;
 		}
