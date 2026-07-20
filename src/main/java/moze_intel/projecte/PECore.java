@@ -73,7 +73,8 @@ public class PECore
 
 		if (!CONFIG_DIR.exists())
 		{
-			CONFIG_DIR.mkdirs();
+            if(!CONFIG_DIR.mkdirs())
+                PELogger.logWarn("Cannot create dir \"config/ProjectE\"!");
 		}
 
 		PREGENERATED_EMC_FILE = new File(CONFIG_DIR, "pregenerated_emc.json");
@@ -149,7 +150,7 @@ public class PECore
 	}
 
 	@Mod.EventHandler
-	public void serverStopping (FMLServerStoppingEvent event)
+	public void serverStopping(FMLServerStoppingEvent event)
 	{
 		TransmutationOffline.cleanAll();
 	}
@@ -211,19 +212,16 @@ public class PECore
 						}
 					}
 				}
-				if (mapping.type == GameRegistry.Type.BLOCK)
-				{
+				if (mapping.type == GameRegistry.Type.BLOCK) {
 					// Space strip remap - Blocks
 					String newSubName = Constants.SPACE_STRIP_NAME_MAP.get(subName);
 					Block remappedBlock = GameRegistry.findBlock(PECore.MODID, newSubName);
 
-					if (remappedBlock != null)
-					{
+					if (remappedBlock != null) {
 						mapping.remap(remappedBlock);
 						PELogger.logInfo(String.format("Remapped ProjectE Block from %s to %s", mapping.name, PECore.MODID + ":" + newSubName));
 					}
-					else
-					{
+					else {
 						PELogger.logFatal("Failed to remap PE Block: " + mapping.name);
 					}
 				}
