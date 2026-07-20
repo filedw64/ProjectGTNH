@@ -19,7 +19,7 @@ public final class Comparators
     };
 
 	public static final Comparator<ItemStack> ITEMSTACK_ASCENDING = (o1, o2) -> {
-        if ((o1 == null && o2 == null))
+        if (o1 == null && o2 == null)
         {
             return 0;
         }
@@ -56,32 +56,11 @@ public final class Comparators
         Double emc1 = EMCMapper.getEmcValue(s1);
         Double emc2 = EMCMapper.getEmcValue(s2);
 
-        if (emc1 < emc2)
-        {
-            return -1;
-        }
+        return emc1.compareTo(emc2);
 
-        if (emc1 > emc2)
-        {
-            return 1;
-        }
-
-        return 0;
     };
 
-    public static final Comparator<Double> DOUBLE_DESCENDING = (i1, i2) -> {
-        if (i1 < i2)
-        {
-            return 1;
-        }
-
-        if (i1 > 2)
-        {
-            return -1;
-        }
-
-        return 0;
-    };
+    public static final Comparator<Double> DOUBLE_DESCENDING = Comparator.reverseOrder();
 
 	public static final Comparator<AbstractPage> PAGE_HEADER = (o1, o2) -> StatCollector.translateToLocal(o1.getHeaderText()).compareToIgnoreCase(StatCollector.translateToLocal(o2.getHeaderText()));
 }
