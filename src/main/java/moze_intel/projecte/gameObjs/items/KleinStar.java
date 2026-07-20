@@ -45,10 +45,10 @@ public class KleinStar extends ItemPE implements IItemEmc
 
 		if (starEmc == 0)
 		{
-			return 1.0D;
+			return 1.0;
 		}
 
-		return 1.0D - starEmc / (double) EMCHelper.getKleinStarMaxEmc(stack);
+		return 1.0 - starEmc / EMCHelper.getKleinStarMaxEmc(stack);
 	}
 
 
@@ -62,15 +62,6 @@ public class KleinStar extends ItemPE implements IItemEmc
 
 		return stack;
 	}
-
-	/*@Override
-	public void onCreated(ItemStack stack, World world, EntityPlayer player)
-	{
-		if (!world.isRemote)
-		{
-			stack.stackTagCompound = new NBTTagCompound();
-		}
-	}*/
 
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
@@ -111,7 +102,7 @@ public class KleinStar extends ItemPE implements IItemEmc
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs cTab, List list)
+	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list)
 	{
 		for (int i = 0; i < 6; ++i)
 		{

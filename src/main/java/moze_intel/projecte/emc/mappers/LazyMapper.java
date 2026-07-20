@@ -46,10 +46,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		}
 
 		for (int i = 0; i <= 5; i++) {
-			if (i == 2 || i == 3) {
-                addMapping(new ItemStack(Blocks.double_plant, 1, i), 1);
-			}
-			addMapping(new ItemStack(Blocks.double_plant, 1, i), 32);
+			addMapping(new ItemStack(Blocks.double_plant, 1, i), (i == 2 || i == 3) ? 1 : 32);
 		}
 
 		addMapping(new ItemStack(Blocks.yellow_flower), 16);

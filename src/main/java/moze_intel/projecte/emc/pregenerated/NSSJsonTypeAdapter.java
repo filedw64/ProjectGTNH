@@ -28,7 +28,6 @@ public class NSSJsonTypeAdapter extends TypeAdapter<NormalizedSimpleStack>
 	@Override
 	public NormalizedSimpleStack read(JsonReader in) throws IOException
 	{
-
 		String serializedItem = in.nextString();
 		try {
 			return NormalizedSimpleStack.fromSerializedItem(serializedItem);

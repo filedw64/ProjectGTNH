@@ -590,8 +590,8 @@ public class ObjHandler
 		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 3), Blocks.dirt);
 
 		//Custom Recipe managment
-		for(int i = 1; i <= 15; i++){
-			GameRegistry.addRecipe(new RecipeAlchemyBag(new ItemStack(alchBag, 1, 15-i), new ItemStack(alchBag, 1, 0), new ItemStack(Items.dye, 1, i)));
+		for (int i = 1; i <= 15; i++) {
+			GameRegistry.addRecipe(new RecipeAlchemyBag(new ItemStack(alchBag, 1, 15 - i), new ItemStack(alchBag, 1, 0), new ItemStack(Items.dye, 1, i)));
 			GameRegistry.addRecipe(new RecipeAlchemyBag(new ItemStack(alchBag, 1, 0), new ItemStack(alchBag, 1, i), new ItemStack(Items.dye, 1, 15)));
 		}
 		GameRegistry.addRecipe(new RecipesCovalenceRepair());
@@ -609,11 +609,8 @@ public class ObjHandler
 	 */
 	public static void registerPhiloStoneSmelting()
 	{
-
-		for (Entry<ItemStack, ItemStack> entry : (((HashMap<ItemStack, ItemStack>) FurnaceRecipes.smelting().getSmeltingList()).entrySet()))
-		{
-			if (entry.getKey() == null || entry.getValue() == null)
-			{
+		for (Entry<ItemStack, ItemStack> entry : FurnaceRecipes.smelting().getSmeltingList().entrySet()) {
+			if (entry.getKey() == null || entry.getValue() == null) {
 				continue;
 			}
 
@@ -622,7 +619,6 @@ public class ObjHandler
 			output.stackSize *= 7;
 
 			GameRegistry.addRecipe(new RecipeShapelessHidden(output, philosStone, input, input, input, input, input, input, input, new ItemStack(Items.coal, 1, OreDictionary.WILDCARD_VALUE)));
-
 		}
 		RecipeSorter.register("Philosopher's Smelting Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
 	}
