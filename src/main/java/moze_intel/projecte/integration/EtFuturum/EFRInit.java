@@ -1,10 +1,9 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.EtFuturum;
 
 import moze_intel.projecte.emc.mappers.IntegrationMapper;
 
 public class EFRInit {
     public static void init() {
-
         IntegrationMapper.addMapping("etfuturum:honeycomb", 0, 16);
         IntegrationMapper.addMapping("etfuturum:bamboo", 0, 32);
         IntegrationMapper.addMapping("etfuturum:netherite_scrap", 0, 12288);
