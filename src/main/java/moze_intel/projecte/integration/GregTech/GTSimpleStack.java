@@ -4,7 +4,6 @@ import moze_intel.projecte.emc.SimpleStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.oredict.OreDictionary;
 
 public class GTSimpleStack extends SimpleStack {
     public String primary;
@@ -25,8 +24,7 @@ public class GTSimpleStack extends SimpleStack {
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return (primary + secondary).hashCode() ^ id;
     }
 
@@ -36,10 +34,20 @@ public class GTSimpleStack extends SimpleStack {
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         if (obj instanceof GTSimpleStack other)
             return super.equals(other) && this.primary.equals(other.primary) && this.secondary.equals(other.secondary);
         return false;
+    }
+
+    @Override
+    public String toString() {
+        Item item = Item.getItemById(id);
+
+        if (item != null) {
+            return Item.itemRegistry.getNameForObject(item) + " " + qnty + " " + damage + " " + primary + " " + secondary;
+        }
+
+        return "id:" + id + " damage:" + damage + " qnty:" + qnty + " primary:" + primary + " secondary" + secondary;
     }
 }

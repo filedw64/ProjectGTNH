@@ -7,7 +7,6 @@ import moze_intel.projecte.emc.collector.MappingCollector;
 import moze_intel.projecte.emc.generators.IValueGenerator;
 import moze_intel.projecte.utils.PELogger;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -174,13 +173,13 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		boolean allIngredientsAreFree = true;
 		boolean hasPositiveIngredientValues = false;
 		for (Map.Entry<T, Integer> entry : conversion.ingredientsWithAmount.entrySet()) {
+            if (entry.getValue() == 0)
+            {
+                //Ingredients with an amount of 'zero' do not need to be handled.
+                continue;
+            }
 			if (values.containsKey(entry.getKey())) {
 				//The ingredient has a value
-				if (entry.getValue() == 0)
-				{
-					//Ingredients with an amount of 'zero' do not need to be handled.
-					continue;
-				}
 				//value = value + amount * ingredientcost
 				V ingredientValue = conversion.arithmeticForConversion.mul(entry.getValue(),values.get(entry.getKey()));
 				if (ingredientValue.compareTo(ZERO) == 0) {

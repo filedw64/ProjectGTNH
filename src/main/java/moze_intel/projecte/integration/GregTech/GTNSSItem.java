@@ -7,10 +7,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.oredict.OreDictionary;
 
 public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
-    public final String primary;
-    public final String secondary;
+    public String primary = "";
+    public String secondary = "";
     public GTNSSItem(ItemStack stack) {
         super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage());
+        if (!GTHelper.isGTtool(stack) || !stack.hasTagCompound()) return;
         NBTTagCompound nbt = stack.getTagCompound().getCompoundTag("GT.ToolStats");
         primary = nbt.getString("PrimaryMaterial");
         secondary = nbt.getString("SecondaryMaterial");

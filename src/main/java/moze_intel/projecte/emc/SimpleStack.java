@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc;
 
+import moze_intel.projecte.integration.GregTech.GTHelper;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
@@ -44,8 +46,7 @@ public class SimpleStack
 
 			if (item != null)
 			{
-                ItemStack is = new ItemStack(item, qnty, damage);
-				return is;
+                return new ItemStack(item, qnty, damage);
 			}
 		}
 
@@ -91,4 +92,10 @@ public class SimpleStack
 
 		return "id:" + id + " damage:" + damage + " qnty:" + qnty;
 	}
+
+    public static SimpleStack getFor(ItemStack is) {
+        if (GTHelper.isGTtool(is))
+            return new GTSimpleStack(is);
+        return new SimpleStack(is);
+    }
 }

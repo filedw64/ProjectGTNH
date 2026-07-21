@@ -634,7 +634,7 @@ public class GraphMapperTest {
 		assertEquals(1, getValue(values, "notConsume1"));
 		assertEquals(0, getValue(values, "notConsume2"));
 		assertEquals(5, getValue(values, "c1"));
-		assertEquals(0, getValue(values, "c2"));
+		assertEquals(5, getValue(values, "c2"));
 	}
 
 

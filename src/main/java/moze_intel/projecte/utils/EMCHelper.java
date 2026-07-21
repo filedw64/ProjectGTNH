@@ -115,11 +115,7 @@ public final class EMCHelper
 		if (stack == null || stack.getItem() == null)
 			return false;
 
-        SimpleStack iStack;
-
-        if (GTHelper.isGTtool(stack))
-            iStack = new GTSimpleStack(stack);
-        else iStack = new SimpleStack(stack);
+        SimpleStack iStack = SimpleStack.getFor(stack);
 
 		if (!iStack.isValid())
 			return false;
@@ -180,11 +176,10 @@ public final class EMCHelper
         if (EFRHelper.isShulkerBox(stack))
             return EFRHelper.ShulkerBoxEMC(stack);
 
-		SimpleStack iStack;
-
         if (GTHelper.isGTtool(stack))
-            iStack = new GTSimpleStack(stack);
-        else iStack = new SimpleStack(stack);
+            return GTHelper.GTtoolEMC(stack);
+
+		SimpleStack iStack = new SimpleStack(stack);
 
 		if (!iStack.isValid()) return 0.0;
 
@@ -208,7 +203,6 @@ public final class EMCHelper
                 result += getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 
                 return result;
-
             }
 		}
 		else if (EMCMapper.mapContains(iStack))

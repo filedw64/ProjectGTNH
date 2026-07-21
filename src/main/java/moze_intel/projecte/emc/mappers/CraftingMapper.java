@@ -33,14 +33,15 @@ import java.util.Set;
 public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	public static List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
-	Set<Class> canNotMap = Sets.newHashSet();
+	public static boolean emcDependencyForUnconsumedItems = false;
+    Set<Class> canNotMap = Sets.newHashSet();
 	Map<Class, Integer> recipeCount = Maps.newHashMap();
 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
 		recipeCount.clear();
 		canNotMap.clear();
-        boolean emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled, items that are made by crafting, with unconsumed ingredients, should only get an emc value, if unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
+        emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled, items that are made by crafting, with unconsumed ingredients, should only get an emc value, if unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
         for (IRecipeMapper recipeMapper : recipeMappers) {
             recipeMapper.setEnabled(config.getBoolean("enable" + recipeMapper.getName(), "IRecipeImplementations", true, recipeMapper.getDescription()));
         }
@@ -75,6 +76,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     try {
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
+                            mapper.setValueBefore(NormalizedSimpleStack.getFor(stack), -Double.MAX_VALUE);
                             ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
                             continue;
                         }
@@ -99,6 +101,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                         IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
+                            mapper.setValueBefore(NormalizedSimpleStack.getFor(stack), -Double.MAX_VALUE);
                             groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
                             mapper.addConversion(1, nss, groupIngredientMap.getMap());
                             continue;
