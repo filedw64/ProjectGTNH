@@ -5,7 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class GTHelper {
+public class GTToolHelper {
     public static boolean isGTtool(Item item) {
         if (item == null) return false;
         return Item.itemRegistry.getNameForObject(item).startsWith("gregtech:gt.metatool");

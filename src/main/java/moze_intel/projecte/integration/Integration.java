@@ -1,8 +1,8 @@
 package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
-import moze_intel.projecte.integration.EtFuturum.EFRInit;
-import moze_intel.projecte.integration.GregTech.GTInit;
+import moze_intel.projecte.integration.EtFuturum.EFRMapper;
+import moze_intel.projecte.integration.GregTech.GTMapper;
 import moze_intel.projecte.integration.MineTweaker.TweakInit;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.utils.PELogger;
@@ -12,7 +12,7 @@ public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
-        natura = false, gregtech = false;
+        natura = false, gregtech = false, IC2 = false;
 
 	public static void modChecks()
 	{
@@ -24,6 +24,7 @@ public class Integration
         EFR = Loader.isModLoaded("etfuturum");
         natura = Loader.isModLoaded("Natura");
         gregtech = Loader.isModLoaded("gregtech");
+        IC2 = Loader.isModLoaded("IC2");
 	}
 
 	public static void init()
@@ -35,6 +36,7 @@ public class Integration
 			try {
 				TweakInit.init();
 			} catch (Throwable e) {
+                mtweak = false;
 				e.printStackTrace();
 			}
 		}
@@ -44,62 +46,43 @@ public class Integration
 			try {
 				NEIInit.init();
 			} catch (NoClassDefFoundError e) {
+                NEI = false;
 				PELogger.logWarn("NEI integration not loaded due to server side being detected");
 			} catch (Throwable e) {
+                NEI = false;
 				e.printStackTrace();
 			}
 		}
-
-        if (PHC) {
-            PELogger.logInfo("Try to integrate with Pam's HarvestCraft");
-            try {
-                PHCInit.init();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (PHN) {
-            PELogger.logInfo("Try to integrate with Pam's Harvest the Nether");
-            try {
-                PHNInit.init();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
 
         if (CCC) {
             PELogger.logInfo("Try to integrate with CodeChicken Core");
             try {
                 CCCInit.init();
             } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (EFR) {
-            PELogger.logInfo("Try to integrate with Et Futurum Requiem");
-            try {
-                EFRInit.init();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (natura) {
-            PELogger.logInfo("Try to integrate with Natura");
-            try {
-                NaturaInit.init();
-            } catch (Throwable e) {
+                CCC = false;
                 e.printStackTrace();
             }
         }
 
         if (gregtech) {
-            PELogger.logInfo("Try to integrate with GregTech");
+            PELogger.logInfo("Try to integrate with gregtech");
             try {
-                GTInit.init();
+                GTMapper.init();
+            } catch (NoClassDefFoundError e) {
+                gregtech = false;
+                PELogger.logWarn("Integration with gregtech failed due to gregtech version below 5.09.51.482");
             } catch (Throwable e) {
+                gregtech = false;
+                e.printStackTrace();
+            }
+        }
+
+        if (IC2) {
+            PELogger.logInfo("Try to integrate with IndustrialCraft 2");
+            try {
+                IC2Init.init();
+            } catch (Throwable e) {
+                IC2 = false;
                 e.printStackTrace();
             }
         }

@@ -316,13 +316,11 @@ public final class ItemHelper
 	{
 		for (ItemStack invStack : inv)
 		{
-			if (invStack == null)
-			{
+			if (invStack == null) {
 				return true;
 			}
 
-			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize())
-			{
+			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize()) {
 				return true;
 			}
 		}
@@ -410,17 +408,14 @@ public final class ItemHelper
 	{
 		int limit;
 
-		if (inv instanceof InventoryPlayer)
-		{
+		if (inv instanceof InventoryPlayer) {
 			limit = ((InventoryPlayer) inv).mainInventory.length;
 		}
-		else
-		{
+		else {
 			limit = inv.getSizeInventory();
 		}
 
-		for (int i = 0; i < limit; i++)
-		{
+		for (int i = 0; i < limit; i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
 
 			if (invStack == null)

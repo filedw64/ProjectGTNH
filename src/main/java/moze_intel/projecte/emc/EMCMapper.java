@@ -60,7 +60,7 @@ public final class EMCMapper
             new FluidMapper(),
             new SmeltingMapper(),
             new APICustomConversionMapper(),
-            IntegrationMapper.instance
+            new IntegrationMapper()
 		);
         SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
 		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator<>(mapper);

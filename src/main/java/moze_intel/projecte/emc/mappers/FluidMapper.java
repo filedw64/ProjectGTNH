@@ -2,10 +2,8 @@ package moze_intel.projecte.emc.mappers;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import moze_intel.projecte.PECore;
 import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
 import moze_intel.projecte.integration.CCCInit;
-import moze_intel.projecte.integration.Integration;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -21,7 +19,6 @@ import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.PELogger;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

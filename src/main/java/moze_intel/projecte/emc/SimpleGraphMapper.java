@@ -179,7 +179,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
                 continue;
             }
 			if (values.containsKey(entry.getKey())) {
-				//The ingredient has a value
+                //The ingredient has a value
 				//value = value + amount * ingredientcost
 				V ingredientValue = conversion.arithmeticForConversion.mul(entry.getValue(),values.get(entry.getKey()));
 				if (ingredientValue.compareTo(ZERO) == 0) {

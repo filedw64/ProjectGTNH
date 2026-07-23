@@ -11,7 +11,7 @@ import net.minecraft.nbt.NBTTagList;
 public class EFRHelper {
     public static boolean isShulkerBox(Item item) {
         if (item == null) return false;
-        return Item.itemRegistry.getNameForObject(item).equals("etfuturum:shulker_box");
+        return "etfuturum:shulker_box".equals(Item.itemRegistry.getNameForObject(item));
     }
 
     public static boolean isShulkerBox(ItemStack is) {

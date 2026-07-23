@@ -3,11 +3,12 @@ package moze_intel.projecte.emc;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cpw.mods.fml.common.registry.GameRegistry;
-import moze_intel.projecte.integration.GregTech.GTHelper;
+import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.integration.GregTech.GTNSSItem;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.oredict.OreDictionary;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.ItemHelper;
@@ -92,13 +93,15 @@ public abstract class NormalizedSimpleStack {
 
 	public static NormalizedSimpleStack getFor(ItemStack stack) {
 		if (stack == null || stack.getItem() == null) return null;
-        if (GTHelper.isGTtool(stack))
+        if (GTToolHelper.isGTtool(stack))
             return new GTNSSItem(stack);
 		return getFor(stack.getItem(), stack.getItemDamage());
 	}
 
-	public static NormalizedSimpleStack getFor(net.minecraftforge.fluids.Fluid fluid) {
+	public static NormalizedSimpleStack getFor(Fluid fluid) {
 		//TODO cache The fluid normalizedSimpleStacks?
+        if (NSSFluid.nameMap.containsKey(fluid))
+            return NSSFluid.nameMap.get(fluid);
 		return new NSSFluid(fluid);
 	}
 
@@ -188,13 +191,14 @@ public abstract class NormalizedSimpleStack {
 	}
 
 	public static class NSSFake extends NormalizedSimpleStack {
+        private static Map<String, Integer> counterMap = new HashMap<>();
+
 		public final String description;
 		public final int counter;
 		private static int fakeItemCounter = 0;
-        private static Map<String, Integer> counterMap = new HashMap<>();
-		public NSSFake(String description){
+		public NSSFake(String description) {
             this.description = description;
-            if(counterMap.containsKey(description)) {
+            if (counterMap.containsKey(description)) {
                 this.counter = counterMap.get(description);
             }
             else {
@@ -227,11 +231,14 @@ public abstract class NormalizedSimpleStack {
 	}
 
 	public static class NSSFluid extends NormalizedSimpleStack {
+        public static Map<Fluid, NSSFluid> nameMap = new HashMap<>();
 
 		public final String name;
-		private NSSFluid(net.minecraftforge.fluids.Fluid f) {
+		private NSSFluid(Fluid f) {
 			this.name = f.getName();
+            nameMap.put(f, this);
 		}
+
 		public boolean equals(Object o) {
 			if (o instanceof NSSFluid) {
 				return name.equals(((NSSFluid) o).name);

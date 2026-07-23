@@ -17,7 +17,7 @@ public class GTSimpleStack extends SimpleStack {
 
     public GTSimpleStack(ItemStack is) {
         super(is);
-        if(!GTHelper.isGTtool(is) || !is.hasTagCompound()) return;
+        if(!GTToolHelper.isGTtool(is) || !is.hasTagCompound()) return;
         NBTTagCompound nbt = is.getTagCompound().getCompoundTag("GT.ToolStats");
         primary = nbt.getString("PrimaryMaterial");
         secondary = nbt.getString("SecondaryMaterial");

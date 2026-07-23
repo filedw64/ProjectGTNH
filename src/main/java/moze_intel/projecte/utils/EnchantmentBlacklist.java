@@ -1,7 +1,7 @@
 package moze_intel.projecte.utils;
 
 import moze_intel.projecte.emc.SimpleStack;
-import moze_intel.projecte.integration.GregTech.GTHelper;
+import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.ItemStack;
 
@@ -13,7 +13,7 @@ public final class EnchantmentBlacklist {
 
     public static boolean add(ItemStack stack) {
         SimpleStack ss;
-        if (GTHelper.isGTtool(stack))
+        if (GTToolHelper.isGTtool(stack))
             ss = new GTSimpleStack(stack);
         else ss = new SimpleStack(stack);
         if (!ss.isValid()) return false;
@@ -23,7 +23,7 @@ public final class EnchantmentBlacklist {
 
     public static boolean contains(ItemStack stack) {
         SimpleStack ss;
-        if (GTHelper.isGTtool(stack))
+        if (GTToolHelper.isGTtool(stack))
             ss = new GTSimpleStack(stack);
         else ss = new SimpleStack(stack);
         if (!ss.isValid()) return false;

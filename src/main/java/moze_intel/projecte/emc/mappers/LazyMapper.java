@@ -22,7 +22,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Blocks.netherrack), 1);
 		addMapping(new ItemStack(Blocks.dirt), 1);
 		addMapping(new ItemStack(Blocks.dirt, 1, 2), 2);
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(Blocks.grass), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.dirt), 2));
+        addMapping(new ItemStack(Blocks.grass), 2);
 		addMapping(new ItemStack(Blocks.mycelium), 2);
 		addMapping(new ItemStack(Blocks.leaves), 1);
 		addMapping(new ItemStack(Blocks.leaves2), 1);
@@ -70,7 +70,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Blocks.pumpkin), 144);
 		addMapping(new ItemStack(Items.bone), 144);
 
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(Blocks.mossy_cobblestone), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.cobblestone), 2));
+        addMapping(new ItemStack(Blocks.mossy_cobblestone), 2);
 		//Mossy Stone Bricks
 		mapper.addConversion(1, NormalizedSimpleStack.getFor(new ItemStack(Blocks.stonebrick, 1, 1)), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.stonebrick), 2));
 		addMapping(new ItemStack(Blocks.stonebrick, 1, 2), 1);
@@ -135,8 +135,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.emerald), 16384);
 
 		addMapping(new ItemStack(Items.nether_star), 139264);
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.iron_horse_armor), ImmutableMap.of(NormalizedSimpleStack.getFor(Items.iron_ingot), 8));
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.golden_horse_armor), ImmutableMap.of(NormalizedSimpleStack.getFor(Items.gold_ingot), 8));
+        addMapping(new ItemStack(Items.iron_horse_armor), 2048);
+        addMapping(new ItemStack(Items.golden_horse_armor), 16384);
 		addMapping(new ItemStack(Items.diamond_horse_armor), 40960);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 1), 1);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 2), 1);
@@ -160,10 +160,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	protected void addMapping(String unlocalName, int meta, int value) {
 		ItemStack stack = ItemHelper.getStackFromString(unlocalName, meta);
-
-		if (stack != null) {
-			addMapping(stack, value);
-		}
+		if (stack == null || stack.getItem() == null) return;
+        addMapping(stack, value);
 	}
 
 	@Override
