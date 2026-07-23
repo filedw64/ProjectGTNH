@@ -11,7 +11,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -342,7 +341,7 @@ public final class ItemHelper
 		return false;
 	}
 
-	public static boolean invContainsItem(ItemStack inv[], ItemStack toSearch)
+	public static boolean invContainsItem(ItemStack[] inv, ItemStack toSearch)
 	{
 		for (ItemStack stack : inv)
 		{
@@ -355,7 +354,7 @@ public final class ItemHelper
 		return false;
 	}
 
-	public static boolean invContainsItem(ItemStack inv[], Item toSearch)
+	public static boolean invContainsItem(ItemStack[] inv, Item toSearch)
 	{
 		for (ItemStack stack : inv)
 		{
@@ -501,14 +500,6 @@ public final class ItemHelper
 
 	public static void trimItemList(List<ItemStack> list)
 	{
-		Iterator<ItemStack> iter = list.iterator();
-		while (iter.hasNext())
-		{
-			ItemStack s = iter.next();
-			if (s.stackSize <= 0)
-			{
-				iter.remove();
-			}
-		}
+        list.removeIf(s -> s.stackSize <= 0);
 	}
 }
