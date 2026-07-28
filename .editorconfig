@@ -8,15 +8,12 @@ root = true
 charset = utf-8
 end_of_line = lf
 indent_size = 4
-indent_style = space
-insert_final_newline = true
-trim_trailing_whitespace = true
+indent_style = tab
+insert_final_newline = false
+trim_trailing_whitespace = false
 
 [*.{bat,ini}]
 end_of_line = crlf
 
 [*.{dtd,json,info,mcmeta,md,sh,svg,xml,xsd,xsl,yaml,yml}]
 indent_size = 2
-
-[*.{lang,md}]
-trim_trailing_whitespace = false

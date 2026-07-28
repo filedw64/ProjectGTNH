@@ -1,11 +1,8 @@
 package moze_intel.projecte.integration;
 
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-
 public class PHNMapper extends AbstractIntegrationMapper {
     @Override
-    protected void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected void doAddMappings() {
         addMapping("harvestthenether:netherLog", 32);
         addMapping("harvestthenether:quartzingotItem", 512);
         addMapping("harvestthenether:glowFlower", 256);

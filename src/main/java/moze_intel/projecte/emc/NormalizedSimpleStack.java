@@ -128,7 +128,6 @@ public abstract class NormalizedSimpleStack {
 	public abstract boolean equals(Object o);
 	public abstract String json();
 
-
 	private static final Map<String, NormalizedSimpleStack> oreDictStacks = new HashMap<>();
 	public static NormalizedSimpleStack forOreDictionary(String oreDictionaryName)
 	{

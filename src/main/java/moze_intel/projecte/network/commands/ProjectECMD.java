@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentTranslation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +31,7 @@ public class ProjectECMD extends ProjectEBaseCMD
 	@Override
 	public String getCommandUsage(ICommandSender sender)
 	{
-        return setemccmd.canCommandSenderUseCommand(sender)?"pe.command.main.usage":"pe.command.main.guest.usage";
+        return "pe.command.main.usage";
 	}
 
 	@Override
@@ -40,7 +41,7 @@ public class ProjectECMD extends ProjectEBaseCMD
 	}
 
 	@Override
-	public List addTabCompletionOptions(ICommandSender sender, String[] params)
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] params)
 	{
 		if (params.length == 1)
 		{
@@ -111,8 +112,8 @@ public class ProjectECMD extends ProjectEBaseCMD
                     sendError(sender, new ChatComponentTranslation("commands.generic.permission"));
                 }
             }
+            default -> sendError(sender, new ChatComponentTranslation("pe.command.main.usage"));
         }
-
 	}
 
 
@@ -125,9 +126,9 @@ public class ProjectECMD extends ProjectEBaseCMD
 		}
 
 		@Override
-		public boolean apply(String input)
+		public boolean apply(@NotNull String input)
 		{
-			return input.toLowerCase(Locale.ROOT).startsWith(prefix.toLowerCase(Locale.ROOT));
+            return input.toLowerCase(Locale.ROOT).startsWith(prefix.toLowerCase(Locale.ROOT));
 		}
 	}
 }

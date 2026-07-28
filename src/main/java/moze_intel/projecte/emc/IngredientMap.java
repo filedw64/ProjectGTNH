@@ -1,26 +1,21 @@
 package moze_intel.projecte.emc;
 
-import com.google.common.collect.Maps;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class IngredientMap<T> {
-	protected HashMap<T, Integer> ingredientsWithAmount = Maps.newHashMap();
+	protected Map<T, Integer> ingredientCounts = new HashMap<>();
 
-	public void addIngredient(T stackNorm, int amount) {
-		int count = amount;
-		if (ingredientsWithAmount.containsKey(stackNorm)) {
-			count += ingredientsWithAmount.get(stackNorm);
-		}
-		ingredientsWithAmount.put(stackNorm, count);
+	public void addIngredient(T input, int amount) {
+		ingredientCounts.put(input, amount + ingredientCounts.getOrDefault(input, 0));
 	}
 
 	public Map<T, Integer> getMap() {
-		return Maps.newHashMap(ingredientsWithAmount);
+		return new HashMap<>(ingredientCounts);
 	}
 
+    @Override
 	public String toString() {
-		return ingredientsWithAmount.toString();
+		return ingredientCounts.toString();
 	}
 }

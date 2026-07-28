@@ -156,7 +156,6 @@ pe.body.pedestal1=恢复附近玩家的饥饿值
 pe.body.pedestal2=每%s恢复半格饥饿值
 
 pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, reloadEMC, removeEMC, resetEMC>
-pe.command.main.guest.usage=/projecte <changelog>
 
 pe.command.changelog.uptodate=当前使用的 ProjectGTNH 为最新版本.
 pe.command.clearknowledge.error=无法清空玩家 %s 的转化知识.
@@ -301,7 +300,7 @@ pe.repairtalisman.pedestal1=修复附近玩家携带的工具
 pe.repairtalisman.pedestal2=每%s修复1点耐久
 
 pe.server.high_alchemist=高级炼金术士
-pe.server.has_joined=进入服务器
+pe.server.has_joined=进入了服务器
 
 pe.soul.pedestal1=治疗附近的玩家
 pe.soul.pedestal2=每%s恢复半格生命值

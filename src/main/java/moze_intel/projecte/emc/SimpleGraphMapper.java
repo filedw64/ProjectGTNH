@@ -15,7 +15,6 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 	private static final boolean OVERWRITE_FIXED_VALUES = false;
 	protected V ZERO;
 
-	private static boolean logFoundExploits = true;
 	public SimpleGraphMapper(A arithmetic) {
 		super(arithmetic);
 		ZERO = arithmetic.getZero();
@@ -27,10 +26,6 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 
 	protected static<K,V extends Comparable<V>> boolean hasSmaller(Map<K,V> m, K key, V value) {
 		return (m.containsKey(key) && m.get(key).compareTo(value) < 0);
-	}
-
-	public static void setLogFoundExploits(boolean log) {
-		logFoundExploits = log;
 	}
 
 	protected static<K, V extends Comparable<V>> boolean updateMapWithMinimum(Map<K,V> m, K key, V value) {
@@ -64,7 +59,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 
 		while (!newValueFor.isEmpty()) {
 			while (!newValueFor.isEmpty()) {
-				debugPrintln("Loop");
+                debugFormat("Loop");
 				for (Map.Entry<T, V> entry : newValueFor.entrySet()) {
 					if (canOverride(entry.getKey(), entry.getValue()) && updateMapWithMinimum(values, entry.getKey(), entry.getValue())) {
 						//The new Value is now set in 'values'
@@ -121,11 +116,13 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 					if (ZERO.compareTo(conversionValue) < 0 && conversionValueSingle.compareTo(resultValueSingle) < 0) {
 						if (overwriteConversion.containsKey(conversion.output) && overwriteConversion.get(conversion.output) != conversion) {
 							PELogger.logWarn(String.format("EMC Exploit: \"%s\" ingredient cost: %s value of result: %s setValueFromConversion: %s", conversion, conversionValue, resultValueSingle, overwriteConversion.get(conversion.output)));
-						} else if (canOverride(entry.getKey(), ZERO)) {
+						}
+						else if (canOverride(entry.getKey(), ZERO)) {
 							debugFormat("Setting %s to 0 because result (%s) > cost (%s): %s", entry.getKey(), resultValueSingle, conversionValue, conversion);
 							newValueFor.put(conversion.output, ZERO);
 							reasonForChange.put(conversion.output, "exploit recipe");
-						} else if (logFoundExploits) {
+						}
+						else {
 							PELogger.logWarn(String.format("EMC Exploit: \"%s\" ingredient cost: %s fixed value of result: %s", conversion, conversionValue, resultValueSingle));
 						}
 					}

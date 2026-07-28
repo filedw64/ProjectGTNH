@@ -1,11 +1,8 @@
 package moze_intel.projecte.integration;
 
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-
 public class NaturaMapper extends AbstractIntegrationMapper {
     @Override
-    protected void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected void doAddMappings() {
         addMapping("Natura:Thornvines", 0, 8);
 
         for (int i = 0; i <= 2; i++) {

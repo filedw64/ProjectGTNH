@@ -1,15 +1,14 @@
 package moze_intel.projecte.emc;
 
 import com.google.common.collect.Lists;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 
-import java.util.Collections;
 import java.util.List;
 
 public final class FuelMapper
@@ -39,7 +38,7 @@ public final class FuelMapper
 		addToMap(new ItemStack(ObjHandler.fuels, 1, 2));
 		addToMap(new ItemStack(ObjHandler.fuelBlock, 1, 2));
 
-		Collections.sort(FUEL_MAP, Comparators.SIMPLESTACK_ASCENDING);
+		FUEL_MAP.sort(Comparators.SIMPLESTACK_ASCENDING);
 	}
 
 	private static void addToMap(ItemStack stack)

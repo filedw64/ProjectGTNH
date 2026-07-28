@@ -50,15 +50,11 @@ public class Chisel2Mapper implements IEMCMapper<NormalizedSimpleStack, Double> 
 		}
 
 		for (String name : carvingRegistry.getSortedGroupNames()) {
-			handleCarvingGroup(mapper, config, carvingRegistry.getGroup(name));
+			handleCarvingGroup(mapper, carvingRegistry.getGroup(name));
 		}
 	}
 
-	protected void handleCarvingGroup(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config, ICarvingGroup group) {
-		//XXX: Generates way too much Configs
-		/*if (!config.getBoolean(group.getName(), "enableCarvingGroups", true, "Enable ICarvingGroup with name=" + group.getName() + (group.getOreName() == null ? "" :  " and oreName=" + group.getOreName())) ) {
-			return;
-		}*/
+	protected void handleCarvingGroup(IMappingCollector<NormalizedSimpleStack, Double> mapper, ICarvingGroup group) {
 		List<NormalizedSimpleStack> stacks = new ArrayList<>();
 		for (ICarvingVariation v : group.getVariations()) {
 			stacks.add(NormalizedSimpleStack.getFor(v.getBlock(), v.getBlockMeta()));

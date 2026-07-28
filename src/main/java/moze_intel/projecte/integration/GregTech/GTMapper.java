@@ -4,7 +4,6 @@ import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.util.GTRecipe;
 import moze_intel.projecte.emc.IngredientMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.integration.AbstractIntegrationMapper;
 import moze_intel.projecte.utils.PELogger;
 
@@ -13,7 +12,7 @@ public class GTMapper extends AbstractIntegrationMapper {
         PELogger.logTrace("RecipeMap compressorRecipes has %s recipes", RecipeMaps.compressorRecipes.getAllRecipes().size());
     }
     @Override
-    protected void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected void doAddMappings() {
         // 压缩机: 1+1 -> 1
         for (GTRecipe gtre : RecipeMaps.compressorRecipes.getAllRecipes()) {
             IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();

@@ -4,10 +4,10 @@ import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 
 import java.util.Map;
 
-public class DoubleCollector<T, DoubleArithmetic extends IValueArithmetic<?>> extends AbstractMappingCollector<T, Double, DoubleArithmetic>
+public class DoubleCollector<T, A extends IValueArithmetic<Double>> extends AbstractMappingCollector<T, Double, A>
 {
-	IExtendedMappingCollector<T, Double, DoubleArithmetic> inner;
-	public DoubleCollector(IExtendedMappingCollector<T, Double, DoubleArithmetic> inner) {
+	IExtendedMappingCollector<T, Double, A> inner;
+	public DoubleCollector(IExtendedMappingCollector<T, Double, A> inner) {
 		super(inner.getArithmetic());
 		this.inner = inner;
 	}
@@ -18,7 +18,7 @@ public class DoubleCollector<T, DoubleArithmetic extends IValueArithmetic<?>> ex
 	}
 
 	@Override
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, DoubleArithmetic arithmeticForConversion)
+	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion)
 	{
 		inner.addConversion(outnumber, output, ingredientsWithAmount, arithmeticForConversion);
 	}

@@ -11,7 +11,7 @@ public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
-        natura = false, gregtech = false, IC2 = false;
+        natura = false, gregtech = false, forestry = false;
 
 	public static void modChecks()
 	{
@@ -23,7 +23,7 @@ public class Integration
         EFR = Loader.isModLoaded("etfuturum");
         natura = Loader.isModLoaded("Natura");
         gregtech = Loader.isModLoaded("gregtech");
-        IC2 = Loader.isModLoaded("IC2");
+        forestry = Loader.isModLoaded("Forestry");
 	}
 
 	public static void init()
@@ -72,16 +72,6 @@ public class Integration
                 PELogger.logWarn("Integration with gregtech failed due to gregtech version below 5.09.51.482");
             } catch (Throwable e) {
                 gregtech = false;
-                e.printStackTrace();
-            }
-        }
-
-        if (IC2) {
-            PELogger.logInfo("Try to integrate with IndustrialCraft 2");
-            try {
-                IC2Init.init();
-            } catch (Throwable e) {
-                IC2 = false;
                 e.printStackTrace();
             }
         }

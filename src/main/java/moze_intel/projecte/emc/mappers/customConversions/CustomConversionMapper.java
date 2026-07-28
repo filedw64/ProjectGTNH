@@ -169,12 +169,11 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 
-	private static NormalizedSimpleStack getNSSfromJsonString(String s, Map<String, NormalizedSimpleStack> fakes) throws Exception
-	{
+	private static NormalizedSimpleStack getNSSfromJsonString(String s, Map<String, NormalizedSimpleStack> fakes) {
 		if (s.startsWith("OD|")) {
 			return NormalizedSimpleStack.forOreDictionary(s.substring(3));
-		} else if (s.startsWith("FAKE|"))
-		{
+		}
+		else if (s.startsWith("FAKE|")) {
 			String fakeIdentifier = s.substring(5);
 			if (fakes.containsKey(fakeIdentifier))
 			{
@@ -186,12 +185,14 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 				fakes.put(fakeIdentifier, nssFake);
 				return nssFake;
 			}
-		} else if (s.startsWith("FLUID|")) {
+		}
+		else if (s.startsWith("FLUID|")) {
 			String fluidName = s.substring("FLUID|".length());
 			Fluid fluid = FluidRegistry.getFluid(fluidName);
 			if (fluid == null) return null;
 			return NormalizedSimpleStack.getFor(fluid);
-		} else {
+		}
+		else {
 			return NormalizedSimpleStack.fromSerializedItem(s);
 		}
 	}

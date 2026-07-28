@@ -48,12 +48,10 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-@Mod(modid = PECore.MODID, name = PECore.NAME, version = PECore.VERSION)
+@Mod(modid = PECore.MODID, name = "ProjectE", version = "1.11.0-GTNH")
 public class PECore
 {
 	public static final String MODID = "ProjectE";
-	public static final String NAME = "ProjectE";
-	public static final String VERSION = "1.11.0-GTNH";
 	public static final GameProfile FAKEPLAYER_GAMEPROFILE = new GameProfile(UUID.fromString("590e39c7-9fb6-471b-a4c2-c0e539b2423d"), "[ProjectE]");
 	public static File CONFIG_DIR;
 	public static File PREGENERATED_EMC_FILE;
@@ -139,14 +137,7 @@ public class PECore
 
 		EMCMapper.map();
 
-		PELogger.logInfo("Registered " + EMCMapper.emc.size() + " EMC values. (took " + (System.currentTimeMillis() - start) + " ms)");
-
-		File dir = new File(event.getServer().getEntityWorld().getSaveHandler().getWorldDirectory(), "ProjectE");
-
-		if (!dir.exists())
-		{
-			dir.mkdirs();
-		}
+        PELogger.logInfo("Registered %d EMC values. (took %dms)", EMCMapper.emc.size(), System.currentTimeMillis() - start);
 	}
 
 	@Mod.EventHandler
@@ -162,12 +153,13 @@ public class PECore
 		PELogger.logDebug("Cleared tile entity maps.");
 
 		Transmutation.clearCache();
-		PELogger.logDebug("Cleared cached tome knowledge");
+		PELogger.logDebug("Cleared cached tome knowledge.");
 
 		PlayerChecks.clearLists();
 		PELogger.logDebug("Cleared player check-lists: server stopping.");
 
 		EMCMapper.clearMaps();
+        PELogger.logDebug("Cleared emc value map.");
 		PELogger.logInfo("Completed server-stop actions.");
 	}
 

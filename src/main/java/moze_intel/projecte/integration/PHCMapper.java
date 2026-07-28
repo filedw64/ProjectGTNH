@@ -1,7 +1,5 @@
 package moze_intel.projecte.integration;
 
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -9,7 +7,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class PHCMapper extends AbstractIntegrationMapper {
     @Override
-    protected void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected void doAddMappings() {
         addMapping("harvestcraft:beeswaxItem", 256);
         addMapping("harvestcraft:honeyItem", 32);
         addMapping("harvestcraft:berrygarden", 384);

@@ -10,10 +10,10 @@ public abstract class AbstractIntegrationMapper {
     protected IMappingCollector<NormalizedSimpleStack, Double> mapper;
     public final void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
         this.mapper = mapper;
-        doAddMappings(mapper);
+        doAddMappings();
     }
 
-    protected abstract void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper);
+    protected abstract void doAddMappings();
 
     protected void addMapping(NormalizedSimpleStack nss, double value) {
         if (nss == null) return;

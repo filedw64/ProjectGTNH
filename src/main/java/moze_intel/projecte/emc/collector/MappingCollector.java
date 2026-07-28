@@ -2,8 +2,6 @@ package moze_intel.projecte.emc.collector;
 
 
 import com.google.common.collect.Maps;
-
-import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.utils.PELogger;
 
@@ -12,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IValueArithmetic<V>> extends AbstractMappingCollector<T,V,A>  {
+public abstract class MappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic<V>> extends AbstractMappingCollector<T,V,A>  {
 	protected static final boolean DEBUG_GRAPHMAPPER = false;
 
 	protected A arithmetic;
@@ -26,16 +24,11 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 			PELogger.logTrace(format, args);
 	}
 
-	protected static void debugPrintln(String s) {
-		debugFormat("%s", s);
-	}
-
 	protected Map<T, Conversion> overwriteConversion = Maps.newHashMap();
 	protected Map<T, List<Conversion>> conversionsFor = Maps.newHashMap();
 	protected Map<T, List<Conversion>> usedIn = Maps.newHashMap();
 	protected Map<T, V> fixValueBeforeInherit = Maps.newHashMap();
 	protected Map<T, V> fixValueAfterInherit = Maps.newHashMap();
-	protected Map<T, Integer> noDependencyConversionCount = Maps.newHashMap();
 
 	public static <T, V> List<V> getOrCreateList(Map<T, List<V>> map, T key) {
 		List<V> list;
@@ -57,16 +50,6 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		return getOrCreateList(usedIn, something);
 	}
 
-	protected int getNoDependencyConversionCountFor(T something) {
-		Integer count = noDependencyConversionCount.get(something);
-		if (count == null) return 0;
-		return count;
-	}
-
-	protected void increaseNoDependencyConversionCountFor(T something) {
-		noDependencyConversionCount.put(something, getNoDependencyConversionCountFor(something) + 1);
-	}
-
 	protected void addConversionToIngredientUsages(Conversion conversion) {
 		for (Map.Entry<T, Integer> ingredient : conversion.ingredientsWithAmount.entrySet()) {
             if (ingredient.getValue() == null)
@@ -75,24 +58,28 @@ public abstract class MappingCollector<T, V extends Comparable<V>,  A extends IV
 		}
 	}
 
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion) {
-        ingredientsWithAmount = Maps.newHashMap(ingredientsWithAmount);
-		if (output == null || ingredientsWithAmount.containsKey(null)) {
-			PELogger.logWarn(String.format("Ignoring Recipe because of invalid ingredient or output: %s -> %dx%s", ingredientsWithAmount, outnumber, output));
+	public void addConversion(int outnum, T output, Map<T, Integer> ingredientCounts, A arithmeticForConversion) {
+        ingredientCounts = Maps.newHashMap(ingredientCounts);
+		if (output == null) {
+			PELogger.logWarn("Ignoring Recipe because of invalid output: %s -> %dxnull", ingredientCounts, outnum);
 			return;
 		}
-		if (outnumber <= 0)
-			throw new IllegalArgumentException("outnumber has to be > 0!");
+		if (outnum <= 0) {
+            PELogger.logWarn("Ignoring Recipe because of negative output count: %s -> %dx%s", ingredientCounts, outnum, output);
+            return;
+        }
+        if (ingredientCounts.containsKey(null)) {
+            PELogger.logWarn("Ignoring null input: %s -> %dx%s", ingredientCounts, outnum, output);
+            ingredientCounts.remove(null);
+        }
 		//Add the Conversions to the conversionsFor and usedIn Maps:
-		Conversion conversion = new Conversion(output, outnumber, ingredientsWithAmount);
+		Conversion conversion = new Conversion(output, outnum, ingredientCounts);
 		conversion.value = arithmetic.getZero();
 		conversion.arithmeticForConversion = arithmeticForConversion;
         List<Conversion> conversionsForOut = getConversionsFor(output);
 		if (conversionsForOut.contains(conversion))
             return;
         conversionsForOut.add(conversion);
-		if (ingredientsWithAmount.isEmpty())
-            increaseNoDependencyConversionCountFor(output);
 		addConversionToIngredientUsages(conversion);
 	}
 

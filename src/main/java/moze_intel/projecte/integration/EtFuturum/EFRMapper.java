@@ -1,12 +1,10 @@
 package moze_intel.projecte.integration.EtFuturum;
 
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.integration.AbstractIntegrationMapper;
 
 public class EFRMapper extends AbstractIntegrationMapper {
     @Override
-    protected void doAddMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected void doAddMappings() {
         addMapping("etfuturum:honeycomb", 0, 16);
         addMapping("etfuturum:bamboo", 0, 32);
         addMapping("etfuturum:netherite_scrap", 0, 12288);

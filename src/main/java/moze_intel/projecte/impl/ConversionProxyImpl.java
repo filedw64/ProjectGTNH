@@ -62,7 +62,7 @@ public class ConversionProxyImpl implements IConversionProxy
 		} else if (object != null && object.getClass().equals(Object.class)) {
 			if (fakes.containsKey(object)) return fakes.get(object);
 
-			NormalizedSimpleStack nss = NormalizedSimpleStack.createFake("" + fakes.size() + " by " + getActiveMod());
+			NormalizedSimpleStack nss = NormalizedSimpleStack.createFake(fakes.size() + " by " + getActiveMod());
 			fakes.put(object, nss);
 			return nss;
 		} else {

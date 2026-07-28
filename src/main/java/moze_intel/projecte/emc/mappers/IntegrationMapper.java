@@ -2,6 +2,8 @@ package moze_intel.projecte.emc.mappers;
 
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
+import moze_intel.projecte.integration.EtFuturum.EFRMapper;
+import moze_intel.projecte.integration.ForestryMapper;
 import moze_intel.projecte.integration.GregTech.GTMapper;
 import moze_intel.projecte.integration.Integration;
 import moze_intel.projecte.integration.NaturaMapper;
@@ -17,8 +19,12 @@ public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Doub
             new PHCMapper().addMappings(mapper);
         if (Integration.PHN)
             new PHNMapper().addMappings(mapper);
+        if (Integration.EFR)
+            new EFRMapper().addMappings(mapper);
         if (Integration.natura)
             new NaturaMapper().addMappings(mapper);
+        if (Integration.forestry)
+            new ForestryMapper().addMappings(mapper);
         if (Integration.gregtech)
             new GTMapper().addMappings(mapper);
     }
@@ -30,7 +36,7 @@ public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Doub
 
     @Override
     public String getDescription() {
-        return "Default values for Items in other Mods";
+        return "Add default values and conversions for Items by integration classes";
     }
 
     @Override

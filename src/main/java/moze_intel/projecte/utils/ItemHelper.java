@@ -1,6 +1,7 @@
 package moze_intel.projecte.utils;
 
 import com.google.common.collect.Lists;
+import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
@@ -10,10 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -98,7 +97,7 @@ public final class ItemHelper
 			}
 		}
 
-		Collections.sort(list, Comparators.ITEMSTACK_ASCENDING);
+		list.sort(Comparators.ITEMSTACK_ASCENDING);
 		trimItemList(list);
 	}
 

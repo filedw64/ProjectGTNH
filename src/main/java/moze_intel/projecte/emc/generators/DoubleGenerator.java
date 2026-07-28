@@ -1,7 +1,6 @@
 package moze_intel.projecte.emc.generators;
 
-import com.google.common.collect.Maps;
-
+import java.util.HashMap;
 import java.util.Map;
 
 public class DoubleGenerator<T> implements IValueGenerator<T, Double>
@@ -16,15 +15,11 @@ public class DoubleGenerator<T> implements IValueGenerator<T, Double>
 	public Map<T, Double> generateValues()
 	{
 		Map<T, Double> innerResult = inner.generateValues();
-		Map<T, Double> myResult = Maps.newHashMap();
-		for (Map.Entry<T, Double> entry: innerResult.entrySet())
-		{
-            Double value = entry.getValue();
+		Map<T, Double> myResult = new HashMap<>();
+		innerResult.forEach((key, value) -> {
 			if (value > 0)
-			{
-				myResult.put(entry.getKey(), value);
-			}
-		}
+				myResult.put(key, value);
+		});
 		return myResult;
 	}
 }
