@@ -1,10 +1,5 @@
 package moze_intel.projecte.playerData;
 
-import com.google.common.collect.Lists;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.SimpleStack;
@@ -13,14 +8,19 @@ import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 public final class Transmutation
 {
-	private static final List<ItemStack> CACHED_TOME_KNOWLEDGE = Lists.newArrayList();
+	private static final List<ItemStack> CACHED_TOME_KNOWLEDGE = new ArrayList<>();
 
 	public static void clearCache() {
 		CACHED_TOME_KNOWLEDGE.clear();

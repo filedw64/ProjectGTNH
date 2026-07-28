@@ -11,6 +11,7 @@ public class GTMapper extends AbstractIntegrationMapper {
     public static void init() {
         PELogger.logTrace("RecipeMap compressorRecipes has %s recipes", RecipeMaps.compressorRecipes.getAllRecipes().size());
     }
+
     @Override
     protected void doAddMappings() {
         // 压缩机: 1+1 -> 1

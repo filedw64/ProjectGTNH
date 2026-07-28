@@ -10,7 +10,6 @@ import moze_intel.projecte.emc.generators.DoubleGenerator;
 import moze_intel.projecte.emc.generators.IValueGenerator;
 import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
 import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
-import moze_intel.projecte.emc.mappers.Chisel2Mapper;
 import moze_intel.projecte.emc.mappers.CraftingMapper;
 import moze_intel.projecte.emc.mappers.CustomEMCMapper;
 import moze_intel.projecte.emc.mappers.FluidMapper;
@@ -46,7 +45,6 @@ public final class EMCMapper
 	{
 		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
             new LazyMapper(),
-            new Chisel2Mapper(),
             APICustomEMCMapper.instance,
             new CustomConversionMapper(),
             new CustomEMCMapper(),

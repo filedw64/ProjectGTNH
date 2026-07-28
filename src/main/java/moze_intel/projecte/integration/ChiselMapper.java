@@ -1,44 +1,30 @@
-package moze_intel.projecte.emc.mappers;
+package moze_intel.projecte.integration;
 
 import com.cricketcraft.chisel.api.carving.CarvingUtils;
 import com.cricketcraft.chisel.api.carving.ICarvingGroup;
 import com.cricketcraft.chisel.api.carving.ICarvingRegistry;
 import com.cricketcraft.chisel.api.carving.ICarvingVariation;
 import cpw.mods.fml.common.Loader;
+import moze_intel.projecte.emc.NormalizedSimpleStack;
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 //Thanks to bdew for a first implementation of this: https://github.com/bdew/ProjectE/blob/f1b08624ff47c6cc716576701024cdb38ff3d297/src/main/java/moze_intel/projecte/emc/ChiselMapper.java
-public class Chisel2Mapper implements IEMCMapper<NormalizedSimpleStack, Double> {
-
+public class ChiselMapper extends AbstractIntegrationMapper {
 	public final static String[] chiselBlockNames = new String[]{"marble", "limestone", "andesite", "granite", "diorite"};
 
-	@Override
-	public String getName() {
-		return "Chisel2Mapper";
+	public static void init() {
+		PELogger.logTrace("Succeed to get Chisel Registry: %s", CarvingUtils.getChiselRegistry());
 	}
 
 	@Override
-	public String getDescription() {
-		return "Add mappings for Blocks that are created with the Chisel2-Chisel.";
-	}
-
-	@Override
-	public boolean isAvailable() {
-		return true;
-	}
-
-	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	protected void doAddMappings() {
         if(!Loader.isModLoaded("chisel")) return;
 		ICarvingRegistry carvingRegistry = CarvingUtils.getChiselRegistry();
 		if (carvingRegistry == null) return;
@@ -50,11 +36,11 @@ public class Chisel2Mapper implements IEMCMapper<NormalizedSimpleStack, Double> 
 		}
 
 		for (String name : carvingRegistry.getSortedGroupNames()) {
-			handleCarvingGroup(mapper, carvingRegistry.getGroup(name));
+			handleCarvingGroup(carvingRegistry.getGroup(name));
 		}
 	}
 
-	protected void handleCarvingGroup(IMappingCollector<NormalizedSimpleStack, Double> mapper, ICarvingGroup group) {
+	private void handleCarvingGroup(ICarvingGroup group) {
 		List<NormalizedSimpleStack> stacks = new ArrayList<>();
 		for (ICarvingVariation v : group.getVariations()) {
 			stacks.add(NormalizedSimpleStack.getFor(v.getBlock(), v.getBlockMeta()));

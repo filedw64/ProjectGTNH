@@ -151,14 +151,11 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping("appliedenergistics2:item.ItemMultiMaterial", 1, 256);
 	}
 
-	protected void addMapping(ItemStack itemStack, int value) {
-        addMapping(itemStack, (double) value);
-	}
     protected void addMapping(ItemStack itemStack, double value) {
         this.mapper.setValueBefore(NormalizedSimpleStack.getFor(itemStack), value);
     }
 
-	protected void addMapping(String unlocalName, int meta, int value) {
+	protected void addMapping(String unlocalName, int meta, double value) {
 		ItemStack stack = ItemHelper.getStackFromString(unlocalName, meta);
 		if (stack == null || stack.getItem() == null) return;
         addMapping(stack, value);

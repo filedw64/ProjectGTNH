@@ -11,7 +11,8 @@ public class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
-        natura = false, gregtech = false, forestry = false;
+        natura = false, gregtech = false, forestry = false,
+		chisel = false;
 
 	public static void modChecks()
 	{
@@ -24,6 +25,7 @@ public class Integration
         natura = Loader.isModLoaded("Natura");
         gregtech = Loader.isModLoaded("gregtech");
         forestry = Loader.isModLoaded("Forestry");
+		chisel = Loader.isModLoaded("chisel");
 	}
 
 	public static void init()
@@ -69,11 +71,24 @@ public class Integration
                 GTMapper.init();
             } catch (NoClassDefFoundError e) {
                 gregtech = false;
-                PELogger.logWarn("Integration with gregtech failed due to gregtech version below 5.09.51.482");
+                PELogger.logWarn("Integration with gregtech failed");
             } catch (Throwable e) {
                 gregtech = false;
                 e.printStackTrace();
             }
         }
+		
+		if (chisel) {
+			PELogger.logInfo("Try to integrate with Chisel");
+			try {
+				ChiselMapper.init();
+			} catch (NoClassDefFoundError e) {
+				chisel = false;
+				PELogger.logWarn("Integration with Chisel failed");
+			} catch (Throwable e) {
+				chisel = false;
+				e.printStackTrace();
+			}
+		}
 	}
 }

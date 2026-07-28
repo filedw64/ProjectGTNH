@@ -1,9 +1,10 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
+import moze_intel.projecte.emc.NormalizedSimpleStack;
+import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.integration.CCCInit;
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -14,27 +15,27 @@ import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.tuple.Pair;
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.utils.PELogger;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
-	private static List<Pair<NormalizedSimpleStack, FluidStack>> melting = Lists.newArrayList();
+	private static final List<Pair<NormalizedSimpleStack, FluidStack>> melting = new ArrayList<>();
 
 	public static void addMelting(String odName, String fluidName, int amount) {
 		addMelting(NormalizedSimpleStack.forOreDictionary(odName), fluidName, amount);
 	}
+
 	public static void addMelting(Item item, String fluidName, int amount) {
 		addMelting(NormalizedSimpleStack.getFor(item), fluidName, amount);
 	}
+
 	public static void addMelting(Block block, String fluidName, int amount) {
 		addMelting(NormalizedSimpleStack.getFor(block), fluidName, amount);
 	}
+
 	public static void addMelting(NormalizedSimpleStack stack, String fluidName, int amount) {
 		Fluid fluid = FluidRegistry.getFluid(fluidName);
 		if (fluid != null) {
@@ -43,6 +44,7 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 			PELogger.logWarn("Can not get Fluid '%s'", fluidName);
 		}
 	}
+
 	static {
 		addMelting(Blocks.obsidian, "obisidan.molten", 288);
 		addMelting(Blocks.glass, "glass.molten", 1000);
@@ -97,19 +99,14 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 			mapper.addConversion(1000, NormalizedSimpleStack.getFor(milkFluid), Arrays.asList(fakeMilkFluid));
 		}
 
-		if (!(mapper instanceof IExtendedMappingCollector)) throw new RuntimeException("Cannot add Extended Fluid Mappings to mapper!");
-        IExtendedMappingCollector<NormalizedSimpleStack, Double, DoubleArithmetic> emapper = (IExtendedMappingCollector<NormalizedSimpleStack, Double, DoubleArithmetic>) mapper;
-        DoubleArithmetic fluidArithmetic = new DoubleArithmetic();
-
 		for (Pair<NormalizedSimpleStack, FluidStack> pair: melting) {
-			emapper.addConversion(pair.getValue().amount, NormalizedSimpleStack.getFor(pair.getValue().getFluid()), Collections.singletonList(pair.getKey()), fluidArithmetic);
+			mapper.addConversion(pair.getValue().amount, NormalizedSimpleStack.getFor(pair.getValue().getFluid()), Collections.singletonList(pair.getKey()));
 		}
 
 		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
 			Fluid fluid = data.fluid.getFluid();
 			mapper.addConversion(1, NormalizedSimpleStack.getFor(data.filledContainer),
-					ImmutableMap.of(NormalizedSimpleStack.getFor(data.emptyContainer), 1, NormalizedSimpleStack.getFor(fluid), data.fluid.amount)
-			);
+				ImmutableMap.of(NormalizedSimpleStack.getFor(data.emptyContainer), 1, NormalizedSimpleStack.getFor(fluid), data.fluid.amount));
 		}
 	}
 

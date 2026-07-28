@@ -4,16 +4,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.config.Configuration;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.impl.ConversionProxyImpl;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.config.Configuration;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,9 +155,8 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 
 	protected boolean isAllowedToSet(String modId, NormalizedSimpleStack stack, Double value, Configuration config) {
 		String itemName;
-		if (stack instanceof NormalizedSimpleStack.NSSItem)
+		if (stack instanceof NormalizedSimpleStack.NSSItem item)
 		{
-			NormalizedSimpleStack.NSSItem item = (NormalizedSimpleStack.NSSItem)stack;
 			itemName = item.itemName;
 		} else {
 			itemName = "IntermediateFakeItemsUsedInRecipes:";
