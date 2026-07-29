@@ -68,7 +68,7 @@ public class SlotLock extends Slot
 	public void onPickupFromSlot(EntityPlayer par1EntityPlayer, ItemStack par2ItemStack)
 	{
 		super.onPickupFromSlot(par1EntityPlayer, par2ItemStack);
-		inv.updateOutputs();
+		inv.updateOutputs(true);
 	}
 
 	@Override
