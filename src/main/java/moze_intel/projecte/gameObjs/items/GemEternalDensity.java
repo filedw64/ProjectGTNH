@@ -172,41 +172,29 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 
 	private String getTargetName(ItemStack stack)
 	{
-		switch(stack.stackTagCompound.getByte("Target"))
-		{
-			case 0:
-				return "item.ingotIron.name";
-			case 1:
-				return "item.ingotGold.name";
-			case 2:
-				return "item.diamond.name";
-			case 3:
-				return "item.pe_matter_dark.name";
-			case 4:
-				return "item.pe_matter_red.name";
-			default:
-				return "INVALID";
-		}
+		return switch (stack.stackTagCompound.getByte("Target")) {
+			case 0 -> "item.ingotIron.name";
+			case 1 -> "item.ingotGold.name";
+			case 2 -> "item.diamond.name";
+			case 3 -> "item.pe_matter_dark.name";
+			case 4 -> "item.pe_matter_red.name";
+			default -> "INVALID";
+		};
 	}
 
 	private static ItemStack getTarget(ItemStack stack)
 	{
-		switch (stack.stackTagCompound.getByte("Target"))
-		{
-			case 0:
-				return new ItemStack(Items.iron_ingot);
-			case 1:
-				return new ItemStack(Items.gold_ingot);
-			case 2:
-				return new ItemStack(Items.diamond);
-			case 3:
-				return new ItemStack(ObjHandler.matter, 1, 0);
-			case 4:
-				return new ItemStack(ObjHandler.matter, 1, 1);
-			default:
+		return switch (stack.stackTagCompound.getByte("Target")) {
+			case 0 -> new ItemStack(Items.iron_ingot);
+			case 1 -> new ItemStack(Items.gold_ingot);
+			case 2 -> new ItemStack(Items.diamond);
+			case 3 -> new ItemStack(ObjHandler.matter, 1, 0);
+			case 4 -> new ItemStack(ObjHandler.matter, 1, 1);
+			default -> {
 				PELogger.logFatal("Invalid target for gem of eternal density: " + stack.stackTagCompound.getByte("Target"));
-				return null;
-		}
+				yield null;
+			}
+		};
 	}
 
 	private static void setItems(ItemStack stack, List<ItemStack> list)
@@ -331,12 +319,12 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			stack.stackTagCompound.setByte("Target", (byte) (oldMode + 1));
 		}
 
-		player.addChatComponentMessage(new ChatComponentTranslation("pe.gemdensity.mode_switch").appendText(" ").appendSibling(new ChatComponentTranslation(getTargetName(stack))));
+		player.addChatComponentMessage(new ChatComponentTranslation("pe.gemdensity.mode_switch", new ChatComponentTranslation(getTargetName(stack))));
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4)
 	{
 		list.add(StatCollector.translateToLocal("pe.gemdensity.tooltip1"));
 
