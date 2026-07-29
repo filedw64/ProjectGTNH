@@ -1,6 +1,8 @@
 package moze_intel.projecte.gameObjs.gui;
 
-import moze_intel.projecte.utils.PELogger;
+import moze_intel.projecte.PECore;
+import moze_intel.projecte.gameObjs.container.TransmutationContainer;
+import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -9,11 +11,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import org.lwjgl.opengl.GL11;
-import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.container.TransmutationContainer;
-import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
-
-import java.util.Locale;
 
 public class GUITransmutation extends GuiContainer
 {
@@ -97,6 +94,7 @@ public class GUITransmutation extends GuiContainer
 	public void updateScreen()
 	{
 		super.updateScreen();
+		inv.updateOutputs();
 		this.textBoxFilter.updateCursorCounter();
 	}
 
