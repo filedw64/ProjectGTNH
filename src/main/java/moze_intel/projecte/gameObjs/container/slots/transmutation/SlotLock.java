@@ -50,13 +50,13 @@ public class SlotLock extends Slot
 				itemEmc.extractEmc(stack, itemEmc.getStoredEmc(stack));
 			}
 
-			inv.handleKnowledge(stack.copy());
+			inv.handleKnowledge(stack);
 			return;
 		}
 
 		if (stack.getItem() != ObjHandler.tome)
 		{
-			inv.handleKnowledge(stack.copy());
+			inv.handleKnowledge(stack);
 		}
 		else
 		{
@@ -68,7 +68,6 @@ public class SlotLock extends Slot
 	public void onPickupFromSlot(EntityPlayer par1EntityPlayer, ItemStack par2ItemStack)
 	{
 		super.onPickupFromSlot(par1EntityPlayer, par2ItemStack);
-
 		inv.updateOutputs();
 	}
 

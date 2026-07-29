@@ -51,7 +51,7 @@ public class SlotInput extends Slot
 
 		if (stack.getItem() != ObjHandler.tome)
 		{
-			inv.handleKnowledge(stack.copy());
+			inv.handleKnowledge(stack);
 		}
 		else
 		{

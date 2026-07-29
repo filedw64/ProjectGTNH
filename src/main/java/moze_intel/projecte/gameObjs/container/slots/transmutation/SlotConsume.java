@@ -8,7 +8,7 @@ import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotConsume extends Slot
 {
-	private TransmutationInventory inv;
+	private final TransmutationInventory inv;
 
 	public SlotConsume(TransmutationInventory inv, int par2, int par3, int par4)
 	{

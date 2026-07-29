@@ -2,18 +2,19 @@ package moze_intel.projecte.gameObjs.container.inventory;
 
 import com.google.common.collect.Lists;
 import moze_intel.projecte.emc.EMCMapper;
-import moze_intel.projecte.integration.EtFuturum.EFRHelper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.integration.EtFuturum.EFRHelper;
+import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ItemSearchHelper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Arrays;
@@ -41,30 +42,27 @@ public class TransmutationInventory implements IInventory
 
 	public void handleKnowledge(ItemStack stack)
 	{
-		if (stack.stackSize > 1)
-		{
-			stack.stackSize = 1;
-		}
+		if (stack == null || stack.getItem() == null) return;
 
-		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0 && stack.getItemDamage() != 0)
-		{
-			stack.setItemDamage(0);
-		}
+		ItemStack is = stack.copy();
+		is.stackSize = 1;
 
-		if (!Transmutation.hasKnowledgeForStack(stack, player))
+		if (!is.getHasSubtypes() && is.getMaxDamage() != 0)
+			is.setItemDamage(0);
+
+		if (!Transmutation.hasKnowledgeForStack(is, player))
 		{
 			learnFlag = 300;
             unlearnFlag = 0;
 
-			if (stack.getItem() == ObjHandler.tome)
+			if (is.getItem() == ObjHandler.tome)
 			{
 				Transmutation.setFullKnowledge(player);
 			}
 			else
 			{
-                if (EFRHelper.isShulkerBox(stack))
-                    stack.stackTagCompound.removeTag("Items");
-				Transmutation.addKnowledge(stack, player);
+				processNBTTags(is);
+				Transmutation.addKnowledge(is, player);
 			}
 
 			if (!player.worldObj.isRemote)
@@ -73,7 +71,24 @@ public class TransmutationInventory implements IInventory
 			}
 		}
 
-		updateOutputs();
+		updateOutputs(true);
+	}
+
+	public static void processNBTTags(ItemStack stack) {
+		if (!EMCMapper.enableNBTprocess)
+			stack.stackTagCompound = null;
+		if (!stack.hasTagCompound()) return;
+		if (stack.getItem() == ObjHandler.voidRing)
+			stack.stackTagCompound.removeTag("teleportCooldown");
+		if (EFRHelper.isShulkerBox(stack))
+			stack.stackTagCompound.removeTag("Items");
+		if (GTToolHelper.isGTtool(stack)) {
+			NBTTagCompound nbt = stack.stackTagCompound.getCompoundTag("GT.ToolStats");
+			if (nbt.hasKey("MaxDamage"))
+				nbt.setLong("Damage", nbt.getLong("MaxDamage"));
+		}
+		if (stack.stackTagCompound.hasNoTags())
+			stack.stackTagCompound = null;
 	}
 
 	public void handleUnlearn(ItemStack stack)
@@ -93,8 +108,7 @@ public class TransmutationInventory implements IInventory
 			unlearnFlag = 300;
             learnFlag = 0;
 
-            if (!EMCMapper.enableNBTprocess)
-                stack.stackTagCompound = null;
+			processNBTTags(stack);
 
 			Transmutation.removeKnowledge(stack, player);
 
@@ -104,7 +118,7 @@ public class TransmutationInventory implements IInventory
 			}
 		}
 
-		updateOutputs();
+		updateOutputs(true);
 	}
 
 	public void checkForUpdates()
@@ -130,7 +144,8 @@ public class TransmutationInventory implements IInventory
 			return;
 		}
 
-        knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
+		if (async)
+        	knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
 
 		for (int i : MATTER_INDEXES)
 		{
@@ -320,7 +335,7 @@ public class TransmutationInventory implements IInventory
 			stack.stackSize = this.getInventoryStackLimit();
 		}
 
-		this.markDirty();
+		//this.markDirty();
 	}
 
 	@Override

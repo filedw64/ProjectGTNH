@@ -91,6 +91,7 @@ public class TransmutationContainer extends Container
                 ItemHelper.pushStackInInv(player.inventory, ItemHelper.getNormalizedStack(newStack));
                 transmutationInventory.setInventorySlotContents(slotIndex, null);
             }
+			transmutationInventory.updateOutputs(true);
 		}
 		else if (slotIndex >= 10 && slotIndex <= 25) // Output Slots
 		{
@@ -105,7 +106,6 @@ public class TransmutationContainer extends Container
 				ItemHelper.pushStackInInv(player.inventory, newStack.copy());
 				stackSize++;
 			}
-
 			transmutationInventory.updateOutputs();
 		}
 		else if (slotIndex >= 27) // Player Inventory
@@ -130,7 +130,6 @@ public class TransmutationContainer extends Container
 				slot.putStack(null);
 			}
 		}
-
 		return null;
 	}
 
