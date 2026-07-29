@@ -1,6 +1,21 @@
 ###版本 1.11.0-GTNH
 * 新功能: EMC 值改为 Double 类型了！(最高可达 1.79e308)
-* 新内容: 对很多模组进行了适配
+* 新内容: 支持处理带 NBT 的物品了！
+* 新内容: 有 CodeChickenCore 时，若水有限则 1000L 水的 EMC 设为 8
+* 新内容: 添加了对 GregTech 5 Unofficial 物品和配方的支持(未完)
+* 新内容: 添加了对 Forestry 物品和配方的支持(未完)
+* 新内容: 添加了对 Et Futurum Requiem - GTNH 物品的支持
+* 新内容: 添加了对 Pam's Harvestcraft 物品的支持
+* 新内容: 添加了对 Pam's Harvest the Nether 物品的支持
+* 新内容: 添加了对 Natura 物品的支持
 * 修复: 加载 NEI 时，转化台的搜索功能无效
 * 修复: 在转化台中 Shift + 左键 输出物品出错
+* 修复: 虚空指环的 NBT 同步问题
+* 修复: 从转化桌取出物品时转化桌的可转换物品不更新
+* 修复: 现在合成时就有附魔的物品不会计算附魔加成
 * 更改: 修改了在转化台中 Shift + 左键 部分栏位的效果
+* 更改: 现在贤者宝珠只能变形原版生物了
+* 更改: 移除了 enableDebugLog 配置
+* 更改: 移除了 dumpEverythingToFile 和 pregenerate 配置
+* 更改: 移除了 enableNBTprocess 和 NBTWhitelist 配置
+* 更改: 矿辞以 Ore 开头的物品 EMC 不在默认设为 0
