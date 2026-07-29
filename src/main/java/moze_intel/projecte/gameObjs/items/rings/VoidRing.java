@@ -2,15 +2,6 @@ package moze_intel.projecte.gameObjs.items.rings;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 import moze_intel.projecte.api.item.IAlchBagItem;
 import moze_intel.projecte.api.item.IAlchChestItem;
 import moze_intel.projecte.api.item.IExtraFunction;
@@ -18,6 +9,16 @@ import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.utils.PlayerHelper;
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.EnderTeleportEvent;
 
 import java.util.List;
 
@@ -38,13 +39,18 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 	{
 		super.onUpdate(stack, world, entity, slot, isHeld);
 		ObjHandler.blackHole.onUpdate(stack, world, entity, slot, isHeld);
-		if (!stack.getTagCompound().hasKey("teleportCooldown"))
-		{
-			stack.getTagCompound().setByte("teleportCooldown", ((byte) 10));
+		if (!world.isRemote) {
+			return;
 		}
-		stack.getTagCompound().setByte("teleportCooldown", ((byte) (stack.getTagCompound().getByte("teleportCooldown") - 1)));
+		NBTTagCompound nbt = stack.getTagCompound();
+		if (!nbt.hasKey("teleportCooldown"))
+			nbt.setByte("teleportCooldown", (byte) 10);
+		byte cd = nbt.getByte("teleportCooldown");
+		if (cd > 0) {
+			cd--;
+			nbt.setByte("teleportCooldown", cd);
+		}
 	}
-
 
 	@Override
 	public void updateInPedestal(World world, int x, int y, int z)
