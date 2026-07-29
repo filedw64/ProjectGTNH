@@ -4,13 +4,14 @@ import com.google.common.collect.Lists;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.items.GemEternalDensity;
+import moze_intel.projecte.gameObjs.items.ItemPE;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
 import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
-import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ItemSearchHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -50,6 +51,7 @@ public class TransmutationInventory implements IInventory
 		if (!is.getHasSubtypes() && is.getMaxDamage() != 0)
 			is.setItemDamage(0);
 
+		processNBTTags(is);
 		if (!Transmutation.hasKnowledgeForStack(is, player))
 		{
 			learnFlag = 300;
@@ -61,7 +63,6 @@ public class TransmutationInventory implements IInventory
 			}
 			else
 			{
-				processNBTTags(is);
 				Transmutation.addKnowledge(is, player);
 			}
 
@@ -78,8 +79,16 @@ public class TransmutationInventory implements IInventory
 		if (!EMCMapper.enableNBTprocess)
 			stack.stackTagCompound = null;
 		if (!stack.hasTagCompound()) return;
-		if (stack.getItem() == ObjHandler.voidRing)
+		if (stack.getItem() instanceof GemEternalDensity) {
+			stack.stackTagCompound.removeTag("Target");
 			stack.stackTagCompound.removeTag("teleportCooldown");
+			stack.stackTagCompound.removeTag("Whitelist");
+			stack.stackTagCompound.removeTag("Items");
+			stack.stackTagCompound.removeTag("Consumed");
+			stack.stackTagCompound.removeTag("StoredEMC");
+		}
+		if (stack.getItem() instanceof ItemPE)
+			stack.stackTagCompound.removeTag("StoredEMC");
 		if (EFRHelper.isShulkerBox(stack))
 			stack.stackTagCompound.removeTag("Items");
 		if (GTToolHelper.isGTtool(stack)) {
@@ -93,24 +102,22 @@ public class TransmutationInventory implements IInventory
 
 	public void handleUnlearn(ItemStack stack)
 	{
-		if (stack.stackSize > 1)
-		{
-			stack.stackSize = 1;
-		}
+		if (stack == null || stack.getItem() == null) return;
 
-		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0 && stack.getItemDamage() != 0)
-		{
-			stack.setItemDamage(0);
-		}
+		ItemStack is = stack.copy();
+		is.stackSize = 1;
 
-		if (Transmutation.hasKnowledgeForStack(stack, player))
+		if (!is.getHasSubtypes() && is.getMaxDamage() != 0)
+			is.setItemDamage(0);
+
+		processNBTTags(is);
+
+		if (Transmutation.hasKnowledgeForStack(is, player))
 		{
 			unlearnFlag = 300;
             learnFlag = 0;
 
-			processNBTTags(stack);
-
-			Transmutation.removeKnowledge(stack, player);
+			Transmutation.removeKnowledge(is, player);
 
 			if (!player.worldObj.isRemote)
 			{
@@ -146,6 +153,7 @@ public class TransmutationInventory implements IInventory
 
 		if (async)
         	knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
+		knowledge.sort(Comparators.ITEMSTACK_EMC_DESCENDING);
 
 		for (int i : MATTER_INDEXES)
 		{
@@ -157,89 +165,38 @@ public class TransmutationInventory implements IInventory
 			inventory[i] = null;
 		}
 
-		ItemStack lockCopy = null;
-
-		knowledge.sort(Comparators.ITEMSTACK_EMC_DESCENDING);
 		ItemSearchHelper searchHelper = ItemSearchHelper.create(filter);
+
+		double reqEmc = 0;
 		if (inventory[LOCK_INDEX] != null)
+			reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
+		if (reqEmc > emc || reqEmc == 0)
+			reqEmc = emc;
+
+		Iterator<ItemStack> iter = knowledge.iterator();
+		int pagecounter = 0;
+
+		while (iter.hasNext())
 		{
-            double reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
+			ItemStack stack = iter.next();
 
-			lockCopy = ItemHelper.getNormalizedStack(inventory[LOCK_INDEX]);
-
-            if (!EMCMapper.enableNBTprocess)
-                lockCopy.setTagCompound(new NBTTagCompound());
-
-			Iterator<ItemStack> iter = knowledge.iterator();
-			int pagecounter = 0;
-
-			while (iter.hasNext())
-			{
-				ItemStack stack = iter.next();
-
-				if (EMCHelper.getEmcValue(stack) > reqEmc) {
-					iter.remove();
-					continue;
-				}
-
-                if (ItemHelper.areItemStacksEqual(lockCopy, stack)) {
-                    iter.remove();
-                    continue;
-                }
-
-				if (!searchHelper.doesItemMatchFilter(stack)) {
-					iter.remove();
-					continue;
-				}
-
-				if (pagecounter < (searchpage * 12)) {
-					pagecounter++;
-					iter.remove();
-                }
+			if (EMCHelper.getEmcValue(stack) > reqEmc) {
+				iter.remove();
+				continue;
 			}
-		}
-		else
-		{
-			Iterator<ItemStack> iter = knowledge.iterator();
-			int pagecounter = 0;
 
-			while (iter.hasNext())
-			{
-				ItemStack stack = iter.next();
+			if (!searchHelper.doesItemMatchFilter(stack)) {
+				iter.remove();
+				continue;
+			}
 
-				if (emc < EMCHelper.getEmcValue(stack)) {
-					iter.remove();
-					continue;
-				}
-
-				if (!searchHelper.doesItemMatchFilter(stack)) {
-					iter.remove();
-					continue;
-				}
-
-				if (pagecounter < (searchpage * 12)) {
-					pagecounter++;
-					iter.remove();
-                }
+			if (pagecounter < (searchpage * 12)) {
+				pagecounter++;
+				iter.remove();
 			}
 		}
 
-		int matterCounter = 0;
-		int fuelCounter = 0;
-
-		if (lockCopy != null)
-		{
-			if (FuelMapper.isStackFuel(lockCopy))
-			{
-				inventory[FUEL_INDEXES[0]] = lockCopy;
-				fuelCounter++;
-			}
-			else
-			{
-				inventory[MATTER_INDEXES[0]] = lockCopy;
-				matterCounter++;
-			}
-		}
+		int matterCounter = 0, fuelCounter = 0;
 
 		for (ItemStack stack : knowledge)
 		{
