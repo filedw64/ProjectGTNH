@@ -93,6 +93,7 @@ public class TransmutationProxyImpl implements ITransmutationProxy
 	}
 
     @Override
+	@Deprecated
     public boolean hasFullKnowledge(UUID playerUUID)
     {
         return false;
