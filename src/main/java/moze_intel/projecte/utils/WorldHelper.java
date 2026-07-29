@@ -343,14 +343,15 @@ public final class WorldHelper
 		{
 			return getNewEntityInstance(CollectionHelper.getRandomListEntry(mobs, entClass), world);
 		}
-		else if (world.rand.nextInt(2) == 0)
+		/*else if (world.rand.nextInt(2) == 0)
 		{
 			return new EntitySlime(world);
 		}
 		else
 		{
 			return new EntitySheep(world);
-		}
+		}*/
+		return null;
 	}
 
 	public static List<TileEntity> getTileEntitiesWithinAABB(World world, AxisAlignedBB bBox)
