@@ -7,7 +7,7 @@ import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.utils.PELogger;
 
 // Single class to initiate different mod compatibilities. Idea came from Avaritia by SpitefulFox
-public class Integration
+public final class Integration
 {
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
