@@ -505,18 +505,17 @@ public abstract class PEToolBase extends ItemMode
 
 			int offset = ((int) Math.pow(2, 2 + charge));
 
-			AxisAlignedBB bBox = player.boundingBox.expand(offset, offset / 2, offset);
+			AxisAlignedBB bBox = player.boundingBox.expand(offset, offset / 2.0, offset);
 			List<Entity> list = world.getEntitiesWithinAABB(Entity.class, bBox);
 
 			List<ItemStack> drops = Lists.newArrayList();
 
 			for (Entity ent : list)
 			{
-				IShearable target = (IShearable) ent;
+				if (!(ent instanceof IShearable target)) continue;
 
 				if (target.isShearable(stack, ent.worldObj, (int) ent.posX, (int) ent.posY, (int) ent.posZ)
-						&& consumeFuel(player, stack, emcCost, true)
-						)
+						&& consumeFuel(player, stack, emcCost, true))
 				{
 					ArrayList<ItemStack> entDrops = target.onSheared(stack, ent.worldObj, (int) ent.posX, (int) ent.posY, (int) ent.posZ, EnchantmentHelper.getEnchantmentLevel(Enchantment.fortune.effectId, stack));
 
