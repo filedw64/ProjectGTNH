@@ -40,7 +40,7 @@ import java.util.Set;
 public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPedestalItem
 {
 	private static Set<String> internalBlacklist = Sets.newHashSet(
-			"projecte.gameObjs.tiles.DMPedestalTile",
+			"moze_intel.projecte.gameObjs.tiles.DMPedestalTile",
 			"Reika.ChromatiCraft.TileEntity.AOE.TileEntityAccelerator",
 			"com.sci.torcherino.tile.TileTorcherino",
 			"com.sci.torcherino.tile.TileCompressedTorcherino"
@@ -244,17 +244,12 @@ public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPed
 	private String getTimeName(ItemStack stack)
 	{
 		byte mode = getTimeBoost(stack);
-		switch (mode)
-		{
-			case 0:
-				return "pe.timewatch.off";
-			case 1:
-				return "pe.timewatch.ff";
-			case 2:
-				return "pe.timewatch.rw";
-			default:
-				return "ERROR_INVALID_MODE";
-		}
+		return switch (mode) {
+			case 0 -> "pe.timewatch.off";
+			case 1 -> "pe.timewatch.ff";
+			case 2 -> "pe.timewatch.rw";
+			default -> "ERROR_INVALID_MODE";
+		};
 	}
 
 	private byte getTimeBoost(ItemStack stack)
@@ -325,7 +320,7 @@ public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPed
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean bool)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean bool)
 	{
 		list.add(StatCollector.translateToLocal("pe.timewatch.tooltip1"));
 		list.add(StatCollector.translateToLocal("pe.timewatch.tooltip2"));
