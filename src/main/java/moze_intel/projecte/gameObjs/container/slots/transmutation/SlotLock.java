@@ -28,34 +28,21 @@ public class SlotLock extends Slot
 	@Override
 	public void putStack(ItemStack stack)
 	{
-		if (stack == null)
-		{
+		if (stack == null || stack.getItem() == null)
 			return;
-		}
 
 		super.putStack(stack);
 
 		if (stack.getItem() instanceof IItemEmc itemEmc)
 		{
-            double remainEmc = Constants.TILE_MAX_EMC - Math.ceil(inv.emc);
-
-			if (itemEmc.getStoredEmc(stack) >= remainEmc)
-			{
-				inv.addEmc(remainEmc);
-				itemEmc.extractEmc(stack, remainEmc);
-			}
-			else
-			{
-				inv.addEmc(itemEmc.getStoredEmc(stack));
-				itemEmc.extractEmc(stack, itemEmc.getStoredEmc(stack));
-			}
-
-			inv.handleKnowledge(stack);
-			return;
+			double toRemove = Math.min(Constants.TILE_MAX_EMC - inv.emc, itemEmc.getStoredEmc(stack));
+			itemEmc.extractEmc(stack, toRemove);
+			inv.addEmc(toRemove);
 		}
 
 		if (stack.getItem() != ObjHandler.tome)
 		{
+			inv.searchpage = 0;
 			inv.handleKnowledge(stack);
 		}
 		else
@@ -68,7 +55,8 @@ public class SlotLock extends Slot
 	public void onPickupFromSlot(EntityPlayer par1EntityPlayer, ItemStack par2ItemStack)
 	{
 		super.onPickupFromSlot(par1EntityPlayer, par2ItemStack);
-		inv.updateOutputs(true);
+		inv.searchpage = 0;
+		inv.updateOutputs();
 	}
 
 	@Override

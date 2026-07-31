@@ -8,7 +8,7 @@ import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotOutput extends Slot
 {
-	private TransmutationInventory inv;
+	private final TransmutationInventory inv;
 
 	public SlotOutput(TransmutationInventory inv, int par2, int par3, int par4)
 	{
@@ -30,7 +30,6 @@ public class SlotOutput extends Slot
 		}
 		inv.removeEmc(emcValue);
 		inv.checkForUpdates();
-
 		return stack;
 	}
 
