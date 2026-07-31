@@ -24,8 +24,8 @@ public class EFRHelper {
         if (!EMCMapper.mapContains(ss))
             return 0.0;
         double res = EMCMapper.getEmcValue(ss);
-        if (!is.hasTagCompound() || is.getTagCompound().hasNoTags()) return res;
-        NBTTagList nbtlist = is.getTagCompound().getTagList("Items", 10);
+        if (!is.hasTagCompound() || is.stackTagCompound.hasNoTags()) return res;
+        NBTTagList nbtlist = is.stackTagCompound.getTagList("Items", 10);
         for (int i = 0; i < nbtlist.tagCount(); i++) {
             NBTTagCompound tag = nbtlist.getCompoundTagAt(i);
             if (tag.hasNoTags())

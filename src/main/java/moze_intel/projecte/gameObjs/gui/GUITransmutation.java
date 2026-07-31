@@ -94,7 +94,7 @@ public class GUITransmutation extends GuiContainer
 	public void updateScreen()
 	{
 		super.updateScreen();
-		inv.updateOutputs();
+		//inv.updateOutputs();
 		this.textBoxFilter.updateCursorCounter();
 	}
 
@@ -111,7 +111,7 @@ public class GUITransmutation extends GuiContainer
 			{
 				inv.filter = srch;
 				inv.searchpage = 0;
-				inv.updateOutputs(true);
+				inv.updateOutputs();
 			}
 		}
 
@@ -135,7 +135,7 @@ public class GUITransmutation extends GuiContainer
 		{
 			inv.filter = "";
 			inv.searchpage = 0;
-			inv.updateOutputs(true);
+			inv.updateOutputs();
 			this.textBoxFilter.setText("");
 		}
 
@@ -170,6 +170,6 @@ public class GUITransmutation extends GuiContainer
 			}
 		}
 		inv.filter = srch;
-		inv.updateOutputs(true);
+		inv.updateOutputs();
 	}
 }

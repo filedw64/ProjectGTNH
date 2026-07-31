@@ -22,7 +22,7 @@ public class GTToolHelper {
     }
 
     public static boolean isNullGTtool(ItemStack is) {
-        return isGTtool(is) && (!is.hasTagCompound() || is.getTagCompound().hasNoTags());
+        return isGTtool(is) && (!is.hasTagCompound() || is.stackTagCompound.hasNoTags());
     }
 
     public static double GTtoolEMC(ItemStack is) {
@@ -30,8 +30,8 @@ public class GTToolHelper {
         if (!EMCMapper.mapContains(ss))
             return 0.0;
         double res = EMCMapper.getEmcValue(ss);
-        if (!is.hasTagCompound() || is.getTagCompound().hasNoTags()) return res;
-        NBTTagCompound nbt = is.getTagCompound().getCompoundTag("GT.ToolStats");
+        if (!is.hasTagCompound() || is.stackTagCompound.hasNoTags()) return res;
+        NBTTagCompound nbt = is.stackTagCompound.getCompoundTag("GT.ToolStats");
         long damage = nbt.getLong("Damage"), maxdamage = nbt.getLong("MaxDamage");
         if (damage == maxdamage || maxdamage == 0) return 0.0;
         return res * (maxdamage - damage) / maxdamage;
