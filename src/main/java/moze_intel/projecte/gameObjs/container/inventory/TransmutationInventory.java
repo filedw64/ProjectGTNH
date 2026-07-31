@@ -1,12 +1,18 @@
 package moze_intel.projecte.gameObjs.container.inventory;
 
 import com.google.common.collect.Lists;
+import moze_intel.projecte.api.item.IItemCharge;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.api.item.IModeChanger;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.ItemPE;
+import moze_intel.projecte.gameObjs.items.TimeWatch;
+import moze_intel.projecte.gameObjs.items.rings.Arcana;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
+import moze_intel.projecte.integration.Forestry.ForestryHelper;
 import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.Comparators;
@@ -16,7 +22,6 @@ import moze_intel.projecte.utils.ItemSearchHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -72,7 +77,7 @@ public class TransmutationInventory implements IInventory
 			}
 		}
 
-		updateOutputs(true);
+		updateOutputs();
 	}
 
 	public static void processNBTTags(ItemStack stack) {
@@ -85,16 +90,25 @@ public class TransmutationInventory implements IInventory
 			stack.stackTagCompound.removeTag("Whitelist");
 			stack.stackTagCompound.removeTag("Items");
 			stack.stackTagCompound.removeTag("Consumed");
-			stack.stackTagCompound.removeTag("StoredEMC");
 		}
-		if (stack.getItem() instanceof ItemPE)
+		if (stack.getItem() instanceof ItemPE || stack.getItem() instanceof IItemEmc)
 			stack.stackTagCompound.removeTag("StoredEMC");
+		if (stack.getItem() instanceof IItemCharge)
+			stack.stackTagCompound.removeTag("Charge");
+		if (stack.getItem() instanceof IModeChanger)
+			stack.stackTagCompound.removeTag("Mode");
+		if (stack.getItem() instanceof TimeWatch)
+			stack.stackTagCompound.removeTag("TimeMode");
+		if (stack.getItem() instanceof Arcana)
+			stack.stackTagCompound.removeTag("Active");
 		if (EFRHelper.isShulkerBox(stack))
 			stack.stackTagCompound.removeTag("Items");
+		if (ForestryHelper.isForestryBag(stack)) {
+			stack.stackTagCompound.removeTag("UID");
+			stack.stackTagCompound.removeTag("Slots");
+		}
 		if (GTToolHelper.isGTtool(stack)) {
-			NBTTagCompound nbt = stack.stackTagCompound.getCompoundTag("GT.ToolStats");
-			if (nbt.hasKey("MaxDamage"))
-				nbt.setLong("Damage", nbt.getLong("MaxDamage"));
+			stack.stackTagCompound.getCompoundTag("GT.ToolStats").setLong("Damage", 0L);
 		}
 		if (stack.stackTagCompound.hasNoTags())
 			stack.stackTagCompound = null;
@@ -125,7 +139,7 @@ public class TransmutationInventory implements IInventory
 			}
 		}
 
-		updateOutputs(true);
+		updateOutputs();
 	}
 
 	public void checkForUpdates()
@@ -133,26 +147,19 @@ public class TransmutationInventory implements IInventory
         double matterEmc = EMCHelper.getEmcValue(inventory[MATTER_INDEXES[0]]);
         double fuelEmc = EMCHelper.getEmcValue(inventory[FUEL_INDEXES[0]]);
 
-        double maxEmc = Math.max(matterEmc, fuelEmc);
-
-		if (maxEmc > emc)
+		if (matterEmc > emc || fuelEmc > emc)
 		{
 			updateOutputs();
 		}
 	}
 
-	public void updateOutputs() {
-		updateOutputs(false);
-	}
-
-	public void updateOutputs(boolean async)
+	public void updateOutputs()
 	{
 		if (!player.worldObj.isRemote) {
 			return;
 		}
 
-		if (async)
-        	knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
+		knowledge = Lists.newArrayList(Transmutation.getKnowledge(player));
 		knowledge.sort(Comparators.ITEMSTACK_EMC_DESCENDING);
 
 		for (int i : MATTER_INDEXES)
@@ -291,8 +298,6 @@ public class TransmutationInventory implements IInventory
 		{
 			stack.stackSize = this.getInventoryStackLimit();
 		}
-
-		//this.markDirty();
 	}
 
 	@Override
@@ -327,7 +332,7 @@ public class TransmutationInventory implements IInventory
 		System.arraycopy(inputLocks, 0, inventory, 0, 9);
 		if (player.worldObj.isRemote)
 		{
-			updateOutputs(true);
+			updateOutputs();
 		}
 	}
 
