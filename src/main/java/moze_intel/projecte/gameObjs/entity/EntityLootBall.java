@@ -46,9 +46,9 @@ public class EntityLootBall extends Entity
 		this.setSize(0.25F, 0.25F);
 		this.yOffset = this.height / 2.0F;
 		this.setPosition(x, y, z);
-		this.motionX = (double)((float)(Math.random() * 0.20000000298023224D - 0.10000000149011612D));
+		this.motionX = (float)(Math.random() * 0.20000000298023224D - 0.10000000149011612D);
 		this.motionY = 0.20000000298023224D;
-		this.motionZ = (double)((float)(Math.random() * 0.20000000298023224D - 0.10000000149011612D));
+		this.motionZ = (float)(Math.random() * 0.20000000298023224D - 0.10000000149011612D);
 		ItemHelper.compactItemList(items);
 	}
 
@@ -76,8 +76,8 @@ public class EntityLootBall extends Entity
 			if (this.worldObj.getBlock(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)).getMaterial() == Material.lava)
 			{
 				this.motionY = 0.20000000298023224D;
-				this.motionX = (double)((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F);
-				this.motionZ = (double)((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F);
+				this.motionX = (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F;
+				this.motionZ = (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F;
 				this.playSound("random.fizz", 0.4F, 2.0F + this.rand.nextFloat() * 0.4F);
 			}
 		}
@@ -87,9 +87,9 @@ public class EntityLootBall extends Entity
 		if (this.onGround)
 			f = this.worldObj.getBlock(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.boundingBox.minY) - 1, MathHelper.floor_double(this.posZ)).slipperiness * 0.98F;
 
-		this.motionX *= (double)f;
+		this.motionX *= f;
 		this.motionY *= 0.9800000190734863D;
-		this.motionZ *= (double)f;
+		this.motionZ *= f;
 
 		if (this.onGround)
 			this.motionY *= -0.5D;
@@ -154,8 +154,6 @@ public class EntityLootBall extends Entity
 						{
 							playSound = true;
 						}
-
-						continue;
 					}
 					else
 					{
@@ -195,8 +193,6 @@ public class EntityLootBall extends Entity
 				{
 					this.setDead();
 				}
-
-				return;
 			}
 		}
 		else
@@ -217,8 +213,6 @@ public class EntityLootBall extends Entity
 						{
 							playSound = true;
 						}
-
-						continue;
 					}
 					else
 					{

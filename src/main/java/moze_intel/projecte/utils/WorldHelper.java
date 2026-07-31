@@ -577,7 +577,7 @@ public final class WorldHelper
 					}
 					else
 					{
-						if (ent instanceof EntityArrow && ((EntityArrow) ent).onGround)
+						if (ent instanceof EntityArrow && ent.onGround)
 						{
 							continue;
 						}
@@ -610,11 +610,11 @@ public final class WorldHelper
 				j1 = stack.stackSize;
 
 			stack.stackSize -= j1;
-			entityitem = new EntityItem(world, (double)((float) x + f), (double)((float) y + f1), (double)((float) z + f2), new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
+			entityitem = new EntityItem(world, x + f, y + f1, z + f2, new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
 			float f3 = 0.05F;
-			entityitem.motionX = (double)((float) world.rand.nextGaussian() * f3);
-			entityitem.motionY = (double)((float) world.rand.nextGaussian() * f3 + 0.2F);
-			entityitem.motionZ = (double)((float) world.rand.nextGaussian() * f3);
+			entityitem.motionX = world.rand.nextGaussian() * f3;
+			entityitem.motionY = world.rand.nextGaussian() * f3 + 0.2F;
+			entityitem.motionZ = world.rand.nextGaussian() * f3;
 
 			if (stack.hasTagCompound())
 			{

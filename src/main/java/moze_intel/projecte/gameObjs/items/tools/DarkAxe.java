@@ -36,9 +36,9 @@ public class DarkAxe extends PEToolBase
 	}
 
 	@Override
-	public Multimap getAttributeModifiers(ItemStack stack)
+	public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
 	{
-		Multimap multimap = super.getAttributeModifiers(stack);
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Tool modifier", this instanceof RedAxe ? 9 : 8, 0));
 		return multimap;
 	}
