@@ -2,6 +2,7 @@ package moze_intel.projecte.utils;
 
 import com.google.common.collect.Maps;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
+import moze_intel.projecte.integration.Forestry.ForestryHelper;
 import moze_intel.projecte.integration.GregTech.GTToolHelper;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.block.Block;
@@ -175,20 +176,28 @@ public final class EMCHelper
 
         if (EFRHelper.isShulkerBox(stack))
             return EFRHelper.ShulkerBoxEMC(stack);
+		
+		if (ForestryHelper.isForestryBag(stack))
+			return ForestryHelper.ForestryBagEMC(stack);
 
         if (GTToolHelper.isGTtool(stack))
             return GTToolHelper.GTtoolEMC(stack);
 
-		SimpleStack iStack = new SimpleStack(stack);
+		SimpleStack sstack = new SimpleStack(stack);
 
-		if (!iStack.isValid()) return 0.0;
+		if (!sstack.isValid()) return 0.0;
 
-		if (!EMCMapper.mapContains(iStack) && !stack.getHasSubtypes() && stack.getMaxDamage() != 0)
+		if (EMCMapper.mapContains(sstack))
+		{
+			return EMCMapper.getEmcValue(sstack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
+		}
+
+		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0)
 		{
 			//We don't have an emc value for id:metadata, so lets check if we have a value for id:0 and apply a damage multiplier based on that emc value.
-            iStack.damage = 0;
-            if (EMCMapper.mapContains(iStack)) {
-                Double emc = EMCMapper.getEmcValue(iStack);
+            sstack.damage = 0;
+            if (EMCMapper.mapContains(sstack)) {
+                Double emc = EMCMapper.getEmcValue(sstack);
 
                 int rest = (stack.getMaxDamage() - stack.getItemDamage());
 
@@ -204,10 +213,6 @@ public final class EMCHelper
 
                 return result;
             }
-		}
-		else if (EMCMapper.mapContains(iStack))
-		{
-            return EMCMapper.getEmcValue(iStack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 		}
 		return 0.0;
 	}

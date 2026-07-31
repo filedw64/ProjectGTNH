@@ -1,4 +1,6 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.Forestry;
+
+import moze_intel.projecte.integration.AbstractIntegrationMapper;
 
 public class ForestryMapper extends AbstractIntegrationMapper {
     @Override
