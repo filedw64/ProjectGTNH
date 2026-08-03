@@ -72,7 +72,7 @@ public class GemHelmet extends GemArmorBase implements IGoggles, IRevealer
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List tooltips, boolean unused)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
     {
         tooltips.add(StatCollector.translateToLocal("pe.gem.helm.lorename"));
 

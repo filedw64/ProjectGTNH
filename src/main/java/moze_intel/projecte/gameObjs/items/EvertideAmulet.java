@@ -227,7 +227,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4)
 	{
 		list.add(String.format(StatCollector.translateToLocal("pe.evertide.tooltip1"), ClientKeyHelper.getKeyName(PEKeybind.FIRE_PROJECTILE)));
 

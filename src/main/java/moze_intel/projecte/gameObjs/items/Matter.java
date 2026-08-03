@@ -52,7 +52,7 @@ public class Matter extends ItemPE
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs cTab, List list)
+	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list)
 	{
 		for (int i = 0; i < 2; i++)
 		{

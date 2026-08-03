@@ -21,7 +21,7 @@ public class ManualFontRenderer extends FontRenderer
     }
 
     @Override
-    public List listFormattedStringToWidth(String string, int width)
+    public List<String> listFormattedStringToWidth(String string, int width)
     {
         return Arrays.asList(this.wrapFormStringToWidth(string, width).split("\n"));
     }

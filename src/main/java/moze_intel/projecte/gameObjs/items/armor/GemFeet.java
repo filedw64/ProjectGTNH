@@ -95,7 +95,7 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List tooltips, boolean unused)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
     {
         tooltips.add(StatCollector.translateToLocal("pe.gem.feet.lorename"));
         tooltips.add(String.format(
@@ -113,9 +113,9 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
     }
 
     @Override
-    public Multimap getAttributeModifiers(ItemStack stack)
+    public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
     {
-        Multimap multimap = super.getAttributeModifiers(stack);
+        Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
         multimap.put(SharedMonsterAttributes.movementSpeed.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Armor modifier", 1.0, 2));
         return multimap;
     }

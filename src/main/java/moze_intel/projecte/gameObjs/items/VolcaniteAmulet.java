@@ -169,7 +169,7 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean par4)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean par4)
 	{
 		list.add(String.format(StatCollector.translateToLocal("pe.volcanite.tooltip1"), ClientKeyHelper.getKeyName(PEKeybind.FIRE_PROJECTILE)));
 		list.add(StatCollector.translateToLocal("pe.volcanite.tooltip2"));

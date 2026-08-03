@@ -61,7 +61,7 @@ public class DarkHammer extends PEToolBase
 	}
 
 	@Override
-	public Multimap getAttributeModifiers(ItemStack stack)
+	public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
 	{
 		if (ProjectEConfig.useOldDamage)
 		{
@@ -71,7 +71,7 @@ public class DarkHammer extends PEToolBase
 		byte charge = stack.stackTagCompound == null ? 0 : getCharge(stack);
 		float damage = HAMMER_BASE_ATTACK + charge;
 
-		Multimap multimap = super.getAttributeModifiers(stack);
+		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Weapon modifier", damage, 0));
 		return multimap;
 	}
