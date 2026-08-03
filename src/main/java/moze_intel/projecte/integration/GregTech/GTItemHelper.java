@@ -4,11 +4,14 @@ import moze_intel.projecte.emc.EMCMapper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.oredict.OreDictionary;
 
-public class GTToolHelper {
+public class GTItemHelper {
     public static boolean isGTtool(Item item) {
         if (item == null) return false;
-        return Item.itemRegistry.getNameForObject(item).startsWith("gregtech:gt.metatool");
+		String id = Item.itemRegistry.getNameForObject(item);
+		if (id == null) return false;
+        return id.startsWith("gregtech:gt.metatool");
     }
 
     public static boolean isGTtool(ItemStack is) {
@@ -36,4 +39,16 @@ public class GTToolHelper {
         if (damage == maxdamage || maxdamage == 0) return 0.0;
         return res * (maxdamage - damage) / maxdamage;
     }
+	
+	public static boolean isAsh(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) return false;
+		int[] oreIDs = OreDictionary.getOreIDs(stack);
+		for (int id : oreIDs) {
+			String oreName = OreDictionary.getOreName(id);
+			if ("dustTinyAsh".equals(oreName) || "dustTinyDarkAsh".equals(oreName) ||
+				"dustAsh".equals(oreName) || "dustDarkAsh".equals(oreName))
+				return true;
+		}
+		return false;
+	}
 }

@@ -1,6 +1,6 @@
 package moze_intel.projecte.emc;
 
-import moze_intel.projecte.integration.GregTech.GTToolHelper;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -94,7 +94,7 @@ public class SimpleStack
 	}
 
     public static SimpleStack getFor(ItemStack is) {
-        if (GTToolHelper.isGTtool(is))
+        if (GTItemHelper.isGTtool(is))
             return new GTSimpleStack(is);
         return new SimpleStack(is);
     }

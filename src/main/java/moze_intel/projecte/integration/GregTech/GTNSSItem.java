@@ -9,9 +9,10 @@ import net.minecraftforge.oredict.OreDictionary;
 public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
     public String primary = "";
     public String secondary = "";
+
     public GTNSSItem(ItemStack stack) {
         super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage());
-        if (!GTToolHelper.isGTtool(stack) || !stack.hasTagCompound()) return;
+        if (!GTItemHelper.isGTtool(stack) || !stack.hasTagCompound()) return;
         NBTTagCompound nbt = stack.getTagCompound().getCompoundTag("GT.ToolStats");
         primary = nbt.getString("PrimaryMaterial");
         secondary = nbt.getString("SecondaryMaterial");
@@ -32,13 +33,17 @@ public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
 
     @Override
     public String json() {
+		if ("".equals(primary) && "".equals(secondary))
+			return String.format("%s|%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
         return String.format("%s|%s{GT.ToolStats:{PrimaryMaterial:%s,SecondaryMaterial:%s}}", itemName,
             damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, primary, secondary);
     }
 
     @Override
     public String toString() {
-        return String.format("%s:%s{GT.ToolStats:{PrimaryMaterial:%s,SecondaryMaterial:%s}}", itemName,
-            damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, primary, secondary);
+		if ("".equals(primary) && "".equals(secondary))
+			return String.format("%s:%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
+		return String.format("%s:%s{GT.ToolStats:{PrimaryMaterial:%s,SecondaryMaterial:%s}}", itemName,
+			damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, primary, secondary);
     }
 }

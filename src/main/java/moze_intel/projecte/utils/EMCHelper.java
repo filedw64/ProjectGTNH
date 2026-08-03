@@ -3,7 +3,7 @@ package moze_intel.projecte.utils;
 import com.google.common.collect.Maps;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
 import moze_intel.projecte.integration.Forestry.ForestryHelper;
-import moze_intel.projecte.integration.GregTech.GTToolHelper;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
@@ -155,7 +155,7 @@ public final class EMCHelper
 	{
 		SimpleStack stack;
 
-        if (GTToolHelper.isGTtool(item))
+        if (GTItemHelper.isGTtool(item))
             stack = new GTSimpleStack(new ItemStack(item));
         else stack = new SimpleStack(new ItemStack(item));
 
@@ -180,8 +180,8 @@ public final class EMCHelper
 		if (ForestryHelper.isForestryBag(stack))
 			return ForestryHelper.ForestryBagEMC(stack);
 
-        if (GTToolHelper.isGTtool(stack))
-            return GTToolHelper.GTtoolEMC(stack);
+        if (GTItemHelper.isGTtool(stack))
+            return GTItemHelper.GTtoolEMC(stack);
 
 		SimpleStack sstack = new SimpleStack(stack);
 

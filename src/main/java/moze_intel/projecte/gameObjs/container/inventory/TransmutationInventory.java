@@ -13,7 +13,7 @@ import moze_intel.projecte.gameObjs.items.TimeWatch;
 import moze_intel.projecte.gameObjs.items.rings.Arcana;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
 import moze_intel.projecte.integration.Forestry.ForestryHelper;
-import moze_intel.projecte.integration.GregTech.GTToolHelper;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.Constants;
@@ -107,7 +107,7 @@ public class TransmutationInventory implements IInventory
 			stack.stackTagCompound.removeTag("UID");
 			stack.stackTagCompound.removeTag("Slots");
 		}
-		if (GTToolHelper.isGTtool(stack)) {
+		if (GTItemHelper.isGTtool(stack)) {
 			stack.stackTagCompound.getCompoundTag("GT.ToolStats").setLong("Damage", 0L);
 		}
 		if (stack.stackTagCompound.hasNoTags())
