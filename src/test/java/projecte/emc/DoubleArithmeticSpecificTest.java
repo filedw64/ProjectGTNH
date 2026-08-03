@@ -1,32 +1,29 @@
 package projecte.emc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
+import com.google.common.collect.ImmutableMap;
 import moze_intel.projecte.emc.SimpleGraphMapper;
 import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
-import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.emc.collector.DoubleCollector;
-import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
+import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.emc.generators.DoubleGenerator;
 import moze_intel.projecte.emc.generators.IValueGenerator;
-
-import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 public class DoubleArithmeticSpecificTest
 {
 	public IValueGenerator<String, Double> valueGenerator;
-	public IExtendedMappingCollector<String, Double, IValueArithmetic<Double>> mappingCollector;
+	public IMappingCollector<String, Double> mappingCollector;
 
 	@Before
 	public void setup()
 	{
-		SimpleGraphMapper<String, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
+		SimpleGraphMapper<String, Double> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
 		valueGenerator = new DoubleGenerator<>(mapper);
 		mappingCollector = new DoubleCollector<>(mapper);
 	}
@@ -84,31 +81,6 @@ public class DoubleArithmeticSpecificTest
 		assertEquals(4.096, getValue(values, "moltenEnder"), 1e-7);
 		assertEquals(768, getValue(values, "bucket"), 1e-7);
 		assertEquals(4*1024+768, getValue(values, "moltenEnderBucket"), 1e-7);
-
-	}
-
-	@Test
-	public void moltenEnderpearlWithConversionArithmetic()
-	{
-        DoubleArithmetic doubleArithmetic = new DoubleArithmetic();
-		mappingCollector.setValueBefore("enderpearl", 1024.0);
-		mappingCollector.setValueBefore("bucket", 768.0);
-
-		//Conversion using milibuckets with a "don't round anything down"-arithmetic
-		mappingCollector.addConversion(250, "moltenEnder", Arrays.asList("enderpearl"), doubleArithmetic);
-		mappingCollector.addConversion(1, "moltenEnderBucket", ImmutableMap.of("moltenEnder", 1000, "bucket", 1));
-
-		//Without using the full fraction arithmetic
-		mappingCollector.addConversion(250, "moltenEnder2", Arrays.asList("enderpearl"));
-		mappingCollector.addConversion(1, "moltenEnderBucket2", ImmutableMap.of("moltenEnder2", 1000, "bucket", 1));
-
-		Map<String, Double> values = valueGenerator.generateValues();
-		assertEquals(1024, getValue(values, "enderpearl"), 1e-7);
-		assertEquals(768, getValue(values, "bucket"), 1e-7);
-		assertEquals(4*1024+768, getValue(values, "moltenEnderBucket"), 1e-7);
-
-		assertNotEquals(4*1024+767, getValue(values, "moltenEnderBucket2"));
-
 	}
 
 

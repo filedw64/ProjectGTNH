@@ -5,19 +5,16 @@ import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic<V>> implements IExtendedMappingCollector<T, V, A>
+public abstract class AbstractMappingCollector<T, V extends Comparable<V>> implements IMappingCollector<T, V>
 {
-	A defaultArithmetic;
-	public AbstractMappingCollector(A defaultArithmetic) {
-		this.defaultArithmetic = defaultArithmetic;
+	protected IValueArithmetic<V> arithmetic;
+	public AbstractMappingCollector(IValueArithmetic<V> arithmetic) {
+		this.arithmetic = arithmetic;
 	}
 
+	@Override
 	public void addConversion(int outnumber, T output, Iterable<T> ingredients) {
 		addConversion(outnumber, output, listToMapOfCounts(ingredients));
-	}
-
-	public void addConversion(int outnumber, T output, Iterable<T> ingredients, A arithmeticForConversion) {
-		addConversion(outnumber, output, listToMapOfCounts(ingredients), arithmeticForConversion);
 	}
 
 	protected Map<T, Integer> listToMapOfCounts(Iterable<T> iterable) {
@@ -33,22 +30,18 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 	}
 
 	@Override
-	public void setValueFromConversion(int outnumber, T something, Iterable<T> ingredients)
-	{
+	public void setValueFromConversion(int outnumber, T something, Iterable<T> ingredients) {
 		this.setValueFromConversion(outnumber, something, listToMapOfCounts(ingredients));
 	}
 
 	public abstract void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount);
 
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount) {
-		this.addConversion(outnumber, output, ingredientsWithAmount, this.defaultArithmetic);
-	}
+	public abstract void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount);
 
-	public abstract void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion);
-
-	public A getArithmetic()
+	@Override
+	public IValueArithmetic<V> getArithmetic()
 	{
-		return this.defaultArithmetic;
+		return this.arithmetic;
 	}
 
 	@Override

@@ -3,9 +3,8 @@ package moze_intel.projecte.emc;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.event.EMCRemapEvent;
 import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
-import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.emc.collector.DoubleCollector;
-import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
+import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.emc.generators.DoubleGenerator;
 import moze_intel.projecte.emc.generators.IValueGenerator;
 import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
@@ -54,9 +53,9 @@ public final class EMCMapper
             new APICustomConversionMapper(),
             new IntegrationMapper()
 		);
-        SimpleGraphMapper<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
+        SimpleGraphMapper<NormalizedSimpleStack, Double> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
 		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator<>(mapper);
-		IExtendedMappingCollector<NormalizedSimpleStack, Double, IValueArithmetic<Double>> mappingCollector = new DoubleCollector<>(mapper);
+		IMappingCollector<NormalizedSimpleStack, Double> mappingCollector = new DoubleCollector<>(mapper);
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();

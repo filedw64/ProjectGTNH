@@ -3,14 +3,13 @@ package projecte.emc;
 import moze_intel.projecte.emc.SimpleGraphMapper;
 import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
 import moze_intel.projecte.emc.collector.DoubleCollector;
+import moze_intel.projecte.emc.collector.IMappingCollector;
+import moze_intel.projecte.emc.collector.MappingCollector;
 import moze_intel.projecte.emc.generators.DoubleGenerator;
+import moze_intel.projecte.emc.generators.IValueGenerator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
-import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
-import moze_intel.projecte.emc.collector.IExtendedMappingCollector;
-import moze_intel.projecte.emc.collector.MappingCollector;
-import moze_intel.projecte.emc.generators.IValueGenerator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,11 +25,10 @@ import static org.junit.Assert.assertTrue;
 //@RunWith(value = Parameterized.class)
 public class GraphMapperTest {
 
-
 	@Before
 	public void setup() {
 		//mappingCollector = new SimpleGraphMapper<String, Integer>(new IntArithmetic());
-		SimpleGraphMapper<String, Double, IValueArithmetic<Double>> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
+		SimpleGraphMapper<String, Double> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
 		valueGenerator = new DoubleGenerator<>(mapper);
 		mappingCollector = new DoubleCollector<>(mapper);
 	}
@@ -38,10 +36,10 @@ public class GraphMapperTest {
 	@Rule
 	public Timeout timeout = new Timeout(5000);
 	public IValueGenerator<String, Double> valueGenerator;
-	public IExtendedMappingCollector<String, Double, IValueArithmetic<Double>> mappingCollector;
+	public IMappingCollector<String, Double> mappingCollector;
 
 	@org.junit.Test
-	public void testGetOrCreateList() throws Exception {
+	public void testGetOrCreateList() {
 		Map<String, List<Integer>> map = new HashMap<>();
 		List<Integer> l1 = MappingCollector.getOrCreateList(map, "abc");
 		assertNotNull(l1);
@@ -51,7 +49,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimple() throws Exception {
+	public void testGenerateValuesSimple() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "c4", Arrays.asList("a1", "a1", "a1", "a1"));
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
@@ -64,7 +62,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleMultiRecipe() throws Exception {
+	public void testGenerateValuesSimpleMultiRecipe() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		//2 Recipes for c4
 		mappingCollector.addConversion(1, "c4", Arrays.asList("a1", "a1", "a1", "a1"));
@@ -78,21 +76,21 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleMultiRecipeWithEmptyAlternative() throws Exception {
+	public void testGenerateValuesSimpleMultiRecipeWithEmptyAlternative() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		//2 Recipes for c4
 		mappingCollector.addConversion(1, "c4", Arrays.asList("a1", "a1", "a1", "a1"));
-		mappingCollector.addConversion(1, "c4", new LinkedList<String>());
+		mappingCollector.addConversion(1, "c4", new LinkedList<>());
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
 
 		Map<String, Double> values = valueGenerator.generateValues();
 		assertEquals(1, getValue(values, "a1"), 1e-7);
 		assertEquals(2, getValue(values, "b2"), 1e-7);
-		assertEquals(4, getValue(values, "c4"), 1e-7); //2 * c4 = 2 * b2 => 2 * (2) = 2 * (2)
+		assertEquals(4, getValue(values, "c4"), 1e-7);
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleFixedAfterInherit() throws Exception {
+	public void testGenerateValuesSimpleFixedAfterInherit() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "c4", Arrays.asList("a1", "a1", "a1", "a1"));
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
@@ -105,7 +103,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleFixedDoNotInherit() throws Exception {
+	public void testGenerateValuesSimpleFixedDoNotInherit() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
 		mappingCollector.addConversion(1, "c4", Arrays.asList("b2", "b2"));
@@ -119,8 +117,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleFixedDoNotInheritMultiRecipes() throws Exception
-	{
+	public void testGenerateValuesSimpleFixedDoNotInheritMultiRecipes() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "c", Arrays.asList("a1", "a1"));
 		mappingCollector.addConversion(1, "c", Arrays.asList("a1", "b"));
@@ -134,8 +131,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleSelectMinValue() throws Exception
-	{
+	public void testGenerateValuesSimpleSelectMinValue() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.setValueBefore("b2", 2.0);
 		mappingCollector.addConversion(1, "c", Arrays.asList("a1", "a1"));
@@ -148,8 +144,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleSelectMinValueWithDependency() throws Exception
-	{
+	public void testGenerateValuesSimpleSelectMinValueWithDependency() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.setValueBefore("b2", 2.0);
 		mappingCollector.addConversion(1, "c", Arrays.asList("a1", "a1"));
@@ -164,8 +159,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesSimpleWoodToWorkBench() throws Exception
-	{
+	public void testGenerateValuesSimpleWoodToWorkBench() {
 		mappingCollector.setValueBefore("planks", 1.0);
 		mappingCollector.addConversion(4, "planks", Arrays.asList("wood"));
 		mappingCollector.addConversion(1, "workbench", Arrays.asList("planks", "planks", "planks", "planks"));
@@ -177,7 +171,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesWood() throws Exception {
+	public void testGenerateValuesWood() {
 		for (char i : "ABCD".toCharArray())
 		{
 			mappingCollector.setValueBefore("wood" + i, 32.0);
@@ -208,8 +202,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesDeepConversions() throws Exception
-	{
+	public void testGenerateValuesDeepConversions() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "b1", Arrays.asList("a1"));
 		mappingCollector.addConversion(1, "c1", Arrays.asList("b1"));
@@ -221,14 +214,12 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesDeepInvalidConversion() throws Exception
-	{
+	public void testGenerateValuesDeepInvalidConversion() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "b", Arrays.asList("a1", "invalid1"));
 		mappingCollector.addConversion(1, "invalid1", Arrays.asList("a1", "invalid2"));
 		mappingCollector.addConversion(1, "invalid2", Arrays.asList("a1", "invalid3"));
-
-
+		
 		Map<String, Double> values = valueGenerator.generateValues();
 		assertEquals(1, getValue(values, "a1"), 1e-7);
 		assertEquals(0, getValue(values, "b"), 1e-7);
@@ -238,8 +229,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesMultiRecipeDeepInvalid() throws Exception
-	{
+	public void testGenerateValuesMultiRecipeDeepInvalid() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
 		mappingCollector.addConversion(1, "b2", Arrays.asList("invalid1"));
@@ -254,8 +244,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesMultiRecipesInvalidIngredient() throws Exception
-	{
+	public void testGenerateValuesMultiRecipesInvalidIngredient() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "b2", Arrays.asList("a1", "a1"));
 		mappingCollector.addConversion(1, "b2", Arrays.asList("invalid"));
@@ -268,8 +257,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesCycleRecipe() throws Exception
-	{
+	public void testGenerateValuesCycleRecipe() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "cycle-1", Arrays.asList("a1"));
 		mappingCollector.addConversion(1, "cycle-2", Arrays.asList("cycle-1"));
@@ -283,8 +271,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesBigCycleRecipe() throws Exception
-	{
+	public void testGenerateValuesBigCycleRecipe() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		mappingCollector.addConversion(1, "cycle-1", Arrays.asList("a1"));
 		mappingCollector.addConversion(1, "cycle-2", Arrays.asList("cycle-1"));
@@ -304,7 +291,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesFuelAndMatter() throws Exception {
+	public void testGenerateValuesFuelAndMatter() {
 		final String coal = "coal";
 		final String aCoal = "alchemicalCoal";
 		final String aCoalBlock = "alchemicalCoalBlock";
@@ -364,7 +351,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesWool() throws Exception {
+	public void testGenerateValuesWool() {
 		final String[] dyes = new String[]{"Blue", "Brown", "White", "Other"};
 		final double[] dyeValue = new double[]{864, 176, 48, 16};
 		for (int i = 0; i < dyes.length; i++)
@@ -403,8 +390,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesBucketRecipe() throws Exception
-	{
+	public void testGenerateValuesBucketRecipe() {
 		mappingCollector.setValueBefore("somethingElse", 9.0);
 		mappingCollector.setValueBefore("container", 23.0);
 		mappingCollector.setValueBefore("fluid", 17.0);
@@ -427,8 +413,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesWaterBucketRecipe() throws Exception
-	{
+	public void testGenerateValuesWaterBucketRecipe() {
 		mappingCollector.setValueBefore("somethingElse", 9.0);
 		mappingCollector.setValueBefore("container", 23.0);
 		mappingCollector.setValueBefore("fluid", -Double.MAX_VALUE);
@@ -451,8 +436,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesCycleRecipeExploit() throws Exception
-	{
+	public void testGenerateValuesCycleRecipeExploit() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		//Exploitable Cycle Recype
 		mappingCollector.addConversion(1, "exploitable", Arrays.asList("a1"));
@@ -469,8 +453,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesDelayedCycleRecipeExploit() throws Exception
-	{
+	public void testGenerateValuesDelayedCycleRecipeExploit() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		//Exploitable Cycle Recype
 		mappingCollector.addConversion(1, "exploitable1", Arrays.asList("a1"));
@@ -484,8 +467,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesCycleRecipeExploit2() throws Exception
-	{
+	public void testGenerateValuesCycleRecipeExploit2() {
 		mappingCollector.setValueBefore("a1", 1.0);
 		//Exploitable Cycle Recype
 		mappingCollector.addConversion(1, "exploitable", Arrays.asList("a1"));
@@ -504,7 +486,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesCoalToFireChargeWithWildcard() throws Exception {
+	public void testGenerateValuesCoalToFireChargeWithWildcard() {
 		String[] logTypes = new String[]{"logA", "logB", "logC"};
 		String[] log2Types = new String[]{"log2A", "log2B", "log2C"};
 		String[] coalTypes = new String[]{"coal0", "coal1"};
@@ -570,7 +552,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesChisel2AntiBlock() throws Exception {
+	public void testGenerateValuesChisel2AntiBlock() {
 		final String gDust = "glowstone dust";
 		final String stone = "stone";
 
@@ -604,8 +586,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesZeroCountIngredientDependency() throws Exception
-	{
+	public void testGenerateValuesZeroCountIngredientDependency() {
 		mappingCollector.setValueBefore("a", 2.0);
 		mappingCollector.setValueBefore("b", 3.0);
 		mappingCollector.setValueBefore("notConsume1", 1.0);
@@ -630,8 +611,7 @@ public class GraphMapperTest {
 
 
 	@org.junit.Test
-	public void testGenerateValuesFreeAlternatives() throws Exception
-	{
+	public void testGenerateValuesFreeAlternatives() {
 		mappingCollector.setValueBefore("freeWater", -Double.MAX_VALUE/* = 'Free' */);
 		mappingCollector.setValueBefore("waterBottle", 0.0);
 		mappingCollector.addConversion(1, "waterGroup", Arrays.asList("freeWater"));
@@ -648,8 +628,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testGenerateValuesFreeAlternativesWithNegativeIngredients() throws Exception
-	{
+	public void testGenerateValuesFreeAlternativesWithNegativeIngredients() {
 		mappingCollector.setValueBefore("bucket", 768.0);
 		mappingCollector.setValueBefore("waterBucket", 768.0);
 		mappingCollector.setValueBefore("waterBottle", 0.0);
@@ -671,8 +650,7 @@ public class GraphMapperTest {
 
 
 	@org.junit.Test
-	public void testOverflowWithIngredients() throws Exception
-	{
+	public void testOverflowWithIngredients() {
 		mappingCollector.setValueBefore("a", Double.MAX_VALUE / 2);
 		mappingCollector.setValueBefore("b", Double.MAX_VALUE / 2);
 		mappingCollector.addConversion(1, "c", Arrays.asList("a", "b"));
@@ -684,8 +662,7 @@ public class GraphMapperTest {
 	}
 
 	@org.junit.Test
-	public void testOverflowWithAmount() throws Exception
-	{
+	public void testOverflowWithAmount() {
 		mappingCollector.setValueBefore("a", Double.MAX_VALUE / 2);
 		mappingCollector.addConversion(3, "a", Arrays.asList("something"));
 
