@@ -90,9 +90,9 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.record_ward), 2048);
 		addMapping(new ItemStack(Items.string), 12);
 
-        for (int i = 1; i < 16; i++) {
+        /*for (int i = 1; i < 16; i++) {
             mapper.addConversion(1, NormalizedSimpleStack.getFor(Blocks.wool, i), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.wool), 1));
-        }
+        }*/
 
 		addMapping(new ItemStack(Items.rotten_flesh), 32);
 		addMapping(new ItemStack(Items.slime_ball), 32);

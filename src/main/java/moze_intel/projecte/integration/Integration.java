@@ -12,7 +12,7 @@ public final class Integration
 	public static boolean mtweak = false, NEI = false,
         PHC = false, PHN = false, CCC = false, EFR = false,
         natura = false, gregtech = false, forestry = false,
-		chisel = false;
+		chisel = false, duraDisplay = false;
 
 	public static void modChecks()
 	{
@@ -26,6 +26,7 @@ public final class Integration
         gregtech = Loader.isModLoaded("gregtech");
         forestry = Loader.isModLoaded("Forestry");
 		chisel = Loader.isModLoaded("chisel");
+		duraDisplay = Loader.isModLoaded("duradisplay");
 	}
 
 	public static void init()
@@ -88,6 +89,17 @@ public final class Integration
 			} catch (Throwable e) {
 				chisel = false;
 				e.printStackTrace();
+			}
+		}
+		
+		if (duraDisplay) {
+			PELogger.logInfo("Try to **hack** DuraDisplay!");
+			try {
+				DuraDisplayInit.init();
+			} catch (Throwable e) {
+				duraDisplay = false;
+				e.printStackTrace();
+				PELogger.logInfo("Cannot **hack** DuraDisplay! I hate it!");
 			}
 		}
 	}

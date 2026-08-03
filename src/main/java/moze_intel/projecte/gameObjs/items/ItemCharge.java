@@ -14,8 +14,8 @@ public class ItemCharge extends ItemPE implements IItemCharge
 	public ItemCharge(String unlocalName, byte numCharges)
 	{
 		this.numCharges = numCharges;
-		this.setUnlocalizedName(unlocalName);
-		this.setMaxStackSize(1);
+		setUnlocalizedName(unlocalName);
+		setMaxStackSize(1);
 	}
 
 	@Override

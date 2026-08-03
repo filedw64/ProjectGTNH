@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.collector;
 
-
 import com.google.common.collect.Maps;
 import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.utils.PELogger;
@@ -10,18 +9,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class MappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic<V>> extends AbstractMappingCollector<T,V,A>  {
-	protected static final boolean DEBUG_GRAPHMAPPER = false;
+public abstract class MappingCollector<T, V extends Comparable<V>> extends AbstractMappingCollector<T,V> {
 
-	protected A arithmetic;
-	public MappingCollector(A arithmetic) {
+	public MappingCollector(IValueArithmetic<V> arithmetic) {
 		super(arithmetic);
-		this.arithmetic = arithmetic;
-	}
-
-	protected static void debugFormat(String format, Object... args) {
-		if (DEBUG_GRAPHMAPPER)
-			PELogger.logTrace(format, args);
 	}
 
 	protected Map<T, Conversion> overwriteConversion = Maps.newHashMap();
@@ -54,28 +45,20 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 		for (Map.Entry<T, Integer> ingredient : conversion.ingredientsWithAmount.entrySet()) {
             if (ingredient.getValue() == null)
                 throw new IllegalArgumentException("ingredient amount value has to be != null");
-			getUsesFor(ingredient.getKey()).add(conversion);
+			List<Conversion> usesFor = getUsesFor(ingredient.getKey());
+			if (!usesFor.contains(conversion))
+				usesFor.add(conversion);
 		}
 	}
 
-	public void addConversion(int outnum, T output, Map<T, Integer> ingredientCounts, A arithmeticForConversion) {
-        ingredientCounts = Maps.newHashMap(ingredientCounts);
-		if (output == null) {
-			PELogger.logWarn("Ignoring Recipe because of invalid output: %s -> %dxnull", ingredientCounts, outnum);
+	public void addConversion(int outnum, T output, Map<T, Integer> ingredientCounts) {
+		if (ingredientCounts.containsKey(null) || output == null || outnum <= 0) {
+			PELogger.logWarn("Ignoring Recipe because of invalid input / output: %s -> %dx%s", ingredientCounts, outnum, output);
 			return;
 		}
-		if (outnum <= 0) {
-            PELogger.logWarn("Ignoring Recipe because of negative output count: %s -> %dx%s", ingredientCounts, outnum, output);
-            return;
-        }
-        if (ingredientCounts.containsKey(null)) {
-            PELogger.logWarn("Ignoring null input: %s -> %dx%s", ingredientCounts, outnum, output);
-            ingredientCounts.remove(null);
-        }
 		//Add the Conversions to the conversionsFor and usedIn Maps:
 		Conversion conversion = new Conversion(output, outnum, ingredientCounts);
 		conversion.value = arithmetic.getZero();
-		conversion.arithmeticForConversion = arithmeticForConversion;
         List<Conversion> conversionsForOut = getConversionsFor(output);
 		if (conversionsForOut.contains(conversion))
             return;
@@ -110,7 +93,6 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 		if (outnumber <= 0)
 			throw new IllegalArgumentException("outnumber has to be > 0!");
 		Conversion conversion = new Conversion(something, outnumber, ingredientsWithAmount);
-		conversion.arithmeticForConversion = this.arithmetic;
 		if (overwriteConversion.containsKey(something)) {
 			Conversion oldConversion = overwriteConversion.get(something);
 			PELogger.logWarn("Overwriting setValueFromConversion " + overwriteConversion.get(something) + " with " + conversion);
@@ -128,7 +110,6 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 		public int outnumber = 1;
 		public V value = arithmetic.getZero();
 		public Map<T, Integer> ingredientsWithAmount;
-		public A arithmeticForConversion;
 
 		protected Conversion(T output) {
 			this.output = output;
@@ -141,7 +122,9 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 		}
 
         public String toString() {
-			return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
+			if (value != arithmetic.getZero())
+				return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
+			return ingredientsToString() + " => " + outnumber + "*" + output;
 		}
 
 		public String ingredientsToString() {
@@ -151,26 +134,28 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 			if (iter.hasNext()) {
 				Map.Entry<T, Integer> entry = iter.next();
 				sb.append(entry.getValue()).append("*").append(entry.getKey().toString());
-				while(iter.hasNext()) {
+				while (iter.hasNext()) {
 					entry = iter.next();
 					sb.append(" + ").append(entry.getValue()).append("*").append(entry.getKey().toString());
 				}
 			}
 
-
 			return sb.toString();
 		}
 
-		public boolean equals(Conversion other) {
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof MappingCollector<?,?>.Conversion other))
+				return false;
 			if (output.equals(other.output) && value.equals(other.value)) {
 				if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) {
 					return other.ingredientsWithAmount == null || other.ingredientsWithAmount.isEmpty();
-				} else {
+				}
+				else {
 					return ingredientsWithAmount.equals(other.ingredientsWithAmount);
 				}
 			}
 			return false;
 		}
 	}
-
 }

@@ -2,17 +2,17 @@ package moze_intel.projecte.emc;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import cpw.mods.fml.common.registry.GameRegistry;
-import moze_intel.projecte.integration.GregTech.GTToolHelper;
+import moze_intel.projecte.emc.collector.IMappingCollector;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.integration.GregTech.GTNSSItem;
+import moze_intel.projecte.utils.ItemHelper;
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.PELogger;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public abstract class NormalizedSimpleStack {
 		{
 			normStack = new NSSItem(itemName, damage);
 		} catch (Exception e) {
-			PELogger.logFatal("Could not create NSSItem: " + e.getMessage());
+			PELogger.logError("Could not create NSSItem: " + e.getMessage());
 			return null;
 		}
 		Set<Integer> usedMetadata;
@@ -47,59 +47,35 @@ public abstract class NormalizedSimpleStack {
 		return getFor(block, 0);
 	}
 
-	private static GameRegistry.UniqueIdentifier getUniqueIdentifierOrNull(Block block) {
-		GameRegistry.UniqueIdentifier identifier;
-		try
-		{
-			identifier = GameRegistry.findUniqueIdentifierFor(block);
-		} catch (Exception e) {
-			PELogger.logFatal("Could not findUniqueIdentifierFor(%s)", block != null ? block.getClass().getName() : "null");
-			e.printStackTrace();
-			return null;
-		}
-		return identifier;
-	}
-
 	public static NormalizedSimpleStack getFor(Block block, int meta) {
-		return getFor(getUniqueIdentifierOrNull(block), meta);
+		String id = Block.blockRegistry.getNameForObject(block);
+		if (id == null) return null;
+		return getFor(id, meta);
 	}
 
 	public static NormalizedSimpleStack getFor(Item item) {
 		return getFor(item, 0);
 	}
 
-	private static GameRegistry.UniqueIdentifier getUniqueIdentifierOrNull(Item item) {
-		GameRegistry.UniqueIdentifier identifier;
-		try
-		{
-			identifier = GameRegistry.findUniqueIdentifierFor(item);
-		} catch (Exception e) {
-			PELogger.logFatal("Could not findUniqueIdentifierFor(%s)", item != null ? item.getClass().getName() : "null");
-			e.printStackTrace();
-			return null;
-		}
-		return identifier;
-	}
-
     public static NormalizedSimpleStack getFor(Item item, int meta) {
-        return getFor(getUniqueIdentifierOrNull(item), meta);
-    }
-
-    private static NormalizedSimpleStack getFor(GameRegistry.UniqueIdentifier uniqueIdentifier, int damage)
-    {
-        if (uniqueIdentifier == null) return null;
-        return getFor(uniqueIdentifier.modId + ":" + uniqueIdentifier.name, damage);
+		String id = Item.itemRegistry.getNameForObject(item);
+		if (id == null) return null;
+		return getFor(id, meta);
     }
 
 	public static NormalizedSimpleStack getFor(ItemStack stack) {
 		if (stack == null || stack.getItem() == null) return null;
-        if (GTToolHelper.isGTtool(stack))
+        if (GTItemHelper.isGTtool(stack))
             return new GTNSSItem(stack);
 		return getFor(stack.getItem(), stack.getItemDamage());
 	}
 
+	public static NormalizedSimpleStack getFor(FluidStack stack) {
+		if (stack == null || stack.getFluid() == null) return null;
+		return getFor(stack.getFluid());
+	}
+
 	public static NormalizedSimpleStack getFor(Fluid fluid) {
-		//TODO cache The fluid normalizedSimpleStacks?
         if (NSSFluid.nameMap.containsKey(fluid))
             return NSSFluid.nameMap.get(fluid);
 		return new NSSFluid(fluid);

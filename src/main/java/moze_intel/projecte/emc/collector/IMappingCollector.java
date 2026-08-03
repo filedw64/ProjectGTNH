@@ -11,6 +11,7 @@ import java.util.Map;
  * @param <V> The type for the EMC Value
  */
 public interface IMappingCollector<T, V extends Comparable<V>> {
+
 	/**
 	 * Add a Conversion that produced {@code outnumber} items of {@code output} by consuming the ingredients, that are specified in the {@code ingredientsWithAmount} Map.<br/>
 	 * The Map contains the ingredients and the amount of how many are consumed. It can contain negative amounts, if you get multiple items back.
@@ -52,6 +53,8 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	void setValueFromConversion(int outnumber, T something, Iterable<T> ingredients);
 
 	void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount);
+
+	IValueArithmetic<V> getArithmetic();
 
 	void finishCollection();
 }

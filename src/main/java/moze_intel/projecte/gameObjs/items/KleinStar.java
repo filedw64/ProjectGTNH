@@ -51,18 +51,6 @@ public class KleinStar extends ItemPE implements IItemEmc
 		return 1.0 - starEmc / EMCHelper.getKleinStarMaxEmc(stack);
 	}
 
-
-	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
-	{
-		/*if (!world.isRemote)
-		{
-			this.setEmc(stack, Utils.GetKleinStarMaxEmc(stack));
-		}*/
-
-		return stack;
-	}
-
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{

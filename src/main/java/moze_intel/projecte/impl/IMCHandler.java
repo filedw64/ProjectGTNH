@@ -1,10 +1,9 @@
 package moze_intel.projecte.impl;
 
 import cpw.mods.fml.common.event.FMLInterModComms;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntity;
 
 import java.util.Locale;
 
@@ -52,14 +51,14 @@ public class IMCHandler
         }
     }
 
-    private static <T, U extends T> Class<U> loadAndCheckSubclass(String name, Class<T> toCheck)
+    private static <T> Class<? extends T> loadAndCheckSubclass(String name, Class<T> toCheck)
     {
         try
         {
             Class<?> clazz = Class.forName(name);
             if (toCheck.isAssignableFrom(clazz))
             {
-                return (Class<U>) clazz;
+                return clazz.asSubclass(toCheck);
             }
         } catch (ClassNotFoundException ex) {
             PELogger.logWarn("IMC tried to identify a class that couldn't be found: %s", name);
