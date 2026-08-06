@@ -13,67 +13,61 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Locale;
 
 public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
-	private static final List<Pair<NormalizedSimpleStack, FluidStack>> melting = new ArrayList<>();
+	IMappingCollector<NormalizedSimpleStack, Double> mapper;
 
-	public static void addMelting(String odName, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.forOreDictionary(odName), fluidName, amount);
-	}
+	@Override
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+		this.mapper = mapper;
+		mapper.setValueBefore(NormalizedSimpleStack.forFluid(FluidRegistry.WATER), CCCInit.finiteWater ? 8e-3 : -Double.MAX_VALUE);
 
-	public static void addMelting(Item item, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.getFor(item), fluidName, amount);
-	}
+		//1 Bucket of Lava = 1 Block of Obsidian
+		mapper.addConversion(1000, NormalizedSimpleStack.forFluid(FluidRegistry.LAVA), Arrays.asList(NormalizedSimpleStack.forItem(Blocks.obsidian)));
 
-	public static void addMelting(Block block, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.getFor(block), fluidName, amount);
-	}
+		//Add Conversion in case MFR is not present and milk is not an actual fluid
+		NormalizedSimpleStack fakeMilkFluid = NormalizedSimpleStack.forFake("fakeMilkFluid");
+		mapper.setValueBefore(fakeMilkFluid, 16.0);
+		mapper.addConversion(1, NormalizedSimpleStack.forItem(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.forItem(Items.bucket), fakeMilkFluid));
 
-	public static void addMelting(NormalizedSimpleStack stack, String fluidName, int amount) {
-		Fluid fluid = FluidRegistry.getFluid(fluidName);
-		if (fluid != null) {
-			melting.add(Pair.of(stack, new FluidStack(fluid, amount)));
-		} else {
-			PELogger.logWarn("Can not get Fluid '%s'", fluidName);
+		Fluid milkFluid = FluidRegistry.getFluid("milk");
+		if (milkFluid != null) {
+			mapper.addConversion(1000, NormalizedSimpleStack.forFluid(milkFluid), Arrays.asList(fakeMilkFluid));
 		}
-	}
 
-	static {
-		addMelting(Blocks.obsidian, "obisidan.molten", 288);
+		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
+			Fluid fluid = data.fluid.getFluid();
+			mapper.addConversion(1, NormalizedSimpleStack.forItem(data.filledContainer),
+				ImmutableMap.of(NormalizedSimpleStack.forItem(data.emptyContainer), 1, NormalizedSimpleStack.forFluid(fluid), data.fluid.amount));
+		}
+
+		addMelting(Blocks.obsidian, "molten.obisidan", 288);
 		addMelting(Blocks.glass, "glass.molten", 1000);
 		addMelting(Blocks.glass_pane, "glass.molten", 250);
 		addMelting(Items.ender_pearl, "ender", 250);
 
-		addMelting("ingotIron", "iron.molten", 144);
-		addMelting("ingotGold", "gold.molten", 144);
-		addMelting("ingotCopper", "copper.molten", 144);
-		addMelting("ingotTin", "tin.molten", 144);
-		addMelting("ingotSilver", "silver.molten", 144);
-		addMelting("ingotLead", "lead.molten", 144);
-		addMelting("ingotNickel", "nickel.molten", 144);
-		addMelting("ingotAluminum", "aluminum.molten", 144);
-		addMelting("ingotArdite", "ardite.molten", 144);
-		addMelting("ingotCobalt", "cobalt.molten", 144);
-		addMelting("ingotPlatinum", "platinum.molten", 144);
-		addMelting("ingotObsidian", "obsidian.molten", 144);
-		addMelting("ingotElectrum", "electrum.molten", 144);
-		addMelting("ingotInvar", "invar.molten", 144);
-		addMelting("ingotSignalum", "signalum.molten", 144);
-		addMelting("ingotLumium", "lumium.molten", 144);
-		addMelting("ingotEnderium", "enderium.molten", 144);
-		addMelting("ingotMithril", "mithril.molten", 144);
+		addMelting(Blocks.glass, "molten.glass", 144);
 
-		addMelting("ingotBronze", "bronze.molten", 144);
-		addMelting("ingotAluminumBrass", "aluminumbrass.molten", 144);
-		addMelting("ingotManyullyn", "manyullyn.molten", 144);
-		addMelting("ingotAlumite", "alumite.molten", 144);
+		for (String s : OreDictionary.getOreNames()) {
+			if (s == null) continue;
+			if (!s.startsWith("ingot")) continue;
+			NormalizedSimpleStack nssOre = NormalizedSimpleStack.forOreDictionary(s);
+			if (nssOre == null) continue;
+			String ingotType = s.substring(5).toLowerCase(Locale.ROOT);
+
+			NormalizedSimpleStack nssFluid = NormalizedSimpleStack.forFluid("molten.".concat(ingotType));
+			if (nssFluid != null)
+				mapper.addConversion(144, nssFluid, Collections.singletonList(nssOre));
+
+			nssFluid = NormalizedSimpleStack.forFluid(ingotType.concat(".molten"));
+			if (nssFluid != null)
+				mapper.addConversion(144, nssFluid, Collections.singletonList(nssOre));
+		}
 
 		addMelting("gemEmerald", "emerald.liquid", 640);
 		addMelting("dustRedstone", "redstone", 100);
@@ -83,30 +77,25 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMelting("dustPryotheum", "pryotheum", 100);
 	}
 
-	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
-        mapper.setValueBefore(NormalizedSimpleStack.getFor(FluidRegistry.WATER), CCCInit.finiteWater ? 8e-3 : -Double.MAX_VALUE);
-		//1 Bucket of Lava = 1 Block of Obsidian
-		mapper.addConversion(1000, NormalizedSimpleStack.getFor(FluidRegistry.LAVA), Arrays.asList(NormalizedSimpleStack.getFor(Blocks.obsidian)));
+	public void addMelting(String odName, String fluidName, int amount) {
+		addMelting(NormalizedSimpleStack.forOreDictionary(odName), fluidName, amount);
+	}
 
-		//Add Conversion in case MFR is not present and milk is not an actual fluid
-		NormalizedSimpleStack fakeMilkFluid = NormalizedSimpleStack.createFake("fakeMilkFluid");
-		mapper.setValueBefore(fakeMilkFluid, 16.0);
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.getFor(Items.bucket), fakeMilkFluid));
+	public void addMelting(Item item, String fluidName, int amount) {
+		addMelting(NormalizedSimpleStack.forItem(item), fluidName, amount);
+	}
 
-		Fluid milkFluid = FluidRegistry.getFluid("milk");
-		if (milkFluid != null) {
-			mapper.addConversion(1000, NormalizedSimpleStack.getFor(milkFluid), Arrays.asList(fakeMilkFluid));
+	public void addMelting(Block block, String fluidName, int amount) {
+		addMelting(NormalizedSimpleStack.forItem(block), fluidName, amount);
+	}
+
+	public void addMelting(NormalizedSimpleStack stack, String fluidName, int amount) {
+		Fluid fluid = FluidRegistry.getFluid(fluidName);
+		if (fluid != null) {
+			mapper.addConversion(amount, NormalizedSimpleStack.forFluid(fluid), Collections.singletonList(stack));
 		}
-
-		for (Pair<NormalizedSimpleStack, FluidStack> pair: melting) {
-			mapper.addConversion(pair.getValue().amount, NormalizedSimpleStack.getFor(pair.getValue().getFluid()), Collections.singletonList(pair.getKey()));
-		}
-
-		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
-			Fluid fluid = data.fluid.getFluid();
-			mapper.addConversion(1, NormalizedSimpleStack.getFor(data.filledContainer),
-				ImmutableMap.of(NormalizedSimpleStack.getFor(data.emptyContainer), 1, NormalizedSimpleStack.getFor(fluid), data.fluid.amount));
+		else {
+			PELogger.logWarn("Can not get Fluid '%s'", fluidName);
 		}
 	}
 
