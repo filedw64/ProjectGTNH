@@ -4,17 +4,16 @@ import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
-import journeymap.shadow.org.eclipse.jetty.util.Utf8StringBuffer;
 import moze_intel.projecte.emc.EMCMapper;
+import moze_intel.projecte.emc.FluidSimpleStack;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.emc.SimpleStack;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.PELogger;
-import net.minecraft.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 
 public class SyncEmcPKT implements IMessage
@@ -41,9 +40,14 @@ public class SyncEmcPKT implements IMessage
 		{
             int arraylen = buf.readInt();
 			Object[] array = new Object[arraylen];
-
-			for (int j = 0; j < 3; j++)
-			{
+			if (arraylen == 3) {
+				array[0] = buf.readInt();
+				array[1] = buf.readInt();
+				array[2] = buf.readDouble();
+				data[i] = array;
+				continue;
+			}
+			for (int j = 0; j < 3; j++) {
                 array[j] = buf.readInt();
 			}
             array[3] = buf.readDouble();
@@ -71,8 +75,13 @@ public class SyncEmcPKT implements IMessage
 		{
 			Object[] array = (Object[]) obj;
             buf.writeInt(array.length);
-			for (int i = 0; i < 3; i++)
-			{
+			if (array.length == 3) {
+				buf.writeInt((int) array[0]);
+				buf.writeInt((int) array[1]);
+				buf.writeDouble((double) array[2]);
+				continue;
+			}
+			for (int i = 0; i < 3; i++) {
 				buf.writeInt((int) array[i]);
 			}
             buf.writeDouble((double) array[3]);
@@ -99,7 +108,7 @@ public class SyncEmcPKT implements IMessage
 				PELogger.logInfo("Receiving EMC data from server.");
 
 				EMCMapper.emc.clear();
-				EMCMapper.emc = new LinkedHashMap<>();
+				EMCMapper.emc = new HashMap<>();
 			}
 
 			for (Object obj : pkt.data)
@@ -107,9 +116,16 @@ public class SyncEmcPKT implements IMessage
                 Object[] array = (Object[]) obj;
 
                 SimpleStack stack;
+				
+				if (array.length == 3) {
+					stack = new FluidSimpleStack((int) array[0], (int) array[1]);
+					if (stack.isValid())
+						EMCMapper.emc.put(stack, (double) array[2]);
+					continue;
+				}
 
                 if (array.length == 6)
-                    stack = new GTSimpleStack((int) array[0], (int) array[1], (int) array[2], (String) array[4], (String) array[5]);
+					stack = new GTSimpleStack((int) array[0], (int) array[1], (int) array[2], (String) array[4], (String) array[5]);
                 else stack = new SimpleStack((int) array[0], (int) array[1], (int) array[2]);
 
 				if (stack.isValid())
