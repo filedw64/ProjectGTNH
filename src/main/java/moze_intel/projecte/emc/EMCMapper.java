@@ -15,6 +15,7 @@ import moze_intel.projecte.emc.mappers.FluidMapper;
 import moze_intel.projecte.emc.mappers.IEMCMapper;
 import moze_intel.projecte.emc.mappers.IntegrationMapper;
 import moze_intel.projecte.emc.mappers.LazyMapper;
+import moze_intel.projecte.emc.mappers.OreDictionaryMapper;
 import moze_intel.projecte.emc.mappers.SmeltingMapper;
 import moze_intel.projecte.emc.mappers.customConversions.CustomConversionMapper;
 import moze_intel.projecte.integration.GregTech.GTNSSItem;
@@ -25,24 +26,26 @@ import moze_intel.projecte.utils.PrefixConfiguration;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public final class EMCMapper
 {
     public static boolean enableNBTprocess = true;
-	public static Map<SimpleStack, Double> emc = new LinkedHashMap<>();
+	public static Map<SimpleStack, Double> emc = new HashMap<>();
 	public static Map<NormalizedSimpleStack, Double> graphMapperValues;
 
 	public static void map()
 	{
 		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
+			new OreDictionaryMapper(),
             new LazyMapper(),
             APICustomEMCMapper.instance,
             new CustomConversionMapper(),
@@ -64,57 +67,50 @@ public final class EMCMapper
 
 		PELogger.logInfo("Start to collect Mappings");
 		for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers) {
-			try
-			{
-				if (config.getBoolean(emcMapper.getName(), "enabledMappers", emcMapper.isAvailable(), emcMapper.getDescription()) && emcMapper.isAvailable())
-				{
-					emcMapper.addMappings(mappingCollector, new PrefixConfiguration(config, "mapperConfigurations." + emcMapper.getName()));
-					PELogger.logInfo("Collected Mappings from " + emcMapper.getClass().getName());
+			try {
+				if (!config.getBoolean(emcMapper.getName(), "enabledMappers", emcMapper.isAvailable(), emcMapper.getDescription()) || !emcMapper.isAvailable()) {
+					continue;
 				}
+				long start = System.currentTimeMillis();
+				emcMapper.addMappings(mappingCollector, new PrefixConfiguration(config, "mapperConfigurations." + emcMapper.getName()));
+				PELogger.logInfo("Collected Mappings from %s. (took %.3fs)", emcMapper.getClass().getName(), (System.currentTimeMillis() - start) / 1e3);
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				PELogger.logFatal("Exception during Mapping Collection from Mapper %s. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!", emcMapper.getClass().getName());
 				e.printStackTrace();
 			}
 		}
+		long start = System.currentTimeMillis();
 		NormalizedSimpleStack.addMappings(mappingCollector);
+		PELogger.logInfo("Collected Mappings from NormalizedSimpleStack. (took %.3fs)", (System.currentTimeMillis() - start) / 1e3);
 
 		PELogger.logInfo("Mapping Collection finished");
 		mappingCollector.finishCollection();
 
+		config.save();
 		PELogger.logInfo("Start to generate Values");
 
-		config.save();
-
+		start = System.currentTimeMillis();
 		graphMapperValues = valueGenerator.generateValues();
-		PELogger.logInfo("EMC Values Generated!");
+		PELogger.logInfo("EMC Values Generated! (took %.3fs)", (System.currentTimeMillis() - start) / 1e3);
 
 		filterEMCMap(graphMapperValues);
-		NormalizedSimpleStack.NSSFake.clearMap();
+		NormalizedSimpleStack.clearMap();
 
-		for (Map.Entry<NormalizedSimpleStack, Double> entry: graphMapperValues.entrySet()) {
-            if (entry.getKey() instanceof GTNSSItem gtnssItem) {
-                Object obj = Item.itemRegistry.getObject(gtnssItem.itemName);
-                if (obj != null) {
-                    int id = Item.itemRegistry.getIDForObject(obj);
-                    emc.put(new GTSimpleStack(id, 1, gtnssItem.damage, gtnssItem.primary, gtnssItem.secondary), entry.getValue());
-                }
-                else {
-                    PELogger.logWarn("Could not add EMC value for %s|%s. Can not get ItemID!", gtnssItem.itemName, gtnssItem.damage);
-                }
-            }
-			else if (entry.getKey() instanceof NormalizedSimpleStack.NSSItem normStackItem) {
-                Object obj = Item.itemRegistry.getObject(normStackItem.itemName);
-				if (obj != null) {
-					int id = Item.itemRegistry.getIDForObject(obj);
-					emc.put(new SimpleStack(id, 1, normStackItem.damage), entry.getValue());
+		graphMapperValues.forEach((nss, val) -> {
+            if (nss instanceof NormalizedSimpleStack.NSSItem nssItem) {
+                Object obj = Item.itemRegistry.getObject(nssItem.itemName);
+				int id = Item.itemRegistry.getIDForObject(obj);
+				if (nss instanceof GTNSSItem gtnssItem) {
+					emc.put(new GTSimpleStack(id, 1, gtnssItem.damage, gtnssItem.primary, gtnssItem.secondary), val);
 				}
-                else {
-					PELogger.logWarn("Could not add EMC value for %s|%s. Can not get ItemID!", normStackItem.itemName, normStackItem.damage);
-				}
+				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
 			}
-		}
+			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
+				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
+				emc.put(new FluidSimpleStack(fluid.getID(), 1), val);
+			}
+		});
 
 		MinecraftForge.EVENT_BUS.post(new EMCRemapEvent());
 		Transmutation.cacheFullKnowledge();
@@ -126,16 +122,12 @@ public final class EMCMapper
 	 * @param map
 	 */
 	static void filterEMCMap(Map<NormalizedSimpleStack, Double> map) {
-		for(Iterator<Map.Entry<NormalizedSimpleStack, Double>> iter = map.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry<NormalizedSimpleStack, Double> entry = iter.next();
-			NormalizedSimpleStack normStack = entry.getKey();
-			if (normStack instanceof NormalizedSimpleStack.NSSItem normStackItem && entry.getValue() > 0) {
-                if (normStackItem.damage != OreDictionary.WILDCARD_VALUE) {
-					continue;
-				}
-			}
-			iter.remove();
-		}
+		map.keySet().removeIf(nss -> {
+			if (map.get(nss) <= 0) return true;
+			if (nss instanceof NormalizedSimpleStack.NSSItem nssItem)
+				return nssItem.damage == OreDictionary.WILDCARD_VALUE;
+			return !(nss instanceof NormalizedSimpleStack.NSSFluid);
+		});
 	}
 
 	public static boolean mapContains(SimpleStack key)
