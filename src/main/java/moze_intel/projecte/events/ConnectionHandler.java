@@ -19,7 +19,6 @@ public class ConnectionHandler
 		PacketHandler.sendTo(new CheckUpdatePKT(), (EntityPlayerMP) event.player);
 
 		PlayerTimers.registerPlayer(event.player);
-
 	}
 
 	@SubscribeEvent

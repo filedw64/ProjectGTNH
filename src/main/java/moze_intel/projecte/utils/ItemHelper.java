@@ -1,6 +1,5 @@
 package moze_intel.projecte.utils;
 
-import com.google.common.collect.Lists;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -12,6 +11,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -166,7 +166,7 @@ public final class ItemHelper
 	 */
 	public static List<ItemStack> getODItems(String oreName)
 	{
-		List<ItemStack> result = Lists.newArrayList();
+		List<ItemStack> result = new ArrayList<>();
 
 		for (ItemStack stack : OreDictionary.getOres(oreName))
 		{
@@ -177,7 +177,7 @@ public final class ItemHelper
 
 			if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE)
 			{
-				List<ItemStack> list = Lists.newArrayList();
+				List<ItemStack> list = new ArrayList<>();
 
 				ItemStack copy = stack.copy();
 				copy.setItemDamage(0);
@@ -387,7 +387,7 @@ public final class ItemHelper
 
 	public static void pushLootBallInInv(IInventory inv, EntityLootBall ball)
 	{
-		List<ItemStack> results = Lists.newArrayList();
+		List<ItemStack> results = new ArrayList<>();
 		for (ItemStack s : ball.getItemList())
 		{
 			ItemStack result = pushStackInInv(inv, s);

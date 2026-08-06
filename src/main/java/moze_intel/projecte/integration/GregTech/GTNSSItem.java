@@ -12,7 +12,7 @@ public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
 
     public GTNSSItem(ItemStack stack) {
         super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage());
-        if (!GTItemHelper.isGTtool(stack) || !stack.hasTagCompound()) return;
+        if (stack.stackTagCompound == null || stack.stackTagCompound.hasNoTags()) return;
         NBTTagCompound nbt = stack.getTagCompound().getCompoundTag("GT.ToolStats");
         primary = nbt.getString("PrimaryMaterial");
         secondary = nbt.getString("SecondaryMaterial");
@@ -43,7 +43,7 @@ public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
     public String toString() {
 		if ("".equals(primary) && "".equals(secondary))
 			return String.format("%s:%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
-		return String.format("%s:%s{GT.ToolStats:{PrimaryMaterial:%s,SecondaryMaterial:%s}}", itemName,
+		return String.format("%s:%s{Primary:%s,Secondary:%s}", itemName,
 			damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, primary, secondary);
     }
 }
