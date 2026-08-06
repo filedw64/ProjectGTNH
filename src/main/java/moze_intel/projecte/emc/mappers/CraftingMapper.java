@@ -1,10 +1,15 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import moze_intel.projecte.emc.IngredientMap;
+import moze_intel.projecte.emc.NormalizedSimpleStack;
+import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.utils.EnchantmentBlacklist;
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -15,16 +20,12 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
-import moze_intel.projecte.emc.IngredientMap;
-import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
-import moze_intel.projecte.utils.PELogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,115 +35,107 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 	public static List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
 	public static boolean emcDependencyForUnconsumedItems = false;
-    Set<Class> canNotMap = Sets.newHashSet();
-	Map<Class, Integer> recipeCount = Maps.newHashMap();
+    Set<Class<?>> canNotMap = new HashSet<>();
+	Map<Class<?>, Integer> recipeCount = new HashMap<>();
 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
-		recipeCount.clear();
-		canNotMap.clear();
-        emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false, "If this option is enabled, items that are made by crafting, with unconsumed ingredients, should only get an emc value, if unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
+        emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false,
+			"Items crafted with unconsumed ingredients get an emc value, only when unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
         for (IRecipeMapper recipeMapper : recipeMappers) {
-            recipeMapper.setEnabled(config.getBoolean("enable" + recipeMapper.getName(), "IRecipeImplementations", true, recipeMapper.getDescription()));
+            recipeMapper.setEnabled(config.getBoolean("enable".concat(recipeMapper.getName()) , "IRecipeImplementations",
+				true, recipeMapper.getDescription()));
         }
-        recipeloop:
+
         for (IRecipe recipe : CraftingManager.getInstance().getRecipeList()) {
-			boolean handled = false;
+			Class<?> clazz = recipe.getClass();
+			if (canNotMap.contains(clazz)) continue;
+
 			ItemStack recipeOutput = recipe.getRecipeOutput();
 			if (recipeOutput == null) continue;
             if (recipeOutput.isItemEnchanted()) {
                 EnchantmentBlacklist.add(recipeOutput);
             }
-			NormalizedSimpleStack recipeOutputNorm = NormalizedSimpleStack.forItem(recipeOutput);
+			NormalizedSimpleStack outNSS = NormalizedSimpleStack.forItem(recipeOutput);
+			boolean handled = false;
 			for (IRecipeMapper recipeMapper : recipeMappers) {
 				if (!recipeMapper.isEnabled() || !recipeMapper.canHandle(recipe)) continue;
                 handled = true;
                 CraftingIngredients ingredients = recipeMapper.getIngredientsFor(recipe);
                 if (ingredients == null) {
-                    PELogger.logWarn("RecipeMapper " + recipeMapper + " failed to map Recipe" + recipe);
+                    PELogger.logError("RecipeMapper %s failed to map Recipe %s", recipeMapper, recipe);
                     break;
                 }
 
                 IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
 
                 for (ItemStack stack : ingredients.fixedIngredients) {
-                    if (stack == null || stack.getItem() == null) continue;
-                    if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                        //Don't check for doesContainerItemLeaveCraftingGrid for WILDCARD-ItemStacks
-                        ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
+					Item item;
+					if (stack == null || (item = stack.getItem()) == null) continue;
+
+					NormalizedSimpleStack.NSSItem nss = NormalizedSimpleStack.forItem(stack);
+                    if (nss.damage == OreDictionary.WILDCARD_VALUE) {
+                        //Don't check ContainerItem for WILDCARD-ItemStacks
+                        ingredientMap.addIngredient(nss, 1);
                         continue;
                     }
                     //stack does not have a wildcard damage value
-                    try {
-                        String id = Item.itemRegistry.getNameForObject(stack.getItem());
-                        if (id.startsWith("gregtech:gt.metatool")) {
-                            mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), -Double.MAX_VALUE);
-                            ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 0);
-                            continue;
-                        }
+					if (GTItemHelper.isNullGTtool(stack)) {
+						mapper.setValueBefore(nss, -Double.MAX_VALUE);
+						ingredientMap.addIngredient(nss, 0);
+						continue;
+					}
 
-                        ItemStack container = stack.getItem().getContainerItem(stack);
-                        if (container != null && container.getItem() != null)
-                            ingredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
+					ItemStack container = item.getContainerItem(stack);
+					if (container != null && container.getItem() != null)
+						ingredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
-                        ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
-                    } catch (Exception e) {
-                        PELogger.logFatal("Exception in CraftingMapper when parsing Recipe Ingredients: RecipeType: %s, Ingredient: %s", recipe.getClass().getName(), stack.toString());
-                        e.printStackTrace();
-                        continue recipeloop;
-                    }
+					ingredientMap.addIngredient(nss, 1);
                 }
 
                 for (Iterable<ItemStack> multiIngredient : ingredients.multiIngredients) {
-                    NormalizedSimpleStack nss = NormalizedSimpleStack.forFake(multiIngredient.toString());
-                    ingredientMap.addIngredient(nss, 1);
-                    for (ItemStack stack : multiIngredient) {
-                        if (stack == null || stack.getItem() == null) continue;
-                        IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
-                        String id = Item.itemRegistry.getNameForObject(stack.getItem());
-                        if (id.startsWith("gregtech:gt.metatool")) {
-                            mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), -Double.MAX_VALUE);
-                            groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 0);
-                            mapper.addConversion(1, nss, groupIngredientMap.getMap());
+                    NormalizedSimpleStack fake = NormalizedSimpleStack.forFake(multiIngredient.toString());
+                    ingredientMap.addIngredient(fake, 1);
+                    for (ItemStack is : multiIngredient) {
+						Item item;
+                        if (is == null || (item = is.getItem()) == null) continue;
+						NormalizedSimpleStack nss = NormalizedSimpleStack.forItem(is);
+                        IngredientMap<NormalizedSimpleStack> fakeIngredients = new IngredientMap<>();
+
+                        if (GTItemHelper.isNullGTtool(is)) {
+                            mapper.setValueBefore(nss, -Double.MAX_VALUE);
+                            fakeIngredients.addIngredient(nss, 0);
+                            mapper.addConversion(1, fake, fakeIngredients.getMap());
                             continue;
                         }
 
-                        ItemStack container = stack.getItem().getContainerItem(stack);
+                        ItemStack container = item.getContainerItem(is);
                         if (container != null && container.getItem() != null)
-                            groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
+                            fakeIngredients.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
-                        groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
-                        mapper.addConversion(1, nss, groupIngredientMap.getMap());
+                        fakeIngredients.addIngredient(nss, 1);
+                        mapper.addConversion(1, fake, fakeIngredients.getMap());
                     }
                 }
+
                 if (recipeOutput.stackSize > 0) {
-                    mapper.addConversion(recipeOutput.stackSize, recipeOutputNorm, ingredientMap.getMap());
+                    mapper.addConversion(recipeOutput.stackSize, outNSS, ingredientMap.getMap());
                 }
                 else {
-                    PELogger.logWarn("Ignoring Recipe because outnumber <= 0: " + ingredientMap.getMap().toString() + " -> " + recipeOutput);
+                    PELogger.logWarn("Ignoring Recipe because outnumber <= 0: %s -> %s", ingredientMap.getMap(), recipeOutput);
                 }
                 break;
             }
 			if (!handled) {
-				if (!canNotMap.contains(recipe.getClass())) {
-					canNotMap.add(recipe.getClass());
-					PELogger.logWarn("Can not map Crafting Recipes with Type: " + recipe.getClass().getName());
-				}
+				canNotMap.add(clazz);
+				PELogger.logWarn("Can not map Crafting Recipes with Type: %s", clazz);
 			}
-            else {
-				int count = 0;
-				if (recipeCount.containsKey(recipe.getClass())) {
-					count = recipeCount.get(recipe.getClass());
-				}
-				count += 1;
-				recipeCount.put(recipe.getClass(), count);
-			}
+            else
+				recipeCount.put(clazz, recipeCount.getOrDefault(clazz, 0) + 1);
 		}
 
 		PELogger.logInfo("CraftingMapper Statistics:");
-		for (Map.Entry<Class, Integer> entry: recipeCount.entrySet()) {
-			PELogger.logInfo(String.format("Found %d Recipes of Type %s", entry.getValue(), entry.getKey()));
-		}
+		recipeCount.forEach((clazz, count) -> PELogger.logInfo("Found %d Recipes of %s", count, clazz));
 	}
 
 	@Override
@@ -170,7 +163,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 		CraftingIngredients getIngredientsFor(IRecipe recipe);
 	}
 
-    public abstract static class AbstractRecipeMapper implements IRecipeMapper{
+    public abstract static class AbstractRecipeMapper implements IRecipeMapper {
         private boolean enabled = true;
 
         @Override
@@ -212,7 +205,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 		@Override
 		public CraftingIngredients getIngredientsFor(IRecipe recipe) {
-			Iterable recipeItems = null;
+			Iterable<ItemStack> recipeItems = null;
 			if (recipe instanceof ShapedRecipes sr) {
 				recipeItems = Arrays.asList(sr.recipeItems);
 			} else if (recipe instanceof ShapelessRecipes sr) {
@@ -267,7 +260,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 				if (recipeItem instanceof ItemStack is) {
 					fixedInputs.add(is);
 				}
-                else if (recipeItem instanceof Collection recipeItemCollection) {
+                else if (recipeItem instanceof Collection<?> recipeItemCollection) {
                     if (recipeItemCollection.size() == 1) {
 						Object element = recipeItemCollection.iterator().next();
 						if (element instanceof ItemStack is) {
@@ -317,7 +310,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 		@Override
 		public CraftingIngredients getIngredientsFor(IRecipe recipe) {
-			Iterable recipeItems = null;
+			Iterable<?> recipeItems = null;
 			if (recipe instanceof RecipeShapedKleinStar rsk) {
 				recipeItems = Arrays.asList(rsk.recipeItems);
 			} else if (recipe instanceof RecipeShapelessHidden rsh) {
