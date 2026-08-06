@@ -24,6 +24,8 @@
       {"evalOD": true, "o": "OD|ingotPlatinum", "c": 1, "i": {"OD|ingotIron":16}},
 
       {"evalOD": true, "o": "OD|ingotObsidian", "c": 2, "i": {"minecraft:obsidian|0": 1}},
+      
+      {"evalOD": true, "o": "OD|ingotSteel", "c": 1, "i": ["OD|ingotIron", "minecraft:coal|1"]},
 
       /* Thermal Expansion alloys */
       {"evalOD": true, "o": "OD|ingotElectrum", "c": 2, "i": ["OD|ingotGold", "OD|ingotSilver"]},
