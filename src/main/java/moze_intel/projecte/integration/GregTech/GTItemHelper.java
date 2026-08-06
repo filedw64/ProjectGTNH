@@ -20,6 +20,10 @@ public class GTItemHelper {
         if (is == null) return false;
         return isGTtool(is.getItem());
     }
+
+	public static boolean isNullGTtool(ItemStack is) {
+		return isGTtool(is) && (is.stackTagCompound == null || is.stackTagCompound.hasNoTags());
+	}
 	
 	public static boolean isGTfluidDisplay(Item item) {
 		if (item == null) return false;
