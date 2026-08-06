@@ -3,6 +3,7 @@ package moze_intel.projecte.events;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
@@ -29,13 +30,12 @@ public class ToolTipEvent
 	public void tTipEvent(ItemTooltipEvent event)
 	{
 		ItemStack current = event.itemStack;
-		Item currentItem = current.getItem();
-		Block currentBlock = Block.getBlockFromItem(currentItem);
-
 		if (current == null)
-		{
 			return;
-		}
+		Item currentItem = current.getItem();
+		if (currentItem == null)
+			return;
+		Block currentBlock = Block.getBlockFromItem(currentItem);
 
 		if (currentBlock == ObjHandler.dmPedestal)
 		{
@@ -48,44 +48,40 @@ public class ToolTipEvent
 			event.toolTip.add(StatCollector.translateToLocal("pe.manual.tooltip1"));
 		}
 
-		if (ProjectEConfig.showPedestalTooltip
-			&& currentItem instanceof IPedestalItem)
+		if (ProjectEConfig.showPedestalTooltip && currentItem instanceof IPedestalItem ipi)
 		{
 			if (ProjectEConfig.showPedestalTooltipInGUI)
 			{
 				if (Minecraft.getMinecraft().currentScreen instanceof GUIPedestal)
 				{
 					event.toolTip.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal("pe.pedestal.on_pedestal") + " ");
-					List<String> description = ((IPedestalItem) currentItem).getPedestalDescription();
-					if (description.isEmpty())
-					{
+					List<String> description = ipi.getPedestalDescription();
+					if (description.isEmpty()) {
 						event.toolTip.add(IPedestalItem.TOOLTIPDISABLED);
 					}
-					else
-					{
-						event.toolTip.addAll(((IPedestalItem) currentItem).getPedestalDescription());
+					else {
+						event.toolTip.addAll(ipi.getPedestalDescription());
 					}
 				}
 			}
 			else
 			{
 				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal("pe.pedestal.on_pedestal") + " ");
-				List<String> description = ((IPedestalItem) currentItem).getPedestalDescription();
+				List<String> description = ipi.getPedestalDescription();
 				if (description.isEmpty())
 				{
 					event.toolTip.add(IPedestalItem.TOOLTIPDISABLED);
 				}
 				else
 				{
-					event.toolTip.addAll(((IPedestalItem) currentItem).getPedestalDescription());
+					event.toolTip.addAll(ipi.getPedestalDescription());
 				}
 			}
-
 		}
 
 		if (ProjectEConfig.showUnlocalizedNames)
 		{
-			event.toolTip.add("UN: " + Item.itemRegistry.getNameForObject(current.getItem()));
+			event.toolTip.add("UN: " + Item.itemRegistry.getNameForObject(currentItem));
 		}
 
 		if (ProjectEConfig.showODNames)
@@ -94,8 +90,8 @@ public class ToolTipEvent
 			{
 				event.toolTip.add("OD: " + OreDictionary.getOreName(id));
 			}
-			if (currentBlock instanceof BlockFluidBase) {
-				event.toolTip.add("Fluid: " + ((BlockFluidBase) currentBlock).getFluid().getName());
+			if (currentBlock instanceof BlockFluidBase bfb) {
+				event.toolTip.add("Fluid: " + bfb.getFluid().getName());
 			}
 		}
 
@@ -105,13 +101,12 @@ public class ToolTipEvent
 			{
                 double value = EMCHelper.getEmcValue(current);
 
-                if (value < 1e5)
-                    event.toolTip.add(EnumChatFormatting.YELLOW +
-                        StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") + " " + EnumChatFormatting.WHITE + String.format("%.2f", value));
-                else
-                    event.toolTip.add(EnumChatFormatting.YELLOW +
-                        StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") + " " + EnumChatFormatting.WHITE + String.format("%.3e", value));
-
+				if (value < 1e5)
+					event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
+						" " + EnumChatFormatting.WHITE + String.format("%.2f", value));
+				else
+					event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
+						" " + EnumChatFormatting.WHITE + String.format("%.3e", value));
 
                 if (current.stackSize > 1)
 				{
@@ -127,7 +122,17 @@ public class ToolTipEvent
                         else
                             event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.stackemc_tooltip_prefix") + " " + EnumChatFormatting.WHITE + String.format("%.3e", total));
                     }
-
+				}
+			}
+			else if (GTItemHelper.isGTfluidDisplay(current)) {
+				double value = GTItemHelper.GTfluidDisplayEMC(current);
+				if (value != 0) {
+					if (value < 1e5)
+						event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
+							" " + EnumChatFormatting.WHITE + String.format("%.2f", value));
+					else
+						event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
+							" " + EnumChatFormatting.WHITE + String.format("%.3e", value));
 				}
 			}
 		}
