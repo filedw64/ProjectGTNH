@@ -108,7 +108,6 @@ public class PECore
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent event)
 	{
-		ObjHandler.registerPhiloStoneSmelting();
 		proxy.initializeManual();
 
 		Integration.init();
@@ -117,6 +116,8 @@ public class PECore
 	@Mod.EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
+		ObjHandler.registerPhiloStoneSmelting();
+
 		event.registerServerCommand(new ProjectECMD());
 
 		if (!ThreadCheckUpdate.hasRunServer())
@@ -137,7 +138,7 @@ public class PECore
 
 		EMCMapper.map();
 
-        PELogger.logInfo("Registered %d EMC values. (took %dms)", EMCMapper.emc.size(), System.currentTimeMillis() - start);
+        PELogger.logInfo("Registered %d EMC values. (took %.3fs)", EMCMapper.emc.size(), (System.currentTimeMillis() - start) / 1e3);
 	}
 
 	@Mod.EventHandler
