@@ -10,6 +10,7 @@ import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLInterModComms;
+import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLMissingMappingsEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -112,12 +113,17 @@ public class PECore
 
 		Integration.init();
 	}
+	
+	@EventHandler
+	public void loadComplete(FMLLoadCompleteEvent event)
+	{
+		PELogger.logInfo("Register PhiloStong Smelting Recipe!");
+		ObjHandler.registerPhiloStoneSmelting();
+	}
 
-	@Mod.EventHandler
+	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event)
 	{
-		ObjHandler.registerPhiloStoneSmelting();
-
 		event.registerServerCommand(new ProjectECMD());
 
 		if (!ThreadCheckUpdate.hasRunServer())
@@ -141,13 +147,13 @@ public class PECore
         PELogger.logInfo("Registered %d EMC values. (took %.3fs)", EMCMapper.emc.size(), (System.currentTimeMillis() - start) / 1e3);
 	}
 
-	@Mod.EventHandler
+	@EventHandler
 	public void serverStopping(FMLServerStoppingEvent event)
 	{
 		TransmutationOffline.cleanAll();
 	}
 
-	@Mod.EventHandler
+	@EventHandler
 	public void serverQuit(FMLServerStoppedEvent event)
 	{
 		TileEntityHandler.clearAll();
@@ -164,7 +170,7 @@ public class PECore
 		PELogger.logInfo("Completed server-stop actions.");
 	}
 
-	@Mod.EventHandler
+	@EventHandler
 	public void onIMCMessage(FMLInterModComms.IMCEvent event)
 	{
 		for (FMLInterModComms.IMCMessage msg : event.getMessages())
@@ -173,7 +179,7 @@ public class PECore
 		}
 	}
 
-	@Mod.EventHandler
+	@EventHandler
 	public void remap(FMLMissingMappingsEvent event) {
 		for (FMLMissingMappingsEvent.MissingMapping mapping : event.get())
 		{
