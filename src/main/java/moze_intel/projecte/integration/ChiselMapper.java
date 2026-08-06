@@ -7,7 +7,6 @@ import com.cricketcraft.chisel.api.carving.ICarvingVariation;
 import cpw.mods.fml.common.Loader;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.utils.PELogger;
-import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
@@ -28,12 +27,13 @@ public class ChiselMapper extends AbstractIntegrationMapper {
         if(!Loader.isModLoaded("chisel")) return;
 		ICarvingRegistry carvingRegistry = CarvingUtils.getChiselRegistry();
 		if (carvingRegistry == null) return;
-		for (String name: chiselBlockNames) {
+
+		/*for (String name: chiselBlockNames) {
 			Block block = Block.getBlockFromName("chisel:" + name);
 			if (block != null) {
-				mapper.setValueBefore(NormalizedSimpleStack.getFor(block), 1.0);
+				mapper.setValueBefore(NormalizedSimpleStack.forFluid(block), 1.0);
 			}
-		}
+		}*/
 
 		for (String name : carvingRegistry.getSortedGroupNames()) {
 			handleCarvingGroup(carvingRegistry.getGroup(name));
@@ -43,11 +43,11 @@ public class ChiselMapper extends AbstractIntegrationMapper {
 	private void handleCarvingGroup(ICarvingGroup group) {
 		List<NormalizedSimpleStack> stacks = new ArrayList<>();
 		for (ICarvingVariation v : group.getVariations()) {
-			stacks.add(NormalizedSimpleStack.getFor(v.getBlock(), v.getBlockMeta()));
+			stacks.add(NormalizedSimpleStack.forItem(v.getBlock(), v.getBlockMeta()));
 		}
 		if (group.getOreName() != null) {
 			for (ItemStack ore : OreDictionary.getOres(group.getOreName())) {
-				stacks.add(NormalizedSimpleStack.getFor(ore));
+				stacks.add(NormalizedSimpleStack.forItem(ore));
 			}
 		}
 		for (int i = 1; i < stacks.size(); i++) {
