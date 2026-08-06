@@ -8,59 +8,58 @@
       "OD|treeSapling": 32,
       "OD|stickWood": 4,
       "OD|treeLeaves": 1,
-			"blockCloth": 48,
 
       //building stuff
       "OD|stone": 1,
       "OD|cobblestone": 1,
 
       //gems and dusts
-      "OD|gemDiamond": 8192,
-      "OD|dustRedstone": 64,
-      "OD|dustGlowstone": 384,
-      "OD|dustCoal": 64,
-      "OD|dustCharcoal": 16,
-      "OD|dustSulfur": 32,
+      "OD|gemDiamond": 8192
+      //"OD|dustRedstone": 64,
+      //"OD|dustGlowstone": 384,
+      //"OD|dustCoal": 64,
+      //"OD|dustCharcoal": 16,
+      //"OD|dustSulfur": 32,
 
       /*TC*/
-      "OD|ingotThaumium": 2048,
+      //"OD|ingotThaumium": 2048,
 
       /*Ender IO*/
-      "OD|itemSilicon": 32,
+      //"OD|itemSilicon": 32,
 
       /*Mekanism*/
-      "OD|ingotOsmium": 512,
+      //"OD|ingotOsmium": 512,
 
       //AE2
-      "OD|crystalCertusQuartz": 64,
-      "OD|crystalFluix": 256,
-      "OD|dustCertusQuartz": 32,
-      "OD|dustFluix": 128,
+      //"OD|crystalCertusQuartz": 64,
+      //"OD|crystalFluix": 256,
+      //"OD|dustCertusQuartz": 32,
+      //"OD|dustFluix": 128,
 
       //BOP-ProjectRed
-      "OD|gemRuby": 2048,
-      "OD|gemSapphire": 2048,
-      "OD|gemPeridot": 2048,
-      "OD|blockMarble": 4,
+      //"OD|gemRuby": 2048,
+      //"OD|gemSapphire": 2048,
+      //"OD|gemPeridot": 2048,
+      //"OD|blockMarble": 4,
 
       //TE
-      "OD|blockGlassHardened": 192,
+      //"OD|blockGlassHardened": 192,
 
       //IC2 BigReactors
-      "OD|itemRubber": 32,
-      "OD|ingotUranium": 4096,
-      "OD|ingotCyanite": 1024,
+      //"OD|itemRubber": 32,
+      //"OD|ingotUranium": 4096,
+      //"OD|ingotCyanite": 1024,
 
       //Thaumcraft
-      "OD|shardAir": 64,
-      "OD|shardFire": 64,
-      "OD|shardWater": 64,
-      "OD|shardEarth": 64,
-      "OD|shardOrder": 64,
-      "OD|shardEntropy": 64,
+      //"OD|shardAir": 64,
+      //"OD|shardFire": 64,
+      //"OD|shardWater": 64,
+      //"OD|shardEarth": 64,
+      //"OD|shardOrder": 64,
+      //"OD|shardEntropy": 64,
 
       //Forbidden Magic
-      "OD|shardNether": 64
+      //"OD|shardNether": 64
     }
   }
 }
