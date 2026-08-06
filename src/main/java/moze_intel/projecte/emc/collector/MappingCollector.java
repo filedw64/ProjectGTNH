@@ -103,7 +103,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
     protected class Conversion {
 		public T output;
 
-		public int outnumber = 1;
+		public int outnumber;
 		public V value = arithmetic.getZero();
 		public Map<T, Integer> ingredientCounts;
 
