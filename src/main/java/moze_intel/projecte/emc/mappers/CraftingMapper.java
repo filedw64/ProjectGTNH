@@ -53,7 +53,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
             if (recipeOutput.isItemEnchanted()) {
                 EnchantmentBlacklist.add(recipeOutput);
             }
-			NormalizedSimpleStack recipeOutputNorm = NormalizedSimpleStack.getFor(recipeOutput);
+			NormalizedSimpleStack recipeOutputNorm = NormalizedSimpleStack.forItem(recipeOutput);
 			for (IRecipeMapper recipeMapper : recipeMappers) {
 				if (!recipeMapper.isEnabled() || !recipeMapper.canHandle(recipe)) continue;
                 handled = true;
@@ -69,23 +69,23 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     if (stack == null || stack.getItem() == null) continue;
                     if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
                         //Don't check for doesContainerItemLeaveCraftingGrid for WILDCARD-ItemStacks
-                        ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 1);
+                        ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
                         continue;
                     }
                     //stack does not have a wildcard damage value
                     try {
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
-                            mapper.setValueBefore(NormalizedSimpleStack.getFor(stack), -Double.MAX_VALUE);
-                            ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
+                            mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), -Double.MAX_VALUE);
+                            ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 0);
                             continue;
                         }
 
                         ItemStack container = stack.getItem().getContainerItem(stack);
                         if (container != null && container.getItem() != null)
-                            ingredientMap.addIngredient(NormalizedSimpleStack.getFor(container), -1);
+                            ingredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
-                        ingredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 1);
+                        ingredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
                     } catch (Exception e) {
                         PELogger.logFatal("Exception in CraftingMapper when parsing Recipe Ingredients: RecipeType: %s, Ingredient: %s", recipe.getClass().getName(), stack.toString());
                         e.printStackTrace();
@@ -94,24 +94,24 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                 }
 
                 for (Iterable<ItemStack> multiIngredient : ingredients.multiIngredients) {
-                    NormalizedSimpleStack nss = NormalizedSimpleStack.createFake(multiIngredient.toString());
+                    NormalizedSimpleStack nss = NormalizedSimpleStack.forFake(multiIngredient.toString());
                     ingredientMap.addIngredient(nss, 1);
                     for (ItemStack stack : multiIngredient) {
                         if (stack == null || stack.getItem() == null) continue;
                         IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
                         String id = Item.itemRegistry.getNameForObject(stack.getItem());
                         if (id.startsWith("gregtech:gt.metatool")) {
-                            mapper.setValueBefore(NormalizedSimpleStack.getFor(stack), -Double.MAX_VALUE);
-                            groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 0);
+                            mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), -Double.MAX_VALUE);
+                            groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 0);
                             mapper.addConversion(1, nss, groupIngredientMap.getMap());
                             continue;
                         }
 
                         ItemStack container = stack.getItem().getContainerItem(stack);
                         if (container != null && container.getItem() != null)
-                            groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(container), -1);
+                            groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
-                        groupIngredientMap.addIngredient(NormalizedSimpleStack.getFor(stack), 1);
+                        groupIngredientMap.addIngredient(NormalizedSimpleStack.forItem(stack), 1);
                         mapper.addConversion(1, nss, groupIngredientMap.getMap());
                     }
                 }

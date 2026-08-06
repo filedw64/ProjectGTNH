@@ -54,15 +54,15 @@ public class ConversionProxyImpl implements IConversionProxy
 		}
 
 		if (object instanceof ItemStack) {
-			return NormalizedSimpleStack.getFor((ItemStack) object);
+			return NormalizedSimpleStack.forItem((ItemStack) object);
 		} else if (object instanceof FluidStack) {
-			return NormalizedSimpleStack.getFor(((FluidStack) object).getFluid());
+			return NormalizedSimpleStack.forFluid(((FluidStack) object).getFluid());
 		} else if (object instanceof String) {
 			return NormalizedSimpleStack.forOreDictionary((String) object);
 		} else if (object != null && object.getClass().equals(Object.class)) {
 			if (fakes.containsKey(object)) return fakes.get(object);
 
-			NormalizedSimpleStack nss = NormalizedSimpleStack.createFake(fakes.size() + " by " + getActiveMod());
+			NormalizedSimpleStack nss = NormalizedSimpleStack.forFake(fakes.size() + " by " + getActiveMod());
 			fakes.put(object, nss);
 			return nss;
 		} else {

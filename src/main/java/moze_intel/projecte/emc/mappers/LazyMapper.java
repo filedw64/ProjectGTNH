@@ -9,6 +9,8 @@ import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.ItemHelper;
 
+import java.util.Collections;
+
 public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	IMappingCollector<NormalizedSimpleStack, Double> mapper;
@@ -22,7 +24,7 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Blocks.netherrack), 1);
 		addMapping(new ItemStack(Blocks.dirt), 1);
 		addMapping(new ItemStack(Blocks.dirt, 1, 2), 2);
-        addMapping(new ItemStack(Blocks.grass), 2);
+		addMapping(new ItemStack(Blocks.grass), 2);
 		addMapping(new ItemStack(Blocks.mycelium), 2);
 		addMapping(new ItemStack(Blocks.leaves), 1);
 		addMapping(new ItemStack(Blocks.leaves2), 1);
@@ -63,16 +65,16 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 			addMapping(new ItemStack(Blocks.stained_hardened_clay, 1, i), 64);
 		}
 
-        addMapping(new ItemStack(Blocks.sponge), 128);
+		addMapping(new ItemStack(Blocks.sponge), 128);
 		addMapping(new ItemStack(Items.apple), 128);
 
 		addMapping(new ItemStack(Items.dye, 1, 3), 128);//Cocoa beans
 		addMapping(new ItemStack(Blocks.pumpkin), 144);
 		addMapping(new ItemStack(Items.bone), 144);
 
-        addMapping(new ItemStack(Blocks.mossy_cobblestone), 2);
+		addMapping(new ItemStack(Blocks.mossy_cobblestone), 2);
 		//Mossy Stone Bricks
-		mapper.addConversion(1, NormalizedSimpleStack.getFor(new ItemStack(Blocks.stonebrick, 1, 1)), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.stonebrick), 2));
+		mapper.addConversion(1, NormalizedSimpleStack.forItem(new ItemStack(Blocks.stonebrick, 1, 1)), ImmutableMap.of(NormalizedSimpleStack.forItem(Blocks.stonebrick), 2));
 		addMapping(new ItemStack(Blocks.stonebrick, 1, 2), 1);
 		addMapping(new ItemStack(Blocks.stonebrick, 1, 3), 1);
 		addMapping(new ItemStack(Items.saddle), 192);
@@ -90,9 +92,9 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.record_ward), 2048);
 		addMapping(new ItemStack(Items.string), 12);
 
-        /*for (int i = 1; i < 16; i++) {
-            mapper.addConversion(1, NormalizedSimpleStack.getFor(Blocks.wool, i), ImmutableMap.of(NormalizedSimpleStack.getFor(Blocks.wool), 1));
-        }*/
+		for (int i = 1; i < 16; i++) {
+			mapper.setValueFromConversion(1, NormalizedSimpleStack.forItem(Blocks.wool, i), Collections.singletonList(NormalizedSimpleStack.forItem(Blocks.wool)));
+		}
 
 		addMapping(new ItemStack(Items.rotten_flesh), 32);
 		addMapping(new ItemStack(Items.slime_ball), 32);
@@ -135,8 +137,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.emerald), 16384);
 
 		addMapping(new ItemStack(Items.nether_star), 139264);
-        addMapping(new ItemStack(Items.iron_horse_armor), 2048);
-        addMapping(new ItemStack(Items.golden_horse_armor), 16384);
+		addMapping(new ItemStack(Items.iron_horse_armor), 2048);
+		addMapping(new ItemStack(Items.golden_horse_armor), 16384);
 		addMapping(new ItemStack(Items.diamond_horse_armor), 40960);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 1), 1);
 		addMapping(new ItemStack(Blocks.tallgrass, 1, 2), 1);
@@ -144,21 +146,21 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(new ItemStack(Items.snowball), 1);
 		addMapping(new ItemStack(Items.filled_map), 1472);
 
-        addMapping(new ItemStack(Items.skull, 1, 0), 256);
-        addMapping(new ItemStack(Items.skull, 1, 2), 256);
-        addMapping(new ItemStack(Items.skull, 1, 4), 256);
+		addMapping(new ItemStack(Items.skull, 1, 0), 256);
+		addMapping(new ItemStack(Items.skull, 1, 2), 256);
+		addMapping(new ItemStack(Items.skull, 1, 4), 256);
 
 		addMapping("appliedenergistics2:item.ItemMultiMaterial", 1, 256);
 	}
 
-    protected void addMapping(ItemStack itemStack, double value) {
-        this.mapper.setValueBefore(NormalizedSimpleStack.getFor(itemStack), value);
-    }
+	protected void addMapping(ItemStack itemStack, double value) {
+		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(itemStack), value);
+	}
 
 	protected void addMapping(String unlocalName, int meta, double value) {
 		ItemStack stack = ItemHelper.getStackFromString(unlocalName, meta);
 		if (stack == null || stack.getItem() == null) return;
-        addMapping(stack, value);
+		addMapping(stack, value);
 	}
 
 	@Override

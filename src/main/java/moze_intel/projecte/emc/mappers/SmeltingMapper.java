@@ -14,8 +14,8 @@ public class SmeltingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 				return;
 			}
 			IngredientMap<NormalizedSimpleStack> map = new IngredientMap<>();
-			NormalizedSimpleStack normInput = NormalizedSimpleStack.getFor(input),
-				normOutput = NormalizedSimpleStack.getFor(output);
+			NormalizedSimpleStack normInput = NormalizedSimpleStack.forItem(input),
+				normOutput = NormalizedSimpleStack.forItem(output);
 			map.addIngredient(normInput, input.stackSize);
 			mapper.addConversion(output.stackSize, normOutput, map.getMap());
 		});

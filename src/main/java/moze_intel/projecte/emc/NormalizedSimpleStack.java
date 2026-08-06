@@ -1,7 +1,5 @@
 package moze_intel.projecte.emc;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import moze_intel.projecte.integration.GregTech.GTNSSItem;
@@ -11,121 +9,109 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class NormalizedSimpleStack {
-	public static Map<String, Set<Integer>> idWithUsedMetaData = Maps.newHashMap();
-
-	public static NormalizedSimpleStack getFor(String itemName, int damage) {
-		NSSItem normStack;
-		try
-		{
-			normStack = new NSSItem(itemName, damage);
-		} catch (Exception e) {
-			PELogger.logError("Could not create NSSItem: " + e.getMessage());
-			return null;
-		}
-		Set<Integer> usedMetadata;
-		if (!idWithUsedMetaData.containsKey(normStack.itemName)) {
-			usedMetadata = Sets.newHashSet();
-			idWithUsedMetaData.put(normStack.itemName, usedMetadata);
-		} else {
-			usedMetadata = idWithUsedMetaData.get(normStack.itemName);
-		}
-		usedMetadata.add(normStack.damage);
-		return normStack;
-	}
-
-	public static NormalizedSimpleStack getFor(Block block) {
-		return getFor(block, 0);
-	}
-
-	public static NormalizedSimpleStack getFor(Block block, int meta) {
-		String id = Block.blockRegistry.getNameForObject(block);
-		if (id == null) return null;
-		return getFor(id, meta);
-	}
-
-	public static NormalizedSimpleStack getFor(Item item) {
-		return getFor(item, 0);
-	}
-
-    public static NormalizedSimpleStack getFor(Item item, int meta) {
-		String id = Item.itemRegistry.getNameForObject(item);
-		if (id == null) return null;
-		return getFor(id, meta);
-    }
-
-	public static NormalizedSimpleStack getFor(ItemStack stack) {
-		if (stack == null || stack.getItem() == null) return null;
-        if (GTItemHelper.isGTtool(stack))
-            return new GTNSSItem(stack);
-		return getFor(stack.getItem(), stack.getItemDamage());
-	}
-
-	public static NormalizedSimpleStack getFor(FluidStack stack) {
-		if (stack == null || stack.getFluid() == null) return null;
-		return getFor(stack.getFluid());
-	}
-
-	public static NormalizedSimpleStack getFor(Fluid fluid) {
-        if (NSSFluid.nameMap.containsKey(fluid))
-            return NSSFluid.nameMap.get(fluid);
-		return new NSSFluid(fluid);
-	}
 
 	public static <V extends Comparable<V>> void addMappings(IMappingCollector<NormalizedSimpleStack, V> mapper) {
-		for (Map.Entry<String, Set<Integer>> entry : idWithUsedMetaData.entrySet()) {
-			entry.getValue().remove(OreDictionary.WILDCARD_VALUE);
-			entry.getValue().add(0);
-			NormalizedSimpleStack stackWildcard = new NSSItem(entry.getKey(), OreDictionary.WILDCARD_VALUE);
-			for (int metadata : entry.getValue()) {
-				mapper.addConversion(1, stackWildcard, Arrays.asList(new NSSItem(entry.getKey(), metadata)));
+		idWithUsedMeta.forEach((id, metaSet) -> {
+			metaSet.remove(OreDictionary.WILDCARD_VALUE);
+			metaSet.add(0);
+			NormalizedSimpleStack stackWildcard = new NSSItem(id, OreDictionary.WILDCARD_VALUE);
+			for (int metadata : metaSet) {
+				mapper.addConversion(1, stackWildcard, Collections.singletonList(new NSSItem(id, metadata)));
 			}
-		}
+		});
 
-		for (Map.Entry<String, NormalizedSimpleStack> entry: oreDictStacks.entrySet()) {
-			NormalizedSimpleStack oreDictStack = entry.getValue();
-			List<ItemStack> list = ItemHelper.getODItems(entry.getKey());
-			for (ItemStack i: list) {
-				mapper.addConversion(1, oreDictStack, Arrays.asList(NormalizedSimpleStack.getFor(i)));
-				mapper.addConversion(1, NormalizedSimpleStack.getFor(i), Arrays.asList(oreDictStack));
+		oreDictMap.forEach((odName, nssOre) -> {
+			List<ItemStack> list = ItemHelper.getODItems(odName);
+			for (ItemStack is: list) {
+				mapper.addConversion(1, nssOre, Collections.singletonList(NormalizedSimpleStack.forItem(is)));
+				mapper.addConversion(1, NormalizedSimpleStack.forItem(is), Collections.singletonList(nssOre));
 			}
-		}
+		});
 	}
 
+	public static void clearMap() {
+		idWithUsedMeta.clear();
+		fakeMap.clear();
+		fluidMap.clear();
+		oreDictMap.clear();
+	}
+
+	@Override
 	public abstract boolean equals(Object o);
+
+	@Override
+	public abstract String toString();
+
+	@Override
+	public abstract int hashCode();
+
 	public abstract String json();
 
-	private static final Map<String, NormalizedSimpleStack> oreDictStacks = new HashMap<>();
-	public static NormalizedSimpleStack forOreDictionary(String oreDictionaryName)
-	{
-		if (oreDictStacks.containsKey(oreDictionaryName))
-			return oreDictStacks.get(oreDictionaryName);
-		List<ItemStack> list = OreDictionary.getOres(oreDictionaryName);
-		if (list == null || list.isEmpty()) {
+	private static final Map<String, Set<Integer>> idWithUsedMeta = new HashMap<>();
+
+	public static NSSItem forItem(String itemName, int damage) {
+		if (Item.itemRegistry.getObject(itemName) == null) {
+			PELogger.logError("Could not create NSSItem: %s", itemName);
 			return null;
 		}
-		NormalizedSimpleStack nss = new NSSOreDictionary(oreDictionaryName);
-		oreDictStacks.put(oreDictionaryName, nss);
+		NSSItem nss = new NSSItem(itemName, damage);
+		Set<Integer> usedMeta;
+		if (!idWithUsedMeta.containsKey(itemName)) {
+			usedMeta = new HashSet<>();
+			idWithUsedMeta.put(itemName, usedMeta);
+		}
+		else {
+			usedMeta = idWithUsedMeta.get(itemName);
+		}
+		usedMeta.add(damage);
 		return nss;
+	}
+
+	public static NSSItem forItem(Block block) {
+		return forItem(block, 0);
+	}
+
+	public static NSSItem forItem(Block block, int meta) {
+		String id = Block.blockRegistry.getNameForObject(block);
+		if (id == null) return null;
+		return forItem(id, meta);
+	}
+
+	public static NSSItem forItem(Item item) {
+		return forItem(item, 0);
+	}
+
+	public static NSSItem forItem(Item item, int meta) {
+		String id = Item.itemRegistry.getNameForObject(item);
+		if (id == null) return null;
+		return forItem(id, meta);
+	}
+
+	public static NSSItem forItem(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) return null;
+		if (GTItemHelper.isGTtool(stack))
+			return new GTNSSItem(stack);
+		return forItem(stack.getItem(), stack.getItemDamage());
 	}
 
 	public static class NSSItem extends NormalizedSimpleStack {
 		public final String itemName;
 		public final int damage;
+
 		protected NSSItem(String itemName, int damage) {
-			if (Item.itemRegistry.getObject(itemName) == null) {
-				throw new IllegalArgumentException("Invalid Item with itemName = " + itemName);
-			}
-            this.itemName = itemName;
+			this.itemName = itemName;
 			this.damage = damage;
 		}
 
@@ -137,86 +123,96 @@ public abstract class NormalizedSimpleStack {
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof NSSItem other) {
-                return this.itemName.equals(other.itemName) && this.damage == other.damage;
+				return this.itemName.equals(other.itemName) && this.damage == other.damage;
 			}
-
 			return false;
 		}
 
 		@Override
-		public String json()
-		{
+		public String json() {
 			return String.format("%s|%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
 		}
 
 		@Override
 		public String toString() {
 			Object obj = Item.itemRegistry.getObject(itemName);
-
-			if (obj != null) {
-				return String.format("%s(%s:%s)", itemName, Item.itemRegistry.getIDForObject(obj), damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
-			}
-
-			return String.format("%s(???:%s)", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
+			return String.format("%s(%s:%s)", itemName, Item.itemRegistry.getIDForObject(obj),
+				damage == OreDictionary.WILDCARD_VALUE ? "*" : damage);
 		}
 	}
 
-	public static NormalizedSimpleStack createFake(String description) {
-		return new NSSFake(description);
+	private static final Map<String, NSSFake> fakeMap = new HashMap<>();
+
+	public static NSSFake forFake(String desc) {
+		if (fakeMap.containsKey(desc))
+			return fakeMap.get(desc);
+		NSSFake nss = new NSSFake(desc);
+		fakeMap.put(desc, nss);
+		return nss;
 	}
 
 	public static class NSSFake extends NormalizedSimpleStack {
-        private static Map<String, Integer> counterMap = new HashMap<>();
-
-		public final String description;
-		public final int counter;
 		private static int fakeItemCounter = 0;
-		public NSSFake(String description) {
-            this.description = description;
-            if (counterMap.containsKey(description)) {
-                this.counter = counterMap.get(description);
-            }
-            else {
-                this.counter = (++fakeItemCounter);
-                counterMap.put(description, this.counter);
-            }
-		}
 
-        public static void clearMap() {
-            counterMap = new HashMap<>();
-        }
-
-		public boolean equals(Object o) {
-			if (o instanceof NSSFake) {
-				return o == this;
-			}
-			return false;
+		public final String desc;
+		public final int counter;
+		public NSSFake(String desc) {
+			this.desc = desc;
+			this.counter = (++fakeItemCounter);
 		}
 
 		@Override
-		public String json()
-		{
-			return "FAKE|" + this.counter + " " + this.description;
+		public boolean equals(Object o) {
+			return o == this;
+		}
+
+		@Override
+		public String json() {
+			return "FAKE|" + this.counter + " " + this.desc;
 		}
 
 		@Override
 		public String toString() {
-			return "NSSFAKE" + counter + ": " + description;
+			return "NSSFAKE" + counter + ": " + desc;
+		}
+
+		@Override
+		public int hashCode() {
+			return desc.hashCode();
 		}
 	}
 
-	public static class NSSFluid extends NormalizedSimpleStack {
-        public static Map<Fluid, NSSFluid> nameMap = new HashMap<>();
+	private static final Map<Fluid, NSSFluid> fluidMap = new HashMap<>();
 
+	public static NSSFluid forFluid(Fluid fluid) {
+		if (fluid == null) return null;
+		if (fluidMap.containsKey(fluid))
+			return fluidMap.get(fluid);
+		NSSFluid nss = new NSSFluid(fluid);
+		fluidMap.put(fluid, nss);
+		return nss;
+	}
+
+	public static NSSFluid forFluid(FluidStack stack) {
+		if (stack == null || stack.getFluid() == null) return null;
+		return forFluid(stack.getFluid());
+	}
+
+	public static NSSFluid forFluid(String fluidName) {
+		if (fluidName == null || fluidName.isEmpty()) return null;
+		return forFluid(FluidRegistry.getFluid(fluidName));
+	}
+
+	public static class NSSFluid extends NormalizedSimpleStack {
 		public final String name;
 		private NSSFluid(Fluid f) {
 			this.name = f.getName();
-            nameMap.put(f, this);
 		}
 
+		@Override
 		public boolean equals(Object o) {
-			if (o instanceof NSSFluid) {
-				return name.equals(((NSSFluid) o).name);
+			if (o instanceof NSSFluid other) {
+				return name.equals(other.name);
 			}
 			return false;
 		}
@@ -224,7 +220,7 @@ public abstract class NormalizedSimpleStack {
 		@Override
 		public String json()
 		{
-			return "FLUID|"+this.name;
+			return "FLUID|" + this.name;
 		}
 
 		@Override
@@ -238,9 +234,23 @@ public abstract class NormalizedSimpleStack {
 		}
 	}
 
-	public static class NSSOreDictionary extends NormalizedSimpleStack {
+	private static final Map<String, NSSOreDictionary> oreDictMap = new HashMap<>();
 
+	public static NSSOreDictionary forOreDictionary(String odName) {
+		if (oreDictMap.containsKey(odName))
+			return oreDictMap.get(odName);
+		List<ItemStack> list = OreDictionary.getOres(odName);
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		NSSOreDictionary nss = new NSSOreDictionary(odName);
+		oreDictMap.put(odName, nss);
+		return nss;
+	}
+
+	public static class NSSOreDictionary extends NormalizedSimpleStack {
 		public final String od;
+
 		private NSSOreDictionary(String od) {
 			this.od = od;
 		}
@@ -254,8 +264,8 @@ public abstract class NormalizedSimpleStack {
 		@Override
 		public boolean equals(Object o)
 		{
-			if (o instanceof NSSOreDictionary) {
-				return this.od.equals(((NSSOreDictionary) o).od);
+			if (o instanceof NSSOreDictionary other) {
+				return this.od.equals(other.od);
 			}
 			return false;
 		}
@@ -272,35 +282,22 @@ public abstract class NormalizedSimpleStack {
 		}
 	}
 
-	public static NormalizedSimpleStack fromSerializedItem(String serializedItem) {
-		int pipeIndex = serializedItem.indexOf('|');
-		if (pipeIndex < 0)
-		{
-			throw new IllegalArgumentException(String.format("Cannot parse '%s' as itemstack. Missing | to separate metadata.", serializedItem));
+	public static NSSItem fromJson(String jsonStr) {
+		int pipeIndex = jsonStr.indexOf('|');
+		String name = jsonStr.substring(0, pipeIndex);
+		String metaStr = jsonStr.substring(pipeIndex + 1).split("\\{")[0];
+		int itemDamage;
+		if (metaStr.equals("*")) {
+			itemDamage = OreDictionary.WILDCARD_VALUE;
 		}
-		String itemName = serializedItem.substring(0, pipeIndex);
-        String metaAndNbt = serializedItem.substring(pipeIndex + 1);
-        int braceIndex = metaAndNbt.indexOf('{');
-        String itemDamageString;
-        if (braceIndex >= 0) {
-            itemDamageString = metaAndNbt.substring(0, braceIndex);
-        } else {
-            itemDamageString = metaAndNbt;
-        }
-        if (itemDamageString.isEmpty()) {
-            throw new IllegalArgumentException("Metadata is empty");
-        }
-        int itemDamage;
-        if (itemDamageString.equals("*")) {
-            itemDamage = OreDictionary.WILDCARD_VALUE;
-        }
-        else {
-            try {
-                itemDamage = Integer.parseInt(itemDamageString);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(String.format("Could not parse '%s' to metadata-integer", itemDamageString), e);
-            }
-        }
-        return NormalizedSimpleStack.getFor(itemName, itemDamage);
+		else {
+			try {
+				itemDamage = Integer.parseInt(metaStr);
+			} catch (NumberFormatException e) {
+				PELogger.logError("Cannot get NSSItem from %s: %s", jsonStr, e);
+				return null;
+			}
+		}
+		return forItem(name, itemDamage);
 	}
 }

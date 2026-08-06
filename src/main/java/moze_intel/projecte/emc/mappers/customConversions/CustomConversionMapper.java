@@ -102,6 +102,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 				for (CustomConversion conversion : entry.getValue().conversions)
 				{
 					NormalizedSimpleStack output = getNSSfromJsonString(conversion.output, fakes);
+					if (output == null) continue;
 					mapper.addConversion(conversion.count, output, convertToNSSMap(conversion.ingredients, fakes));
 				}
 			} catch (Exception e) {
@@ -124,7 +125,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 							String odName = ((NormalizedSimpleStack.NSSOreDictionary) something).od;
 							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
-								mapper.setValueBefore(NormalizedSimpleStack.getFor(itemStack), entry.getValue());
+								mapper.setValueBefore(NormalizedSimpleStack.forItem(itemStack), entry.getValue());
 							}
 						}
 					}
@@ -140,7 +141,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 							String odName = ((NormalizedSimpleStack.NSSOreDictionary) something).od;
 							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
-								mapper.setValueAfter(NormalizedSimpleStack.getFor(itemStack), entry.getValue());
+								mapper.setValueAfter(NormalizedSimpleStack.forItem(itemStack), entry.getValue());
 							}
 						}
 					}
@@ -150,12 +151,12 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 					for (CustomConversion conversion : file.values.conversion)
 					{
 						NormalizedSimpleStack out = getNSSfromJsonString(conversion.output, fakes);
-						if (conversion.evalOD && out instanceof NormalizedSimpleStack.NSSOreDictionary)
+						if (conversion.evalOD && out instanceof NormalizedSimpleStack.NSSOreDictionary nssOD)
 						{
-							String odName = ((NormalizedSimpleStack.NSSOreDictionary) out).od;
+							String odName = nssOD.od;
 							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
-								mapper.setValueFromConversion(conversion.count, NormalizedSimpleStack.getFor(itemStack), convertToNSSMap(conversion.ingredients, fakes));
+								mapper.setValueFromConversion(conversion.count, NormalizedSimpleStack.forItem(itemStack), convertToNSSMap(conversion.ingredients, fakes));
 							}
 						}
 						mapper.setValueFromConversion(conversion.count, out, convertToNSSMap(conversion.ingredients, fakes));
@@ -181,7 +182,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			}
 			else
 			{
-				NormalizedSimpleStack nssFake = NormalizedSimpleStack.createFake(fakeIdentifier);
+				NormalizedSimpleStack nssFake = NormalizedSimpleStack.forFake(fakeIdentifier);
 				fakes.put(fakeIdentifier, nssFake);
 				return nssFake;
 			}
@@ -190,10 +191,10 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			String fluidName = s.substring("FLUID|".length());
 			Fluid fluid = FluidRegistry.getFluid(fluidName);
 			if (fluid == null) return null;
-			return NormalizedSimpleStack.getFor(fluid);
+			return NormalizedSimpleStack.forFluid(fluid);
 		}
 		else {
-			return NormalizedSimpleStack.fromSerializedItem(s);
+			return NormalizedSimpleStack.fromJson(s);
 		}
 	}
 

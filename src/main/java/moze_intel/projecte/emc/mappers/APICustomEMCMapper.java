@@ -40,7 +40,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 			modMap = Maps.newHashMap();
 			customEMCforMod.put(modId, modMap);
 		}
-		modMap.put(NormalizedSimpleStack.getFor(stack), emcValue);
+		modMap.put(NormalizedSimpleStack.forItem(stack), emcValue);
 	}
 
 	public void registerCustomEMC(Object o, double emcValue) {

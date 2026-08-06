@@ -21,7 +21,7 @@ public abstract class AbstractIntegrationMapper {
     }
 
     protected void addMapping(String id, int meta, double value) {
-        addMapping(NormalizedSimpleStack.getFor(id, meta), value);
+        addMapping(NormalizedSimpleStack.forItem(id, meta), value);
     }
 
     protected void addMapping(String id, double value) {
@@ -29,12 +29,12 @@ public abstract class AbstractIntegrationMapper {
     }
 
     protected void addMapping(ItemStack istack, double value) {
-        addMapping(NormalizedSimpleStack.getFor(istack), value);
+        addMapping(NormalizedSimpleStack.forItem(istack), value);
     }
 
     protected void addSingleConversion(String in, int inMeta, int inNum, String out, int outMeta, int outNum) {
-        NormalizedSimpleStack output = NormalizedSimpleStack.getFor(out, outMeta),
-            input = NormalizedSimpleStack.getFor(in, inMeta);
+        NormalizedSimpleStack output = NormalizedSimpleStack.forItem(out, outMeta),
+            input = NormalizedSimpleStack.forItem(in, inMeta);
         if (output == null || input == null) return;
         mapper.addConversion(outNum, output, ImmutableMap.of(input, inNum));
     }
