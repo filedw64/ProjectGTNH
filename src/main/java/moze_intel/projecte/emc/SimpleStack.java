@@ -40,15 +40,11 @@ public class SimpleStack
 
 	public ItemStack toItemStack()
 	{
-		if (isValid())
-		{
-			Item item = Item.getItemById(id);
+		if (!isValid()) return null;
 
-			if (item != null)
-			{
-                return new ItemStack(item, qnty, damage);
-			}
-		}
+		Item item = Item.getItemById(id);
+		if (item != null)
+			return new ItemStack(item, qnty, damage);
 
 		return null;
 	}
@@ -61,7 +57,7 @@ public class SimpleStack
 	@Override
 	public int hashCode()
 	{
-		return id;
+		return id << 15 | damage;
 	}
 
 	@Override
