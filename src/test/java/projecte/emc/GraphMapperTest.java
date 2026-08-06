@@ -14,8 +14,8 @@ import org.junit.rules.Timeout;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,12 +39,12 @@ public class GraphMapperTest {
 	public IMappingCollector<String, Double> mappingCollector;
 
 	@org.junit.Test
-	public void testGetOrCreateList() {
-		Map<String, List<Integer>> map = new HashMap<>();
-		List<Integer> l1 = MappingCollector.getOrCreateList(map, "abc");
+	public void testGetOrCreateSet() {
+		Map<String, Set<Integer>> map = new HashMap<>();
+		Set<Integer> l1 = MappingCollector.getOrCreateSet(map, "abc");
 		assertNotNull(l1);
 		assertTrue(map.containsKey("abc"));
-		List<Integer> l2 = MappingCollector.getOrCreateList(map, "abc");
+		Set<Integer> l2 = MappingCollector.getOrCreateSet(map, "abc");
 		assertSame(l1, l2);
 	}
 

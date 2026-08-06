@@ -1,13 +1,13 @@
 package moze_intel.projecte.emc.collector;
 
-import com.google.common.collect.Maps;
 import moze_intel.projecte.emc.arithmetics.IValueArithmetic;
 import moze_intel.projecte.utils.PELogger;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class MappingCollector<T, V extends Comparable<V>> extends AbstractMappingCollector<T,V> {
 
@@ -15,93 +15,89 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		super(arithmetic);
 	}
 
-	protected Map<T, Conversion> overwriteConversion = Maps.newHashMap();
-	protected Map<T, List<Conversion>> conversionsFor = Maps.newHashMap();
-	protected Map<T, List<Conversion>> usedIn = Maps.newHashMap();
-	protected Map<T, V> fixValueBeforeInherit = Maps.newHashMap();
-	protected Map<T, V> fixValueAfterInherit = Maps.newHashMap();
+	protected Map<T, Conversion> overwriteConversion = new HashMap<>();
+	protected Map<T, Set<Conversion>> conversionsFor = new HashMap<>();
+	protected Map<T, Set<Conversion>> usedIn = new HashMap<>();
+	protected Map<T, V> valueBefore = new HashMap<>();
+	protected Map<T, V> valueAfter = new HashMap<>();
 
-	public static <T, V> List<V> getOrCreateList(Map<T, List<V>> map, T key) {
-		List<V> list;
+	public static <T, V> Set<V> getOrCreateSet(Map<T, Set<V>> map, T key) {
+		Set<V> set;
 		if (map.containsKey(key)) {
-			list = map.get(key);
+			set = map.get(key);
 		}
         else {
-			list = new LinkedList<>();
-			map.put(key, list);
+			set = new HashSet<>();
+			map.put(key, set);
 		}
-		return list;
+		return set;
 	}
 
-	protected List<Conversion> getConversionsFor(T something) {
-		return getOrCreateList(conversionsFor, something);
+	protected Set<Conversion> getConversionsFor(T something) {
+		return getOrCreateSet(conversionsFor, something);
 	}
 
-	protected List<Conversion> getUsesFor(T something) {
-		return getOrCreateList(usedIn, something);
+	protected Set<Conversion> getUsesFor(T something) {
+		return getOrCreateSet(usedIn, something);
 	}
 
-	protected void addConversionToIngredientUsages(Conversion conversion) {
-		for (Map.Entry<T, Integer> ingredient : conversion.ingredientsWithAmount.entrySet()) {
+	protected void addIngredientUsage(Conversion conversion) {
+		for (Map.Entry<T, Integer> ingredient : conversion.ingredientCounts.entrySet()) {
             if (ingredient.getValue() == null)
                 throw new IllegalArgumentException("ingredient amount value has to be != null");
-			List<Conversion> usesFor = getUsesFor(ingredient.getKey());
-			if (!usesFor.contains(conversion))
-				usesFor.add(conversion);
+			getUsesFor(ingredient.getKey()).add(conversion);
 		}
 	}
 
 	public void addConversion(int outnum, T output, Map<T, Integer> ingredientCounts) {
-		if (ingredientCounts.containsKey(null) || output == null || outnum <= 0) {
-			PELogger.logWarn("Ignoring Recipe because of invalid input / output: %s -> %dx%s", ingredientCounts, outnum, output);
+		if (overwriteConversion.containsKey(output))
+			return;
+		if (ingredientCounts.containsKey(null) || output == null || ingredientCounts.containsValue(null) || outnum <= 0) {
+			PELogger.logWarn("Ignoring Recipe because of invalid input / output: %s -> %sx%s", ingredientCounts, outnum, output);
 			return;
 		}
 		//Add the Conversions to the conversionsFor and usedIn Maps:
-		Conversion conversion = new Conversion(output, outnum, ingredientCounts);
-		conversion.value = arithmetic.getZero();
-        List<Conversion> conversionsForOut = getConversionsFor(output);
-		if (conversionsForOut.contains(conversion))
+		Conversion conv = new Conversion(output, outnum, ingredientCounts);
+		Set<Conversion> convForOut = getConversionsFor(output);
+		if (convForOut.contains(conv))
             return;
-        conversionsForOut.add(conversion);
-		addConversionToIngredientUsages(conversion);
+        convForOut.add(conv);
+		addIngredientUsage(conv);
 	}
 
 	@Override
 	public void setValueBefore(T something, V value) {
 		if (something == null) return;
-		if (fixValueBeforeInherit.containsKey(something) && fixValueBeforeInherit.get(something).compareTo(value) != 0)
-			PELogger.logWarn("Overwriting fixValueBeforeInherit for " + something + ":" + fixValueBeforeInherit.get(something) + " to " + value);
-        fixValueBeforeInherit.put(something, value);
-		fixValueAfterInherit.remove(something);
+		if (valueBefore.containsKey(something) && valueBefore.get(something).compareTo(value) != 0)
+			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, valueBefore.get(something), value);
+        valueBefore.put(something, value);
+		valueAfter.remove(something);
 	}
 
 	@Override
 	public void setValueAfter(T something, V value) {
 		if (something == null) return;
-		if (fixValueAfterInherit.containsKey(something) && fixValueAfterInherit.get(something) != value)
-			PELogger.logWarn("Overwriting fixValueAfterInherit for " + something + ":" + fixValueAfterInherit.get(something) + " to " + value);
-		fixValueAfterInherit.put(something, value);
+		if (valueAfter.containsKey(something) && valueAfter.get(something).compareTo(value) != 0)
+			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, valueAfter.get(something), value);
+		valueAfter.put(something, value);  
 	}
 
 	@Override
-	public void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount)
-	{
-		if (something == null || ingredientsWithAmount.containsKey(null)) {
-			PELogger.logWarn(String.format("Ignoring setValueFromConversion because of invalid ingredient or output: %s -> %dx%s", ingredientsWithAmount, outnumber, something));
+	public void setValueFromConversion(int outnum, T output, Map<T, Integer> ingredientCounts) {
+		if (ingredientCounts.containsKey(null) || output == null || ingredientCounts.containsValue(null) || outnum <= 0) {
+			PELogger.logWarn("Ignoring Recipe because of invalid input / output: %s -> %sx%s", ingredientCounts, outnum, output);
 			return;
 		}
-		if (outnumber <= 0)
-			throw new IllegalArgumentException("outnumber has to be > 0!");
-		Conversion conversion = new Conversion(something, outnumber, ingredientsWithAmount);
-		if (overwriteConversion.containsKey(something)) {
-			Conversion oldConversion = overwriteConversion.get(something);
-			PELogger.logWarn("Overwriting setValueFromConversion " + overwriteConversion.get(something) + " with " + conversion);
-			for (T ingredient: ingredientsWithAmount.keySet()) {
-				getUsesFor(ingredient).remove(oldConversion);
+		Conversion conv = new Conversion(output, outnum, ingredientCounts);
+		if (overwriteConversion.containsKey(output)) {
+			Conversion oldConv = overwriteConversion.get(output);
+			PELogger.logWarn("Overwriting setValueFromConversion %s with %s", oldConv, conv);
+			for (T ingredient: oldConv.ingredientCounts.keySet()) {
+				getUsesFor(ingredient).remove(oldConv);
 			}
 		}
-		addConversionToIngredientUsages(conversion);
-		overwriteConversion.put(something, conversion);
+		overwriteConversion.put(output, conv);
+		addIngredientUsage(conv);
 	}
 
     protected class Conversion {
@@ -109,18 +105,15 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 
 		public int outnumber = 1;
 		public V value = arithmetic.getZero();
-		public Map<T, Integer> ingredientsWithAmount;
+		public Map<T, Integer> ingredientCounts;
 
-		protected Conversion(T output) {
+		protected Conversion(T output, int outnumber, Map<T, Integer> ingredientCounts) {
 			this.output = output;
-		}
-
-		protected Conversion(T output, int outnumber, Map<T, Integer> ingredientsWithAmount) {
-			this(output);
 			this.outnumber = outnumber;
-			this.ingredientsWithAmount = ingredientsWithAmount;
+			this.ingredientCounts = ingredientCounts;
 		}
 
+		@Override
         public String toString() {
 			if (value != arithmetic.getZero())
 				return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
@@ -128,9 +121,9 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		}
 
 		public String ingredientsToString() {
-			if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) return "nothing";
+			if (ingredientCounts == null || ingredientCounts.isEmpty()) return "nothing";
 			StringBuilder sb = new StringBuilder();
-            Iterator<Map.Entry<T,Integer>> iter = ingredientsWithAmount.entrySet().iterator();
+            Iterator<Map.Entry<T,Integer>> iter = ingredientCounts.entrySet().iterator();
 			if (iter.hasNext()) {
 				Map.Entry<T, Integer> entry = iter.next();
 				sb.append(entry.getValue()).append("*").append(entry.getKey().toString());
@@ -148,11 +141,11 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 			if (!(obj instanceof MappingCollector<?,?>.Conversion other))
 				return false;
 			if (output.equals(other.output) && value.equals(other.value)) {
-				if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) {
-					return other.ingredientsWithAmount == null || other.ingredientsWithAmount.isEmpty();
+				if (ingredientCounts == null || ingredientCounts.isEmpty()) {
+					return other.ingredientCounts == null || other.ingredientCounts.isEmpty();
 				}
 				else {
-					return ingredientsWithAmount.equals(other.ingredientsWithAmount);
+					return ingredientCounts.equals(other.ingredientCounts);
 				}
 			}
 			return false;
