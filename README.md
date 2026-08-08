@@ -26,6 +26,8 @@ filedw64 - Developer of this program - GTNH Support:
 
 #### \# Thanks To
 
+WindyBye - Brilliant idea inventor and developer
+
 SinKillerJ - Head of Alchemical Studies - Main Project & Community Lead:
 
 * Twitter: https://twitter.com/sinkillerj
