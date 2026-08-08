@@ -78,7 +78,7 @@ public final class Integration
                 e.printStackTrace();
             }
         }
-		
+
 		if (chisel) {
 			PELogger.logInfo("Try to integrate with Chisel");
 			try {
@@ -91,7 +91,7 @@ public final class Integration
 				e.printStackTrace();
 			}
 		}
-		
+
 		if (duraDisplay) {
 			PELogger.logInfo("Try to **hack** DuraDisplay!");
 			try {
