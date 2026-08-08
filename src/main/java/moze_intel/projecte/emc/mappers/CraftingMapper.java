@@ -118,24 +118,19 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
                     }
                 }
 
-                if (recipeOutput.stackSize > 0) {
-                    mapper.addConversion(recipeOutput.stackSize, outNSS, ingredientMap.getMap());
-                }
-                else {
-                    PELogger.logWarn("Ignoring Recipe because outnumber <= 0: %s -> %s", ingredientMap.getMap(), recipeOutput);
-                }
+                mapper.addConversion(recipeOutput.stackSize, outNSS, ingredientMap.getMap());
                 break;
             }
 			if (!handled) {
 				canNotMap.add(clazz);
-				PELogger.logWarn("Can not map Crafting Recipes with Type: %s", clazz);
+				PELogger.logWarn("Can not map Crafting Recipes with Type: %s", clazz.getName());
 			}
             else
 				recipeCount.put(clazz, recipeCount.getOrDefault(clazz, 0) + 1);
 		}
 
 		PELogger.logInfo("CraftingMapper Statistics:");
-		recipeCount.forEach((clazz, count) -> PELogger.logInfo("Found %d Recipes of %s", count, clazz));
+		recipeCount.forEach((clazz, count) -> PELogger.logInfo("Found %d Recipes of %s", count, clazz.getName()));
 	}
 
 	@Override
