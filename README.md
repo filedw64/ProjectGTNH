@@ -24,9 +24,9 @@ filedw64 - Developer of this program - GTNH Support:
 
 * Github: https://github.com/filedw64
 
-#### \# Thanks To
+WindyBye - Brilliant idea inventor and developer - Mods Integrator
 
-WindyBye - Brilliant idea inventor and developer
+#### \# Thanks To
 
 SinKillerJ - Head of Alchemical Studies - Main Project & Community Lead:
 
