@@ -113,12 +113,12 @@ public class PECore
 
 		Integration.init();
 	}
-	
+
 	@EventHandler
 	public void loadComplete(FMLLoadCompleteEvent event)
 	{
-		PELogger.logInfo("Register PhiloStong Smelting Recipe!");
 		ObjHandler.registerPhiloStoneSmelting();
+		PELogger.logInfo("Registered PhiloStone Smelting Recipe!");
 	}
 
 	@EventHandler
