@@ -101,8 +101,7 @@ public class GUITransmutation extends GuiContainer
 	@Override
 	protected void keyTyped(char par1, int par2)
 	{
-		if (this.textBoxFilter.isFocused())
-		{
+		if (this.textBoxFilter.isFocused()) {
 			this.textBoxFilter.textboxKeyTyped(par1, par2);
 
 			String srch = this.textBoxFilter.getText();
@@ -113,11 +112,12 @@ public class GUITransmutation extends GuiContainer
 				inv.searchpage = 0;
 				inv.updateOutputs();
 			}
-		}
 
-		if (par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode() && !this.textBoxFilter.isFocused())
-		{
-			this.mc.thePlayer.closeScreen();
+			if (par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode())
+				this.textBoxFilter.setFocused(false);
+		}
+		else {
+			super.keyTyped(par1, par2);
 		}
 	}
 
