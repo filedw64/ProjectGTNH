@@ -3,7 +3,7 @@
 * 新内容: 支持处理带 NBT 的物品了！
 * 新内容: 加载 CodeChickenCore 时，若水有限则 1000L 水的 EMC 设为 8
 * 新内容: 添加了对 GregTech 5 Unofficial 物品和配方的支持(未完)
-* 新内容: 添加了对 Forestry 物品和配方的支持(未完)
+* 新内容: 添加了对 Forestry 物品和配方的支持
 * 新内容: 添加了对 Et Futurum Requiem - GTNH 物品的支持
 * 新内容: 添加了对 Pam's Harvestcraft 物品的支持
 * 新内容: 添加了对 Pam's Harvest the Nether 物品的支持
