@@ -64,7 +64,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 								continue;
 							}
 							//Calculate how much the conversion-output costs with the new Value for entry.getKey
-							V conversionValue = arithmetic.div(valueForConversion(values, conversion), conversion.outnumber);
+							V conversionValue = arithmetic.div(valueForConversion(values, conversion), conversion.outputCount);
 							if (conversionValue.compareTo(ZERO) > 0 || arithmetic.isFree(conversionValue)) {
 								//We could calculate a valid value for the conversion
 								if (!hasSmallerOrEqual(values, conversion.output, conversionValue)) {
@@ -91,7 +91,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 					//How much do the ingredients cost:
 					V conversionValue = valueForConversion(values, conversion);
 					//What would the output cost be, if that conversion would be used
-					V conversionValueSingle = arithmetic.div(conversionValue, conversion.outnumber);
+					V conversionValueSingle = arithmetic.div(conversionValue, conversion.outputCount);
 					//What is the actual emc value for the conversion output
 					V resultValueSingle = values.containsKey(entry.getKey()) ? values.get(entry.getKey()) : ZERO;
 
@@ -145,7 +145,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 					continue;
 				if (overwriteConversion.containsKey(conv.output) && overwriteConversion.get(conv.output) != conv)
 					continue;
-				V convVal = arithmetic.div(valueForConversion(values, conv), conv.outnumber);
+				V convVal = arithmetic.div(valueForConversion(values, conv), conv.outputCount);
 				if (convVal.compareTo(ZERO) > 0 || arithmetic.isFree(convVal)) {
 					if (!values.containsKey(conv.output) || values.get(conv.output).compareTo(convVal) > 0) {
 						values.put(conv.output, convVal);

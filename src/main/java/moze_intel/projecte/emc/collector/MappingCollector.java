@@ -5,7 +5,6 @@ import moze_intel.projecte.utils.PELogger;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +19,23 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 	protected Map<T, Set<Conversion>> usedIn = new HashMap<>();
 	protected Map<T, V> valueBefore = new HashMap<>();
 	protected Map<T, V> valueAfter = new HashMap<>();
+
+	@Override
+	public void setValueBefore(T something, V value) {
+		if (something == null) return;
+		if (valueBefore.containsKey(something) && valueBefore.get(something).compareTo(value) != 0)
+			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, valueBefore.get(something), value);
+		valueBefore.put(something, value);
+		valueAfter.remove(something);
+	}
+
+	@Override
+	public void setValueAfter(T something, V value) {
+		if (something == null) return;
+		if (valueAfter.containsKey(something) && valueAfter.get(something).compareTo(value) != 0)
+			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, valueAfter.get(something), value);
+		valueAfter.put(something, value);
+	}
 
 	public static <T, V> Set<V> getOrCreateSet(Map<T, Set<V>> map, T key) {
 		Set<V> set;
@@ -41,12 +57,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		return getOrCreateSet(usedIn, something);
 	}
 
-	protected void addIngredientUsage(Conversion conversion) {
-		for (Map.Entry<T, Integer> ingredient : conversion.ingredientCounts.entrySet()) {
-            if (ingredient.getValue() == null)
-                throw new IllegalArgumentException("ingredient amount value has to be != null");
-			getUsesFor(ingredient.getKey()).add(conversion);
-		}
+	protected void addIngredientUsage(Conversion conv) {
+		conv.ingredientCounts.keySet().forEach(input -> getUsesFor(input).add(conv));
 	}
 
 	public void addConversion(int outnum, T output, Map<T, Integer> ingredientCounts) {
@@ -63,23 +75,6 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
             return;
         convForOut.add(conv);
 		addIngredientUsage(conv);
-	}
-
-	@Override
-	public void setValueBefore(T something, V value) {
-		if (something == null) return;
-		if (valueBefore.containsKey(something) && valueBefore.get(something).compareTo(value) != 0)
-			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, valueBefore.get(something), value);
-        valueBefore.put(something, value);
-		valueAfter.remove(something);
-	}
-
-	@Override
-	public void setValueAfter(T something, V value) {
-		if (something == null) return;
-		if (valueAfter.containsKey(something) && valueAfter.get(something).compareTo(value) != 0)
-			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, valueAfter.get(something), value);
-		valueAfter.put(something, value);  
 	}
 
 	@Override
@@ -101,39 +96,41 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 	}
 
     protected class Conversion {
-		public T output;
+		public final T output;
+		public final int outputCount;
+		public final Map<T, Integer> ingredientCounts;
+		public final V value;
 
-		public int outnumber;
-		public V value = arithmetic.getZero();
-		public Map<T, Integer> ingredientCounts;
-
-		protected Conversion(T output, int outnumber, Map<T, Integer> ingredientCounts) {
+		protected Conversion(T output, int outputCount, Map<T, Integer> ingredientCounts) {
 			this.output = output;
-			this.outnumber = outnumber;
+			this.outputCount = outputCount;
 			this.ingredientCounts = ingredientCounts;
+			this.value = arithmetic.getZero();
+		}
+
+		protected Conversion(T output, int outputCount, Map<T, Integer> ingredientCounts, V value) {
+			this.output = output;
+			this.outputCount = outputCount;
+			this.ingredientCounts = ingredientCounts;
+			this.value = value;
 		}
 
 		@Override
         public String toString() {
-			if (value != arithmetic.getZero())
-				return value + " + " + ingredientsToString() + " => " + outnumber + "*" + output;
-			return ingredientsToString() + " => " + outnumber + "*" + output;
+			if (value.compareTo(arithmetic.getZero()) != 0)
+				return value + " + " + ingredientsToString() + " => " + outputCount + "*" + output;
+			return ingredientsToString() + " => " + outputCount + "*" + output;
 		}
 
 		public String ingredientsToString() {
 			if (ingredientCounts == null || ingredientCounts.isEmpty()) return "nothing";
-			StringBuilder sb = new StringBuilder();
-            Iterator<Map.Entry<T,Integer>> iter = ingredientCounts.entrySet().iterator();
-			if (iter.hasNext()) {
-				Map.Entry<T, Integer> entry = iter.next();
-				sb.append(entry.getValue()).append("*").append(entry.getKey().toString());
-				while (iter.hasNext()) {
-					entry = iter.next();
-					sb.append(" + ").append(entry.getValue()).append("*").append(entry.getKey().toString());
-				}
-			}
-
-			return sb.toString();
+			StringBuilder builder = new StringBuilder();
+			ingredientCounts.forEach((input, count) -> {
+				if (builder.length() == 0)
+					builder.append(count).append("*").append(input);
+				else builder.append(" + ").append(count).append("*").append(input);
+			});
+			return builder.toString();
 		}
 
 		@Override
