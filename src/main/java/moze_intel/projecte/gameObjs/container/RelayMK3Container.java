@@ -11,7 +11,7 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 
 public class RelayMK3Container extends Container
 {
-	private RelayMK3Tile tile;
+	private final RelayMK3Tile tile;
 
 	public RelayMK3Container(InventoryPlayer invPlayer, RelayMK3Tile relay)
 	{

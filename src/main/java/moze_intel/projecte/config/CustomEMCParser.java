@@ -198,14 +198,14 @@ public final class CustomEMCParser
 				writer = new PrintWriter(new FileOutputStream(CONFIG, true));
 
 				writer.append("\n");
-				writer.append("S:" + toAdd + "\n");
+				writer.append("S:").append(toAdd).append("\n");
 
 				if (toAdd.contains(":"))
 				{
-					writer.append("M:" + meta + "\n");
+					writer.append("M:").append(String.valueOf(meta)).append("\n");
 				}
 
-				writer.append("E:" + emc + "\n");
+				writer.append("E:").append(String.valueOf(emc)).append("\n");
 
 				result = true;
 			}

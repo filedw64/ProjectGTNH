@@ -49,12 +49,11 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (stack.getItemDamage() != 1 || !(entity instanceof EntityPlayer))
+		if (stack.getItemDamage() != 1 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
-		EntityPlayer player = (EntityPlayer) entity;
 		AxisAlignedBB bBox = player.boundingBox.expand(7, 7, 7);
 		List<EntityItem> itemList = world.getEntitiesWithinAABB(EntityItem.class, bBox);
 
@@ -133,9 +132,8 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 		List<TileEntity> list = WorldHelper.getAdjacentTileEntities(tile.getWorldObj(), tile);
 		for (TileEntity tileEntity : list)
 		{
-			if (tileEntity instanceof IInventory)
+			if (tileEntity instanceof IInventory inv)
 			{
-				IInventory inv = ((IInventory) tileEntity);
 				ItemStack result = ItemHelper.pushStackInInv(inv, item.getEntityItem());
 				if (result != null)
 				{

@@ -33,8 +33,8 @@ import java.util.List;
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
 public class Arcana extends ItemPE implements IBauble, IModeChanger, IFlightProvider, IFireProtector, IExtraFunction, IProjectileShooter
 {
-	private IIcon[] icons = new IIcon[4];
-	private IIcon[] iconsOn = new IIcon[4];
+	private final IIcon[] icons = new IIcon[4];
+	private final IIcon[] iconsOn = new IIcon[4];
 
 	public Arcana()
 	{
@@ -200,35 +200,28 @@ public class Arcana extends ItemPE implements IBauble, IModeChanger, IFlightProv
 
 		if(world.isRemote) return;
 
-		switch(stack.getItemDamage())
-		{
-			case 1: // ignition
-				switch(MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5) & 3)
-				{
-					case 0: // south, -z
-					case 2: // north, +z
-						for(int x = (int) (player.posX - 30); x <= player.posX + 30; x++)
-							for(int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
-								for(int z = (int) (player.posZ - 3); z <= player.posZ + 3; z++)
-									if(world.isAirBlock(x, y, z))
-									{
-										PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
-									}
-						break;
-					case 1: // west, -x
-					case 3: // east, +x
-						for(int x = (int) (player.posX - 3); x <= player.posX + 3; x++)
-							for(int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
-								for(int z = (int) (player.posZ - 30); z <= player.posZ + 30; z++)
-								{
-									if(world.isAirBlock(x, y, z))
-									{
-										PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
-									}
+		if (stack.getItemDamage() == 1) { // ignition
+			switch (MathHelper.floor_double((double) (player.rotationYaw * 4.0F / 360.0F) + 0.5) & 3) {
+				case 0: // south, -z
+				case 2: // north, +z
+					for (int x = (int) (player.posX - 30); x <= player.posX + 30; x++)
+						for (int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
+							for (int z = (int) (player.posZ - 3); z <= player.posZ + 3; z++)
+								if (world.isAirBlock(x, y, z)) {
+									PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
 								}
-						break;
-				}
-				break;
+					break;
+				case 1: // west, -x
+				case 3: // east, +x
+					for (int x = (int) (player.posX - 3); x <= player.posX + 3; x++)
+						for (int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
+							for (int z = (int) (player.posZ - 30); z <= player.posZ + 30; z++) {
+								if (world.isAirBlock(x, y, z)) {
+									PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
+								}
+							}
+					break;
+			}
 		}
 	}
 

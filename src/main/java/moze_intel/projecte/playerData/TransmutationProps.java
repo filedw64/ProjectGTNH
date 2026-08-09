@@ -12,7 +12,6 @@ import net.minecraftforge.common.util.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 
-import java.util.Iterator;
 import java.util.List;
 
 public class TransmutationProps implements IExtendedEntityProperties
@@ -20,7 +19,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 	private final EntityPlayer player;
 
 	private double transmutationEmc;
-	private List<ItemStack> knowledge = Lists.newArrayList();
+	private final List<ItemStack> knowledge = Lists.newArrayList();
 	private ItemStack[] inputLocks = new ItemStack[9];
 	public static final String PROP_NAME = "ProjectETransmutation";
 

@@ -21,7 +21,7 @@ import moze_intel.projecte.utils.ItemHelper;
 public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory, IEmcAcceptor, IEmcProvider
 {
 	private ItemStack[] inventory;
-	private int invBufferSize;
+	private final int invBufferSize;
 	private final int chargeRate;
 	public int displayEmc;
 	public double displayChargingEmc;
@@ -59,9 +59,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 
 		if (stack != null)
 		{
-			if(stack.getItem() instanceof IItemEmc)
+			if(stack.getItem() instanceof IItemEmc itemEmc)
 			{
-				IItemEmc itemEmc = ((IItemEmc) stack.getItem());
 				double emcVal = itemEmc.getStoredEmc(stack);
 
 				if (emcVal > chargeRate)
@@ -359,7 +358,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		int indexes[] = new int[inventory.length - 2];
+		int[] indexes = new int[inventory.length - 2];
 		byte counter = 0;
 
 		for (int i = 1; i < inventory.length - 1; i++)

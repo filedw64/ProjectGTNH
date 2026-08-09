@@ -21,12 +21,11 @@ public class ChestRenderer extends TileEntitySpecialRenderer
 	@Override
 	public void renderTileEntityAt(TileEntity tile, double x, double y, double z, float var8)
 	{
-		if (!(tile instanceof AlchChestTile))
+		if (!(tile instanceof AlchChestTile chestTile))
 		{
 			return;
 		}
 
-		AlchChestTile chestTile = (AlchChestTile) tile;
 		ForgeDirection direction = null;
 
 		if (chestTile.getWorldObj() != null)

@@ -25,7 +25,7 @@ import java.util.Map;
 public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInventory, IEmcProvider
 {
 	private ItemStack[] inventory;
-	private int[] accessibleSlots;
+	private final int[] accessibleSlots;
 	private final int invBufferSize;
 	private final int emcGen;
 	private final int lockSlot;
@@ -189,9 +189,8 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 
 	public void checkFuelOrKlein()
 	{
-		if (inventory[0] != null && inventory[0].getItem() instanceof IItemEmc)
+		if (inventory[0] != null && inventory[0].getItem() instanceof IItemEmc itemEmc)
 		{
-			IItemEmc itemEmc = ((IItemEmc) inventory[0].getItem());
 			if(itemEmc.getStoredEmc(inventory[0]) != itemEmc.getMaximumEmc(inventory[0]))
 			{
 				hasChargeableItem = true;

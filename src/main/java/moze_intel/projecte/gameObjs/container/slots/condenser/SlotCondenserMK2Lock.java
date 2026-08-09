@@ -9,7 +9,7 @@ import moze_intel.projecte.utils.ItemHelper;
 
 public class SlotCondenserMK2Lock extends Slot
 {
-	private CondenserMK2Container container;
+	private final CondenserMK2Container container;
 
 	public SlotCondenserMK2Lock(CondenserMK2Container container, int slotIndex, int xPos, int yPos)
 	{
@@ -20,7 +20,7 @@ public class SlotCondenserMK2Lock extends Slot
 	@Override
 	public boolean isItemValid(ItemStack stack)
 	{
-		if (stack != null && EMCHelper.doesItemHaveEmc(stack) && !container.tile.getWorldObj().isRemote)
+		if (EMCHelper.doesItemHaveEmc(stack) && !container.tile.getWorldObj().isRemote)
 		{
 			this.putStack(ItemHelper.getNormalizedStack(stack));
 			container.tile.checkLockAndUpdate();

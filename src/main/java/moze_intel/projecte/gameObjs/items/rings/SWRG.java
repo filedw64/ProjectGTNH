@@ -143,23 +143,13 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 	{
 		if (!world.isRemote)
 		{
-			int newMode = 0;
-
-			switch (stack.getItemDamage())
-			{
-				case 0:
-					newMode = 2;
-					break;
-				case 1:
-					newMode = 3;
-					break;
-				case 2:
-					newMode = 0;
-					break;
-				case 3:
-					newMode = 1;
-					break;
-			}
+			int newMode = switch (stack.getItemDamage()) {
+				case 0 -> 2;
+				case 1 -> 3;
+				case 2 -> 0;
+				case 3 -> 1;
+				default -> 0;
+			};
 
 			changeMode(stack, newMode);
 		}

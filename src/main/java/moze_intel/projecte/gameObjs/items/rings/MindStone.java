@@ -27,14 +27,12 @@ public class MindStone extends RingToggle implements IPedestalItem
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer))
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		if (stack.getItemDamage() != 0)
 		{

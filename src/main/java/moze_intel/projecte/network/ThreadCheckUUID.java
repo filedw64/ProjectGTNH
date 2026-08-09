@@ -3,7 +3,7 @@ package moze_intel.projecte.network;
 public class ThreadCheckUUID extends Thread
 {
 	private static boolean hasRunServer = false;
-    private boolean isServerSide;
+    private final boolean isServerSide;
 
 	public ThreadCheckUUID(boolean isServer)
 	{

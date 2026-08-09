@@ -51,9 +51,8 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 		{
 			TileEntity tile = world.getTileEntity(x, y, z);
 
-			if (tile instanceof IFluidHandler)
+			if (tile instanceof IFluidHandler tank)
 			{
-				IFluidHandler tank = (IFluidHandler) tile;
 
 				if (FluidHelper.canFillTank(tank, FluidRegistry.LAVA, sideHit))
 				{
@@ -115,9 +114,7 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int invSlot, boolean par5)
 	{
-		if (invSlot > 8 || !(entity instanceof EntityPlayer)) return;
-
-		EntityPlayer player = (EntityPlayer) entity;
+		if (invSlot > 8 || !(entity instanceof EntityPlayer player)) return;
 
 		int x = (int) Math.floor(player.posX);
 		int y = (int) (player.posY - player.getYOffset());
@@ -188,12 +185,11 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 	@Optional.Method(modid = "Baubles")
 	public void onWornTick(ItemStack stack, EntityLivingBase ent)
 	{
-		if (!(ent instanceof EntityPlayer))
+		if (!(ent instanceof EntityPlayer player))
 		{
 			return;
 		}
 
-		EntityPlayer player = (EntityPlayer) ent;
 		World world = player.worldObj;
 
 		int x = (int) Math.floor(player.posX);

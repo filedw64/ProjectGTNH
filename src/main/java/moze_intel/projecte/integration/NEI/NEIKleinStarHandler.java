@@ -1,6 +1,5 @@
 package moze_intel.projecte.integration.NEI;
 
-import codechicken.nei.NEIClientUtils;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.ShapelessRecipeHandler;

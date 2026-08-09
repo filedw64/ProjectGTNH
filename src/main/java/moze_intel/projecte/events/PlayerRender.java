@@ -14,10 +14,10 @@ import moze_intel.projecte.gameObjs.items.armor.GemFeet;
 @SideOnly(Side.CLIENT)
 public class PlayerRender
 {
-	private static ModelYue yuemodel = new ModelYue();
+	private static final ModelYue yuemodel = new ModelYue();
 
-	private static String sinuuid = "5f86012c-ca4b-451a-989c-8fab167af647";
-	private static String claruuid = "e5c59746-9cf7-4940-a849-d09e1f1efc13";
+	private static final String sinuuid = "5f86012c-ca4b-451a-989c-8fab167af647";
+	private static final String claruuid = "e5c59746-9cf7-4940-a849-d09e1f1efc13";
 
 	private String playeruuid = "";
 

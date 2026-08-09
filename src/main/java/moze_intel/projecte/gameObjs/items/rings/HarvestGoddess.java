@@ -33,14 +33,12 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer))
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		if (stack.getItemDamage() != 0)
 		{
@@ -102,9 +100,8 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 			{
 				Block crop = world.getBlock(x, yCoord, z);
 
-				if (crop instanceof IGrowable)
+				if (crop instanceof IGrowable growable)
 				{
-					IGrowable growable = (IGrowable) crop;
 
 					if (growable.func_149852_a(world, world.rand, x, yCoord, z))
 					{

@@ -56,9 +56,8 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 
 		if (!worldObj.isRemote)
 		{
-			if (canSmelt() && inventory[0] != null && inventory[0].getItem() instanceof IItemEmc)
+			if (canSmelt() && inventory[0] != null && inventory[0].getItem() instanceof IItemEmc itemEmc)
 			{
-				IItemEmc itemEmc = ((IItemEmc) inventory[0].getItem());
 				if (itemEmc.getStoredEmc(inventory[0]) >= EMC_CONSUMPTION)
 				{
 					itemEmc.extractEmc(inventory[0], EMC_CONSUMPTION);
@@ -216,11 +215,10 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 	{
 		TileEntity tile = this.worldObj.getTileEntity(this.xCoord, this.yCoord + 1, this.zCoord);
 
-		if (tile instanceof ISidedInventory)
+		if (tile instanceof ISidedInventory inv)
 		{
 			//The bottom side of the tile pulling from (ForgeDirection.DOWN)
 			final int side = 0;
-			ISidedInventory inv = (ISidedInventory) tile;
 
 			int[] slots = inv.getAccessibleSlotsFromSide(side);
 
@@ -296,9 +294,8 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 				}
 			}
 		}
-		else if (tile instanceof IInventory)
+		else if (tile instanceof IInventory inv)
 		{
-			IInventory inv = (IInventory) tile;
 
 			for (int i = 0; i < inv.getSizeInventory(); i++)
 			{
@@ -393,9 +390,8 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 				continue;
 			}
 
-			if (tile instanceof ISidedInventory)
+			if (tile instanceof ISidedInventory inv)
 			{
-				ISidedInventory inv = (ISidedInventory) tile;
 
 				int[] slots = inv.getAccessibleSlotsFromSide(ForgeDirection.OPPOSITES[dir.ordinal()]);
 
@@ -697,16 +693,15 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		switch(side)
-		{
-			case 0: return new int[] {15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Outputs accessible from bottom
-			case 1: return new int[] {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 , 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Inputs accessible from top
-			case 2: // Fall through
-			case 3:
-			case 4:
-			case 5: return new int[] {0, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Fuel and output accessible from all sides
-			default: return new int[] {};
-		}
+		return switch (side) {
+			case 0 -> new int[]{15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Outputs accessible from bottom
+			case 1 ->
+				new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Inputs accessible from top
+			// Fall through
+			case 2, 3, 4, 5 ->
+				new int[]{0, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26}; // Fuel and output accessible from all sides
+			default -> new int[]{};
+		};
 	}
 
 	@Override

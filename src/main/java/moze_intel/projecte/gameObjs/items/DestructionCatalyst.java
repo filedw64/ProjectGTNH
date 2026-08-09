@@ -81,7 +81,7 @@ public class DestructionCatalyst extends ItemCharge
 						if (PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
 						{
 							List<ItemStack> list = WorldHelper.getBlockDrops(world, player, block, stack, x, y, z);
-							if (list != null && list.size() > 0)
+							if (list != null && !list.isEmpty())
                             {
                                 drops.addAll(list);
                             }

@@ -16,17 +16,12 @@ public class ItemFuelBlock extends ItemBlock
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		switch (stack.getItemDamage())
-		{
-			case 0:
-				return "tile.pe_fuel_block_0";
-			case 1:
-				return "tile.pe_fuel_block_1";
-			case 2:
-				return "tile.pe_fuel_block_2";
-			default:
-				return "tile.pe_fuel_block_null";
-		}
+		return switch (stack.getItemDamage()) {
+			case 0 -> "tile.pe_fuel_block_0";
+			case 1 -> "tile.pe_fuel_block_1";
+			case 2 -> "tile.pe_fuel_block_2";
+			default -> "tile.pe_fuel_block_null";
+		};
 	}
 
 	@Override

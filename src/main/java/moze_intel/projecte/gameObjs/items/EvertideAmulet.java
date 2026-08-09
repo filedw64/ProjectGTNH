@@ -57,9 +57,8 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 		{
 			TileEntity tile = world.getTileEntity(x, y, z);
 
-			if (tile instanceof IFluidHandler)
+			if (tile instanceof IFluidHandler tank)
 			{
-				IFluidHandler tank = (IFluidHandler) tile;
 
 				if (FluidHelper.canFillTank(tank, FluidRegistry.WATER, sideHit))
 				{
@@ -138,12 +137,10 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int invSlot, boolean par5)
 	{
-		if (invSlot > 8 || !(entity instanceof EntityPlayer))
+		if (invSlot > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		int x = (int) Math.floor(player.posX);
 		int y = (int) (player.posY - player.getYOffset());

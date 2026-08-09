@@ -26,13 +26,13 @@ import java.util.Random;
 
 public class MatterFurnace extends BlockDirection
 {
-	private String textureName;
-	private boolean isActive;
-	private boolean isHighTier;
+	private final String textureName;
+	private final boolean isActive;
+	private final boolean isHighTier;
 	private static boolean isUpdating;
 	@SideOnly(Side.CLIENT)
 	private IIcon front;
-	private Random rand = new Random();
+	private final Random rand = new Random();
 
 	public MatterFurnace(boolean active, boolean isRM)
 	{

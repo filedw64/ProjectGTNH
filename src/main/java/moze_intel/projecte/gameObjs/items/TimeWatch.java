@@ -39,7 +39,7 @@ import java.util.Set;
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
 public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPedestalItem
 {
-	private static Set<String> internalBlacklist = Sets.newHashSet(
+	private static final Set<String> internalBlacklist = Sets.newHashSet(
 			"moze_intel.projecte.gameObjs.tiles.DMPedestalTile",
 			"Reika.ChromatiCraft.TileEntity.AOE.TileEntityAccelerator",
 			"com.sci.torcherino.tile.TileTorcherino",
@@ -91,7 +91,7 @@ public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPed
 			stack.setTagCompound(new NBTTagCompound());
 		}
 
-		if (!(entity instanceof EntityPlayer) || invSlot > 8)
+		if (!(entity instanceof EntityPlayer player) || invSlot > 8)
 		{
 			return;
 		}
@@ -133,7 +133,6 @@ public class TimeWatch extends ItemCharge implements IModeChanger, IBauble, IPed
 			return;
 		}
 
-		EntityPlayer player = (EntityPlayer) entity;
 		double reqEmc = getEmcPerTick(this.getCharge(stack));
 
 		if (!consumeFuel(player, stack, reqEmc, true))

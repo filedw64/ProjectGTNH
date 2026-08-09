@@ -250,12 +250,11 @@ public abstract class PEToolBase extends ItemMode
 	 */
 	protected void digBasedOnMode(ItemStack stack, World world, Block block, int x, int y, int z, EntityLivingBase living)
 	{
-		if (world.isRemote || !(living instanceof EntityPlayer))
+		if (world.isRemote || !(living instanceof EntityPlayer player))
 		{
 			return;
 		}
 
-		EntityPlayer player = (EntityPlayer) living;
 		byte mode = this.getMode(stack);
 
 		if (mode == 0) // Standard
@@ -467,9 +466,8 @@ public abstract class PEToolBase extends ItemMode
 
 		Block block = player.worldObj.getBlock(x, y, z);
 
-		if (block instanceof IShearable)
+		if (block instanceof IShearable target)
 		{
-			IShearable target = (IShearable) block;
 
 			if (target.isShearable(stack, player.worldObj, x, y, z) && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
 			{

@@ -139,8 +139,8 @@ public class ToolTipEvent
 
 		if (ProjectEConfig.showStatTooltip)
 		{
-			/**
-			 * Collector ToolTips
+			/*
+			  Collector ToolTips
 			 */
 			String unit = StatCollector.translateToLocal("pe.emc.name");
 			String rate = StatCollector.translateToLocal("pe.emc.rate");
@@ -175,8 +175,8 @@ public class ToolTipEvent
 						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.COLLECTOR_MK3_MAX));
 			}
 
-			/**
-			 * Relay ToolTips
+			/*
+			  Relay ToolTips
 			 */
 			if (currentBlock == ObjHandler.relay)
 			{

@@ -14,7 +14,7 @@ import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
 public class GUIEternalDensity extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/eternal_density.png");
-	private EternalDensityInventory inventory;
+	private final EternalDensityInventory inventory;
 
 	public GUIEternalDensity(InventoryPlayer invPlayer, EternalDensityInventory invGem)
 	{

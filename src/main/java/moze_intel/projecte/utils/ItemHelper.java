@@ -74,7 +74,7 @@ public final class ItemHelper
 			}
 		}
 
-		Collections.sort(list, Comparators.ITEMSTACK_ASCENDING);
+		list.sort(Comparators.ITEMSTACK_ASCENDING);
 		trimItemList(list);
 	}
 
@@ -276,7 +276,6 @@ public final class ItemHelper
 	}
 
 	/**
-	 *	@throws NullPointerException
 	 */
 	public static ItemStack getStackFromString(String internal, int metaData)
 	{

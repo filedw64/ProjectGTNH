@@ -4,7 +4,7 @@ public class ThreadCheckUpdate extends Thread
 {
 	private static boolean hasRunServer = false;
 	private static boolean hasRunClient = false;
-	private boolean isServerSide;
+	private final boolean isServerSide;
 
 	public ThreadCheckUpdate(boolean isServer)
 	{

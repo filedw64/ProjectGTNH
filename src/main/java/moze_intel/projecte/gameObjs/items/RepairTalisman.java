@@ -50,12 +50,10 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 			stack.stackTagCompound = new NBTTagCompound();
 		}
 
-		if (world.isRemote || !(entity instanceof EntityPlayer))
+		if (world.isRemote || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		PlayerTimers.activateRepair(player);
 

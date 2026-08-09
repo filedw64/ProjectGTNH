@@ -63,12 +63,11 @@ public class AlchemicalBag extends ItemPE
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (!(entity instanceof EntityPlayer))
+		if (!(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
-		EntityPlayer player = (EntityPlayer) entity;
 		ItemStack[] inv = AlchemicalBags.get(player, (byte) stack.getItemDamage());
 
 		if (player.openContainer instanceof AlchBagContainer)

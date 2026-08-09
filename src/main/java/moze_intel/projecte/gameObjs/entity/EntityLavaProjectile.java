@@ -44,9 +44,8 @@ public class EntityLavaProjectile extends PEProjectile
 				return;
 			}
 
-			if (getThrower() instanceof EntityPlayerMP)
+			if (getThrower() instanceof EntityPlayerMP player)
 			{
-				EntityPlayerMP player = ((EntityPlayerMP) getThrower());
 				for (int x = (int) (this.posX - 3); x <= this.posX + 3; x++)
 					for (int y = (int) (this.posY - 3); y <= this.posY + 3; y++)
 						for (int z = (int) (this.posZ - 3); z <= this.posZ + 3; z++)

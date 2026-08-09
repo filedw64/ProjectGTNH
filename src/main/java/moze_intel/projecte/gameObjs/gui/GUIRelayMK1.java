@@ -13,7 +13,7 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK1Tile;
 public class GUIRelayMK1 extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/relay1.png");
-	private RelayMK1Tile tile;
+	private final RelayMK1Tile tile;
 
 	public GUIRelayMK1(InventoryPlayer invPlayer, RelayMK1Tile tile)
 	{
