@@ -11,7 +11,7 @@ import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotLock extends Slot
 {
-	private TransmutationInventory inv;
+	private final TransmutationInventory inv;
 
 	public SlotLock(TransmutationInventory inv, int par2, int par3, int par4)
 	{
@@ -31,6 +31,9 @@ public class SlotLock extends Slot
 		if (stack == null || stack.getItem() == null)
 			return;
 
+		if (!ItemStack.areItemStacksEqual(stack, getStack()))
+			inv.searchpage = 0; // 只有当放入的物品改变时才刷新页码
+
 		super.putStack(stack);
 
 		if (stack.getItem() instanceof IItemEmc itemEmc)
@@ -41,14 +44,8 @@ public class SlotLock extends Slot
 		}
 
 		if (stack.getItem() != ObjHandler.tome)
-		{
-			inv.searchpage = 0;
 			inv.handleKnowledge(stack);
-		}
-		else
-		{
-			inv.updateOutputs();
-		}
+		else inv.updateOutputs(); // 能来到这里，则知识之书也有 emc，应该以知识之书的 emc 来筛选物品
 	}
 
 	@Override

@@ -142,7 +142,7 @@ public class TransmutationInventory implements IInventory
 		updateOutputs();
 	}
 
-	public void checkForUpdates()
+	/*public void checkForUpdates()
 	{
         double matterEmc = EMCHelper.getEmcValue(inventory[MATTER_INDEXES[0]]);
         double fuelEmc = EMCHelper.getEmcValue(inventory[FUEL_INDEXES[0]]);
@@ -151,7 +151,7 @@ public class TransmutationInventory implements IInventory
 		{
 			updateOutputs();
 		}
-	}
+	}*/
 
 	public void updateOutputs()
 	{

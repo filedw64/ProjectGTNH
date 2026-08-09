@@ -7,7 +7,7 @@ import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotUnlearn extends Slot
 {
-	private TransmutationInventory inv;
+	private final TransmutationInventory inv;
 
 	public SlotUnlearn(TransmutationInventory inv, int par2, int par3, int par4)
 	{
@@ -18,7 +18,8 @@ public class SlotUnlearn extends Slot
 	@Override
 	public boolean isItemValid(ItemStack stack)
 	{
-		return !this.getHasStack() && EMCHelper.doesItemHaveEmc(stack);
+		return /*!this.getHasStack() && */EMCHelper.doesItemHaveEmc(stack);
+		// 同 SlotInput，即使槽位内有物品也应当允许其它物品与之交换
 	}
 
 	@Override

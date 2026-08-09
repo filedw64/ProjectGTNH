@@ -9,7 +9,7 @@ import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotInput extends Slot
 {
-	private TransmutationInventory inv;
+	private final TransmutationInventory inv;
 
 	public SlotInput(TransmutationInventory inv, int par2, int par3, int par4)
 	{
@@ -20,16 +20,15 @@ public class SlotInput extends Slot
 	@Override
 	public boolean isItemValid(ItemStack stack)
 	{
-		return !this.getHasStack() && EMCHelper.doesItemHaveEmc(stack);
+		return /*!this.getHasStack() && */EMCHelper.doesItemHaveEmc(stack);
+		// 即使输入槽有物品也应当允许其它物品与之交换
 	}
 
 	@Override
 	public void putStack(ItemStack stack)
 	{
 		if (stack == null)
-		{
 			return;
-		}
 
 		super.putStack(stack);
 
@@ -41,13 +40,7 @@ public class SlotInput extends Slot
 		}
 
 		if (stack.getItem() != ObjHandler.tome)
-		{
-			inv.handleKnowledge(stack);
-		}
-		else
-		{
-			inv.updateOutputs();
-		}
+			inv.handleKnowledge(stack); // 若知识之书有 emc，被放入输入槽的时候不处理知识
 	}
 
 	@Override

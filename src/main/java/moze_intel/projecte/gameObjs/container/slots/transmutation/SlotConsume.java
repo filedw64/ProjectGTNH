@@ -19,21 +19,14 @@ public class SlotConsume extends Slot
 	@Override
 	public void putStack(ItemStack stack)
 	{
-		if (stack == null)
-		{
-			return;
-		}
+		if (stack == null) return;
 
-		inv.handleKnowledge(stack);
+		// 没有 super.putStack(stack)，这就是为什么物品放进来就消失了？
 
-		double toAdd = 0;
-		while (!inv.hasMaxedEmc() && stack.stackSize > 0)
-		{
-			toAdd += EMCHelper.getEmcValue(stack);
-			stack.stackSize--;
-		}
-
-		inv.addEmc(toAdd);
+		//if (stack.getItem() != ObjHandler.tome) // 通常而言，知识之书没有 emc，但如果开放了合成，知识之书也应当转化为 emc
+		// 或者不？毕竟是添加了知识，相当于用 emc 去换知识了
+		inv.addEmc(EMCHelper.getEmcValue(stack) * stack.stackSize);
+		inv.handleKnowledge(stack); // 处理知识放在 addEmc 之后，这样 emc 增加后会刷新输出
 		this.onSlotChanged();
 	}
 

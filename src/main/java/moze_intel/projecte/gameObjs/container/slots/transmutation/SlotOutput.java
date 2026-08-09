@@ -29,7 +29,8 @@ public class SlotOutput extends Slot
 			return stack;
 		}
 		inv.removeEmc(emcValue);
-		inv.checkForUpdates();
+		//inv.checkForUpdates(); // 买不起页面里价值最高的物品才刷新？nonono
+		inv.updateOutputs(); // emc 减少了就该刷新输出
 		return stack;
 	}
 
@@ -37,7 +38,7 @@ public class SlotOutput extends Slot
 	public void putStack(ItemStack stack) {}
 
 	@Override
-	public boolean isItemValid(ItemStack par1ItemStack)
+	public boolean isItemValid(ItemStack stack)
 	{
 		return false;
 	}
