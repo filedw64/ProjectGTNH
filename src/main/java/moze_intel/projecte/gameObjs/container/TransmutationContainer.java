@@ -1,10 +1,5 @@
 package moze_intel.projecte.gameObjs.container;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotConsume;
@@ -16,13 +11,21 @@ import moze_intel.projecte.network.PacketHandler;
 import moze_intel.projecte.network.packets.SearchUpdatePKT;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 
 public class TransmutationContainer extends Container
 {
 	public TransmutationInventory transmutationInventory;
 
-	public TransmutationContainer(InventoryPlayer invPlayer, TransmutationInventory inventory)
+	private final boolean portable;
+
+	public TransmutationContainer(InventoryPlayer invPlayer, TransmutationInventory inventory, boolean portable)
 	{
+		this.portable = portable;
 		this.transmutationInventory = inventory;
 
 		// Transmutation Inventory
@@ -55,8 +58,8 @@ public class TransmutationContainer extends Container
 		this.addSlotToContainer(new SlotUnlearn(transmutationInventory, 26, 89, 97));
 
 		//Player Inventory
-		for(int i = 0; i < 3; i++)
-			for(int j = 0; j < 9; j++)
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 9; j++)
 				this.addSlotToContainer(new Slot(invPlayer, j + i * 9 + 9, 35 + j * 18, 117 + i * 18));
 
 		//Player Hotbar
@@ -88,22 +91,21 @@ public class TransmutationContainer extends Container
 		if (slotIndex <= 8 || slotIndex == 26) // Input Slots, Lock Slot, and Unlearn Slot
 		{
             if (ItemHelper.hasSpace(player.inventory.mainInventory, stack)) {
-                ItemHelper.pushStackInInv(player.inventory, ItemHelper.getNormalizedStack(newStack));
+                ItemHelper.pushStackInInv(player.inventory, ItemHelper.getNormalizedStack(stack));
                 transmutationInventory.setInventorySlotContents(slotIndex, null);
             }
 		}
 		else if (slotIndex >= 10 && slotIndex <= 25) // Output Slots
 		{
-            double emc = EMCHelper.getEmcValue(newStack);
+            double emc = EMCHelper.getEmcValue(stack);
 
-			int stackSize = 0;
-            int maxStackSize = newStack.getMaxStackSize();
+            int maxStackSize = stack.getMaxStackSize();
+			int count = (int) Math.min(maxStackSize, transmutationInventory.emc / emc);
 
-			while (transmutationInventory.emc >= emc && stackSize < maxStackSize && ItemHelper.hasSpace(player.inventory.mainInventory, newStack))
-			{
-				transmutationInventory.removeEmc(emc);
-				ItemHelper.pushStackInInv(player.inventory, newStack.copy());
-				stackSize++;
+			newStack.stackSize = count;
+			if (ItemHelper.hasSpace(player.inventory.mainInventory, newStack)) {
+				transmutationInventory.removeEmc(emc * count);
+				ItemHelper.pushStackInInv(player.inventory, newStack);
 			}
 			transmutationInventory.updateOutputs();
 		}
@@ -112,22 +114,11 @@ public class TransmutationContainer extends Container
             double emc = EMCHelper.getEmcValue(stack);
 
 			if (emc == 0 && stack.getItem() != ObjHandler.tome)
-			{
 				return null;
-			}
 
-			while (!transmutationInventory.hasMaxedEmc() && stack.stackSize > 0)
-			{
-				transmutationInventory.addEmc(emc);
-				--stack.stackSize;
-			}
-
-			transmutationInventory.handleKnowledge(newStack);
-
-			if (stack.stackSize == 0)
-			{
-				slot.putStack(null);
-			}
+			transmutationInventory.addEmc(emc * stack.stackSize);
+			transmutationInventory.handleKnowledge(stack);
+			slot.putStack(null);
 		}
 		return null;
 	}
@@ -139,46 +130,35 @@ public class TransmutationContainer extends Container
 		transmutationInventory.closeInventory();
 	}
 
-	//From LoadController.findActiveContainerFromStack
-	private FMLSecurityManager accessibleManager = new FMLSecurityManager();
-
-	class FMLSecurityManager extends SecurityManager
-	{
-		Class<?>[] getStackClasses()
-		{
-			return getClassContext();
-		}
-	}
-
-	private boolean isNeiScrollWheel() {
-		final int stacktraceDepth = 3; //[getStackClasses(), isNeiScrollWheel(), slotClick(), [POSSIBLE POSITION FOR NEI IN STACKTRACE]
-		Class<?>[] stacktrace = accessibleManager.getStackClasses();
-		return stacktrace.length >= stacktraceDepth && stacktrace[stacktraceDepth] != null && stacktrace[stacktraceDepth].getName().equals("codechicken.nei.FastTransferManager");
-	}
-
 	@Override
-	public ItemStack slotClick(int slot, int button, int flag, EntityPlayer player)
-	{
-		if (player.worldObj.isRemote && isNeiScrollWheel()) return null;
-		if (player.worldObj.isRemote && 10 <= slot && slot <= 25) {
+	public ItemStack slotClick(int slot, int button, int clickType, EntityPlayer player) {
+		if (player.worldObj.isRemote && 10 <= slot && slot <= 25)
 			PacketHandler.sendToServer(new SearchUpdatePKT(slot, getSlot(slot).getStack()));
-		}
-		if (slot >= 0 && getSlot(slot) != null)
-		{
-			if (getSlot(slot).getStack() != null && getSlot(slot).getStack().getItem() == ObjHandler.transmutationTablet
-				&& getSlot(slot).getStack() == player.getHeldItem())
-			{
-				return null;
+
+		Slot theSlot = null;
+		if (slot >= 0)
+			theSlot = getSlot(slot); // 被点击的槽位对象
+
+		if (clickType == 4 && theSlot instanceof SlotOutput)
+			return null;// 禁止从输出槽位中丢弃物品（又来？）
+
+		if (portable && theSlot != null) {
+			// 如果这个页面是由便携式转化桌打开的 且 槽位有效
+			ItemStack stack = theSlot.getStack();
+			if (stack != null && stack.getItem() == ObjHandler.transmutationTablet && stack == player.getHeldItem()) {
+				// 槽位内容物是便携式转化桌，且恰好是玩家手持的那一个
+				if (clickType != 3)// 允许鼠标中键复制
+					return null;// 禁止任何移动便携式转化桌的行为
 			}
 		}
 
-		return super.slotClick(slot, button, flag, player);
+		return super.slotClick(slot, button, clickType, player);
 	}
 
 	@Override
 	public boolean canDragIntoSlot(Slot slot)
 	{
-		if (slot instanceof SlotConsume || slot instanceof SlotUnlearn || slot instanceof SlotInput || slot instanceof SlotLock || slot instanceof SlotOutput) return false;
-		return true;
+		/* 不允许通过拖拽的方式将物品分到这些槽位中 */
+		return !(slot instanceof SlotConsume) && !(slot instanceof SlotUnlearn) && !(slot instanceof SlotInput) && !(slot instanceof SlotLock) && !(slot instanceof SlotOutput);
 	}
 }

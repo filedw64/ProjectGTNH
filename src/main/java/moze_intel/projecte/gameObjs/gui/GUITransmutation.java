@@ -3,11 +3,13 @@ package moze_intel.projecte.gameObjs.gui;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
+import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotOutput;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import org.lwjgl.opengl.GL11;
@@ -21,9 +23,8 @@ public class GUITransmutation extends GuiContainer
 	int xLocation;
 	int yLocation;
 
-	public GUITransmutation(InventoryPlayer invPlayer, TransmutationInventory inventory)
-	{
-		super(new TransmutationContainer(invPlayer, inventory));
+	public GUITransmutation(InventoryPlayer invPlayer, TransmutationInventory inventory, boolean portable) {
+		super(new TransmutationContainer(invPlayer, inventory, portable));
 		this.inv = inventory;
 		this.xSize = 228;
 		this.ySize = 196;
@@ -122,6 +123,17 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
+	protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, int clickType) {
+		if (slotIn instanceof SlotOutput && clickType == 4)
+			return;// 禁止从输出槽位中丢弃物品
+
+		if (slotIn != null)
+			slotId = slotIn.slotNumber;
+
+		this.mc.playerController.windowClick(this.inventorySlots.windowId, slotId, clickedButton, clickType, this.mc.thePlayer);
+	}
+
+	@Override
 	protected void mouseClicked(int x, int y, int mouseButton)
 	{
 		super.mouseClicked(x, y, mouseButton);
@@ -134,9 +146,9 @@ public class GUITransmutation extends GuiContainer
 		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY)
 		{
 			inv.filter = "";
+			this.textBoxFilter.setText("");
 			inv.searchpage = 0;
 			inv.updateOutputs();
-			this.textBoxFilter.setText("");
 		}
 
 		this.textBoxFilter.mouseClicked(x, y, mouseButton);

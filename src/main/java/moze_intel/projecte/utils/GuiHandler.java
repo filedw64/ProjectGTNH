@@ -54,15 +54,12 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK1Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 
-public class GuiHandler implements IGuiHandler
-{
+public class GuiHandler implements IGuiHandler {
 	@Override
-	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
-	{
+	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileEntity tile = world.getTileEntity(x, y, z);
 
-		switch (ID)
-		{
+		switch (ID) {
 			case Constants.ALCH_CHEST_GUI:
 				if (tile instanceof AlchChestTile)
 					return new AlchChestContainer(player.inventory, (AlchChestTile) tile);
@@ -110,25 +107,25 @@ public class GuiHandler implements IGuiHandler
 			case Constants.PHILOS_STONE_GUI:
 				return new PhilosStoneContainer(player.inventory);
 			case Constants.TRANSMUTATION_GUI:
-				return new TransmutationContainer(player.inventory, new TransmutationInventory(player));
+				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), false);
 			case Constants.ETERNAL_DENSITY_GUI:
 				return new EternalDensityContainer(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
 			case Constants.CONDENSER_MK2_GUI:
 				return new CondenserMK2Container(player.inventory, (CondenserMK2Tile) tile);
 			case Constants.PEDESTAL_GUI:
 				return new PedestalContainer(player.inventory, ((DMPedestalTile) tile));
+			case Constants.TRANSMUTATION_PORTABLE_GUI:
+				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
 		}
 
 		return null;
 	}
 
 	@Override
-	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z)
-	{
+	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileEntity tile = world.getTileEntity(x, y, z);
 
-		switch (ID)
-		{
+		switch (ID) {
 			case Constants.ALCH_CHEST_GUI:
 				if (tile instanceof AlchChestTile)
 					return new GUIAlchChest(player.inventory, (AlchChestTile) tile);
@@ -176,14 +173,16 @@ public class GuiHandler implements IGuiHandler
 			case Constants.PHILOS_STONE_GUI:
 				return new GUIPhilosStone(player.inventory);
 			case Constants.TRANSMUTATION_GUI:
-				return new GUITransmutation(player.inventory, new TransmutationInventory(player));
+				return new GUITransmutation(player.inventory, new TransmutationInventory(player), false);
 			case Constants.ETERNAL_DENSITY_GUI:
-				player.getHeldItem();
+				//player.getHeldItem(); // 这里哪来的这行鬼代码？？
 				return new GUIEternalDensity(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
 			case Constants.CONDENSER_MK2_GUI:
 				return new GUICondenserMK2(player.inventory, (CondenserMK2Tile) tile);
 			case Constants.PEDESTAL_GUI:
 				return new GUIPedestal(player.inventory, ((DMPedestalTile) tile));
+			case Constants.TRANSMUTATION_PORTABLE_GUI:
+				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
 		}
 
 		return null;
