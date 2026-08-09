@@ -13,32 +13,30 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-public final class Transmutation
-{
-	private static final List<ItemStack> CACHED_TOME_KNOWLEDGE = new ArrayList<>();
+public final class Transmutation {
+	private static final Set<ItemStack> CACHED_TOME_KNOWLEDGE = new HashSet<>();
 
 	public static void clearCache() {
 		CACHED_TOME_KNOWLEDGE.clear();
 	}
 
-	public static void cacheFullKnowledge()
-	{
-		for (SimpleStack stack : EMCMapper.emc.keySet())
-		{
+	public static void cacheFullKnowledge() {
+		for (SimpleStack stack : EMCMapper.emc.keySet()) {
 			if (!stack.isValid()) continue;
-			ItemStack s = stack.toItemStack();
-			if (s == null) continue;
-			s.stackSize = 1;
+			ItemStack is = stack.toItemStack();
+			if (is == null) continue;
+			is.stackSize = 1;
 
 			//Apparently items can still not have EMC if they are in the EMC map.
-			if (EMCHelper.doesItemHaveEmc(s) && EMCHelper.getEmcValue(s) > 0 && !ItemHelper.containsItemStack(CACHED_TOME_KNOWLEDGE, s))
+			if (EMCHelper.doesItemHaveEmc(is) && EMCHelper.getEmcValue(is) > 0)
 			{
-				CACHED_TOME_KNOWLEDGE.add(s);
+				CACHED_TOME_KNOWLEDGE.add(is);
 			}
 		}
 	}
