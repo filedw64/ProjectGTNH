@@ -140,15 +140,15 @@ public class TransmutationContainer extends Container
 			theSlot = getSlot(slot); // 被点击的槽位对象
 
 		if (clickType == 4 && theSlot instanceof SlotOutput)
-			return null;// 禁止从输出槽位中丢弃物品（又来？）
+			return null; // 禁止从输出槽位中丢弃物品（又来？）
 
 		if (portable && theSlot != null) {
 			// 如果这个页面是由便携式转化桌打开的 且 槽位有效
 			ItemStack stack = theSlot.getStack();
 			if (stack != null && stack.getItem() == ObjHandler.transmutationTablet && stack == player.getHeldItem()) {
 				// 槽位内容物是便携式转化桌，且恰好是玩家手持的那一个
-				if (clickType != 3)// 允许鼠标中键复制
-					return null;// 禁止任何移动便携式转化桌的行为
+				if (clickType != 3) // 允许鼠标中键复制
+					return null; // 禁止任何移动便携式转化桌的行为
 			}
 		}
 

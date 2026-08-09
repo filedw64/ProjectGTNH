@@ -4,6 +4,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotOutput;
+import moze_intel.projecte.gameObjs.gui.component.RefinedButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -14,8 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import org.lwjgl.opengl.GL11;
 
-public class GUITransmutation extends GuiContainer
-{
+public class GUITransmutation extends GuiContainer {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/transmute.png");
 	TransmutationInventory inv;
 	private GuiTextField textBoxFilter;
@@ -31,8 +31,7 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
-	public void initGui()
-	{
+	public void initGui() {
 		super.initGui();
 
 		this.xLocation = (this.width - this.xSize) / 2;
@@ -41,13 +40,12 @@ public class GUITransmutation extends GuiContainer
 		this.textBoxFilter = new GuiTextField(this.fontRendererObj, this.xLocation + 88, this.yLocation + 8, 45, 10);
 		this.textBoxFilter.setText(inv.filter);
 
-		this.buttonList.add(new GuiButton(1, this.xLocation + 125, this.yLocation + 100, 14, 14, "<"));
-		this.buttonList.add(new GuiButton(2, this.xLocation + 193, this.yLocation + 100, 14, 14, ">"));
+		this.buttonList.add(new RefinedButton(1, this.xLocation + 125, this.yLocation + 98, 14, 16, "<"));
+		this.buttonList.add(new RefinedButton(2, this.xLocation + 193, this.yLocation + 98, 14, 16, ">"));
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float var1, int var2, int var3)
-	{
+	protected void drawGuiContainerBackgroundLayer(float var1, int var2, int var3) {
 		GL11.glColor4f(1F, 1F, 1F, 1F);
 		Minecraft.getMinecraft().renderEngine.bindTexture(texture);
 		this.drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
@@ -55,14 +53,12 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int var1, int var2)
-	{
+	protected void drawGuiContainerForegroundLayer(int var1, int var2) {
 		this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.transmute"), 6, 8, 4210752);
 		String emc = StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") + String.format(inv.emc < 1e5 ? " %.2f": " %.3e", inv.emc);
 		this.fontRendererObj.drawString(emc, 6, this.ySize - 94, 4210752);
 
-		if (inv.learnFlag > 0)
-		{
+		if (inv.learnFlag > 0) {
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.learned0"), 98, 30, 4210752);
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.learned1"), 99, 38, 4210752);
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.learned2"), 100, 46, 4210752);
@@ -75,8 +71,7 @@ public class GUITransmutation extends GuiContainer
 			inv.learnFlag--;
 		}
 
-		if (inv.unlearnFlag > 0)
-		{
+		if (inv.unlearnFlag > 0) {
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.unlearned0"), 97, 22, 4210752);
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.unlearned1"), 98, 30, 4210752);
 			this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.unlearned2"), 99, 38, 4210752);
@@ -92,23 +87,18 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
-	public void updateScreen()
-	{
+	public void updateScreen() {
 		super.updateScreen();
-		//inv.updateOutputs();
 		this.textBoxFilter.updateCursorCounter();
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2)
-	{
+	protected void keyTyped(char par1, int par2) {
 		if (this.textBoxFilter.isFocused()) {
 			this.textBoxFilter.textboxKeyTyped(par1, par2);
 
 			String srch = this.textBoxFilter.getText();
-
-			if (!inv.filter.equals(srch))
-			{
+			if (!inv.filter.equals(srch)) {
 				inv.filter = srch;
 				inv.searchpage = 0;
 				inv.updateOutputs();
@@ -117,15 +107,13 @@ public class GUITransmutation extends GuiContainer
 			if (par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode())
 				this.textBoxFilter.setFocused(false);
 		}
-		else {
-			super.keyTyped(par1, par2);
-		}
+		else super.keyTyped(par1, par2);
 	}
 
 	@Override
 	protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, int clickType) {
 		if (slotIn instanceof SlotOutput && clickType == 4)
-			return;// 禁止从输出槽位中丢弃物品
+			return; // 禁止从输出槽位中丢弃物品
 
 		if (slotIn != null)
 			slotId = slotIn.slotNumber;
@@ -134,8 +122,7 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
-	protected void mouseClicked(int x, int y, int mouseButton)
-	{
+	protected void mouseClicked(int x, int y, int mouseButton) {
 		super.mouseClicked(x, y, mouseButton);
 
 		int minX = textBoxFilter.xPosition;
@@ -143,8 +130,7 @@ public class GUITransmutation extends GuiContainer
 		int maxX = minX + textBoxFilter.width;
 		int maxY = minY + textBoxFilter.height;
 
-		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY)
-		{
+		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY) {
 			inv.filter = "";
 			this.textBoxFilter.setText("");
 			inv.searchpage = 0;
@@ -155,31 +141,24 @@ public class GUITransmutation extends GuiContainer
 	}
 
 	@Override
-	public void onGuiClosed()
-	{
+	public void onGuiClosed() {
 		super.onGuiClosed();
 		inv.learnFlag = 0;
 		inv.unlearnFlag = 0;
 	}
 
 	@Override
-	protected void actionPerformed(GuiButton button)
-	{
+	protected void actionPerformed(GuiButton button) {
 		String srch = this.textBoxFilter.getText();
 
-		if (button.id == 1)
-		{
+		if (button.id == 1) {
 			if (inv.searchpage != 0)
-			{
 				inv.searchpage--;
-			}
 		}
-		else if (button.id == 2)
-		{
+
+		else if (button.id == 2) {
 			if (!(inv.knowledge.size() <= 12))
-			{
 				inv.searchpage++;
-			}
 		}
 		inv.filter = srch;
 		inv.updateOutputs();
