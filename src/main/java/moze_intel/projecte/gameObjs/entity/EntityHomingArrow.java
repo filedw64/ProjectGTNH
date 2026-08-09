@@ -1,17 +1,15 @@
 package moze_intel.projecte.gameObjs.entity;
 
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.world.World;
-import moze_intel.projecte.utils.WorldHelper;
 
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class EntityHomingArrow extends EntityArrow
