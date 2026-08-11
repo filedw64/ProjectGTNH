@@ -1,13 +1,12 @@
 package moze_intel.projecte.emc;
 
 import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
-import moze_intel.projecte.integration.GregTech.GTNSSItem;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -101,9 +100,54 @@ public abstract class NormalizedSimpleStack {
 
 	public static NSSItem forItem(ItemStack stack) {
 		if (stack == null || stack.getItem() == null) return null;
-		if (GTItemHelper.isGTtool(stack))
-			return new GTNSSItem(stack);
+//		if (GTItemHelper.isGTtool(stack))
+//			return new GTNSSItem(stack);
+		NBTTagCompound nbt = ItemHelper.filterNBT(stack);
+		if (nbt != null)
+			return new NBTNSSItem(stack, nbt);
 		return forItem(stack.getItem(), stack.getItemDamage());
+	}
+
+	public static class NBTNSSItem extends NSSItem {
+		/**
+		 * never try to change key-value in this nbt, or it will cause severe problems!
+		 */
+		public final NBTTagCompound nbt;
+
+		protected NBTNSSItem(String itemName, int damage, NBTTagCompound nbt) {
+			super(itemName, damage);
+			this.nbt = (NBTTagCompound) nbt.copy();
+		}
+
+		private NBTNSSItem(ItemStack stack, NBTTagCompound filtered) {
+			super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage());
+			nbt = filtered;
+		}
+
+		@Override
+		public int hashCode() {
+			return (itemName.hashCode() ^ damage) * 31 + nbt.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof NBTNSSItem other) {
+				return this.itemName.equals(other.itemName) && this.damage == other.damage && this.nbt.equals(other.nbt);
+			}
+			return false;
+		}
+
+		@Override
+		public String json() {
+			return String.format("%s|%s%s", itemName, damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, nbt);
+		}
+
+		@Override
+		public String toString() {
+			Object obj = Item.itemRegistry.getObject(itemName);
+			return String.format("%s(%s:%s)%s", itemName, Item.itemRegistry.getIDForObject(obj),
+				damage == OreDictionary.WILDCARD_VALUE ? "*" : damage, nbt);
+		}
 	}
 
 	public static class NSSItem extends NormalizedSimpleStack {

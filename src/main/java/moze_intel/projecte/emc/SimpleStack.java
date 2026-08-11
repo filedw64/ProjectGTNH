@@ -1,32 +1,24 @@
 package moze_intel.projecte.emc;
 
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
-import moze_intel.projecte.integration.GregTech.GTSimpleStack;
+import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraft.nbt.NBTTagCompound;
 
-public class SimpleStack
-{
+public class SimpleStack {
 	public int id;
 	public int damage;
 	public int qnty;
 
-	public SimpleStack(int id, int qnty, int damage)
-	{
+	public SimpleStack(int id, int qnty, int damage) {
 		this.id = id;
 		this.qnty = qnty;
 		this.damage = damage;
 	}
 
-	public SimpleStack(ItemStack stack)
-	{
-		if (stack == null || stack.getItem() == null)
-		{
-			id = -1;
-		}
-		else
-		{
+	public SimpleStack(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) id = -1;
+		else {
 			id = Item.itemRegistry.getIDForObject(stack.getItem());
 			damage = stack.getItemDamage();
 			qnty = stack.stackSize;
@@ -38,8 +30,7 @@ public class SimpleStack
 		return id != -1;
 	}
 
-	public ItemStack toItemStack()
-	{
+	public ItemStack toItemStack() {
 		if (!isValid()) return null;
 
 		Item item = Item.getItemById(id);
@@ -49,49 +40,37 @@ public class SimpleStack
 		return null;
 	}
 
-	public SimpleStack copy()
-	{
+	public SimpleStack copy() {
 		return new SimpleStack(id, qnty, damage);
 	}
 
 	@Override
-	public int hashCode()
-	{
+	public int hashCode() {
 		return id << 15 | damage;
 	}
 
 	@Override
-	public boolean equals(Object obj)
-	{
+	public boolean equals(Object obj) {
 		if (obj instanceof SimpleStack other)
-		{
-            if (this.damage == OreDictionary.WILDCARD_VALUE || other.damage == OreDictionary.WILDCARD_VALUE)
-			{
-				return this.qnty == other.qnty && this.id == other.id;
-			}
-
 			return this.id == other.id && this.qnty == other.qnty && this.damage == other.damage;
-		}
-
 		return false;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		Object obj = Item.itemRegistry.getObjectById(id);
 
 		if (obj != null)
-		{
 			return Item.itemRegistry.getNameForObject(obj) + " " + qnty + " " + damage;
-		}
 
 		return "id:" + id + " damage:" + damage + " qnty:" + qnty;
 	}
 
     public static SimpleStack getFor(ItemStack is) {
-        if (GTItemHelper.isGTtool(is))
-            return new GTSimpleStack(is);
+		if (is == null || is.getItem() == null) return null;
+		NBTTagCompound nbt = ItemHelper.filterNBT(is);
+		if (nbt != null)
+			return new NBTSimpleStack(is, nbt);
         return new SimpleStack(is);
     }
 }

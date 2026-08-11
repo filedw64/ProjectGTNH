@@ -18,8 +18,6 @@ import moze_intel.projecte.emc.mappers.LazyMapper;
 import moze_intel.projecte.emc.mappers.OreDictionaryMapper;
 import moze_intel.projecte.emc.mappers.SmeltingMapper;
 import moze_intel.projecte.emc.mappers.customConversions.CustomConversionMapper;
-import moze_intel.projecte.integration.GregTech.GTNSSItem;
-import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.PELogger;
 import moze_intel.projecte.utils.PrefixConfiguration;
@@ -68,15 +66,16 @@ public final class EMCMapper
 		PELogger.logInfo("Start to collect Mappings");
 		for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers) {
 			try {
-				if (!config.getBoolean(emcMapper.getName(), "enabledMappers", emcMapper.isAvailable(), emcMapper.getDescription()) || !emcMapper.isAvailable()) {
+				boolean available = emcMapper.isAvailable();
+				if (!available || !config.getBoolean(emcMapper.getName(), "enabledMappers", available, emcMapper.getDescription()))
 					continue;
-				}
+
 				long start = System.currentTimeMillis();
 				emcMapper.addMappings(mappingCollector, new PrefixConfiguration(config, "mapperConfigurations." + emcMapper.getName()));
 				PELogger.logInfo("Collected Mappings from %s. (took %.3fs)", emcMapper.getClass().getName(), (System.currentTimeMillis() - start) / 1e3);
 			}
 			catch (Exception e) {
-				PELogger.logFatal("Exception during Mapping Collection from Mapper %s. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!", emcMapper.getClass().getName());
+				PELogger.logFatal("Exception during Mapping Collection from %s. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!", emcMapper.getClass().getName());
 				e.printStackTrace();
 			}
 		}
@@ -101,9 +100,8 @@ public final class EMCMapper
             if (nss instanceof NormalizedSimpleStack.NSSItem nssItem) {
                 Object obj = Item.itemRegistry.getObject(nssItem.itemName);
 				int id = Item.itemRegistry.getIDForObject(obj);
-				if (nss instanceof GTNSSItem gtnssItem) {
-					emc.put(new GTSimpleStack(id, 1, gtnssItem.damage, gtnssItem.primary, gtnssItem.secondary), val);
-				}
+				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
+					emc.put(new NBTSimpleStack(id, 1, nbtnssItem.damage, nbtnssItem.nbt), val);
 				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
