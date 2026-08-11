@@ -125,10 +125,8 @@ public class GUITransmutation extends GuiContainer {
 	protected void mouseClicked(int x, int y, int mouseButton) {
 		super.mouseClicked(x, y, mouseButton);
 
-		int minX = textBoxFilter.xPosition;
-		int minY = textBoxFilter.yPosition;
-		int maxX = minX + textBoxFilter.width;
-		int maxY = minY + textBoxFilter.height;
+		final int minX = textBoxFilter.xPosition, maxX = minX + textBoxFilter.width;
+		final int minY = textBoxFilter.yPosition, maxY = minY + textBoxFilter.height;
 
 		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY) {
 			inv.filter = "";
@@ -157,9 +155,10 @@ public class GUITransmutation extends GuiContainer {
 		}
 
 		else if (button.id == 2) {
-			if (!(inv.knowledge.size() <= 12))
+			if (inv.hasNextPage())
 				inv.searchpage++;
 		}
+
 		inv.filter = srch;
 		inv.updateOutputs();
 	}
