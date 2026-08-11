@@ -3,6 +3,12 @@ package moze_intel.projecte.gameObjs.items;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IModeChanger;
+import moze_intel.projecte.utils.Coordinates;
+import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.utils.ItemHelper;
+import moze_intel.projecte.utils.PlayerHelper;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
@@ -17,14 +23,8 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import moze_intel.projecte.api.item.IModeChanger;
-import moze_intel.projecte.utils.Comparators;
-import moze_intel.projecte.utils.Coordinates;
-import moze_intel.projecte.utils.EMCHelper;
-import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.PlayerHelper;
-import moze_intel.projecte.utils.WorldHelper;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -150,7 +150,7 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 				maxValues[i] = 1;
 			}
 
-			emcValues.sort(Comparators.DOUBLE_DESCENDING);
+			emcValues.sort(Comparator.reverseOrder());
 
 			int num = Math.min(emcValues.size(), 3);
 
