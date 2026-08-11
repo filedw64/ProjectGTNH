@@ -1,6 +1,8 @@
 package moze_intel.projecte.utils;
 
+import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
@@ -12,7 +14,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,8 +82,7 @@ public final class ItemHelper
 	/**
 	 * Compacts and sorts list of items, without regard for stack sizes
 	 */
-	public static void compactItemListNoStacksize(List<ItemStack> list)
-	{
+	public static void compactItemListNoStacksize(List<ItemStack> list) {
 		for (int i = 0; i < list.size(); i++)
 		{
 			ItemStack s = list.get(i);
@@ -148,6 +148,53 @@ public final class ItemHelper
 			dest[entry.getByte("index")] = ItemStack.loadItemStackFromNBT(entry);
 		}
 		return dest;
+	}
+
+	/**
+	 * Filter nbt tags that truly differ items.
+	 *
+	 * @param stack The ItemStack needs to filter nbt for
+	 * @return filtered nbt from stack.stackTagCompound
+	 */
+	public static NBTTagCompound filterNBT(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) return null;
+		if (stack.stackTagCompound == null || stack.stackTagCompound.hasNoTags()) return null;
+
+		NBTTagCompound result = new NBTTagCompound();
+		NBTTagCompound original = stack.getTagCompound();
+
+		// 白名单 NBT
+		String itemName = Item.itemRegistry.getNameForObject(stack.getItem());
+		if (ProjectEConfig.nbtDistinctlist.containsKey(itemName)) {
+			for (String key : ProjectEConfig.nbtDistinctlist.get(itemName)) {
+				if (original.hasKey(key))
+					result.setTag(key, original.getTag(key).copy());
+			}
+		}
+
+		// 整合 GT 工具核心 NBT
+		if (GTItemHelper.isGTtool(stack) && original.hasKey("GT.ToolStats")) {
+			NBTTagCompound toolStats = original.getCompoundTag("GT.ToolStats");
+			NBTTagCompound newStats = new NBTTagCompound();
+
+			// 主材料与副材料
+			if (toolStats.hasKey("PrimaryMaterial")) {
+				newStats.setTag("PrimaryMaterial", toolStats.getTag("PrimaryMaterial").copy());
+			}
+			if (toolStats.hasKey("SecondaryMaterial")) {
+				newStats.setTag("SecondaryMaterial", toolStats.getTag("SecondaryMaterial").copy());
+			}
+
+			// MaxDamage
+			if (toolStats.hasKey("MaxDamage")) {
+				newStats.setTag("MaxDamage", toolStats.getTag("MaxDamage").copy());
+			}
+
+			if (!newStats.hasNoTags())
+				result.setTag("GT.ToolStats", newStats);
+		}
+
+		return result.hasNoTags() ? null : result;
 	}
 
 	/**
