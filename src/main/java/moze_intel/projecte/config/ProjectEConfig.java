@@ -1,12 +1,15 @@
 package moze_intel.projecte.config;
 
-import net.minecraftforge.common.config.Configuration;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public final class ProjectEConfig
-{
+public final class ProjectEConfig {
 	public static boolean showUnlocalizedNames;
 	public static boolean showODNames;
 	public static boolean showEMCTooltip;
@@ -45,12 +48,18 @@ public final class ProjectEConfig
 	public static boolean disableAllRadiusMining;
     public static int gemChestCooldown;
 
-	public static void init(File configFile)
-	{
-		Configuration config = new Configuration(configFile);
+	// nbt 白名单 与 动态 nbt emc 计算
+	public static String[] nbtWhitelistConfig;
+	public static String[] dynamicEmcNbtConfig;
 
-		try
-		{
+	// 解析后的 nbt 配置
+	public static Map<String, List<String>> nbtDistinctlist = new HashMap<>();
+	public static Map<String, Double> dynamicEmcNbt = new HashMap<>();
+
+	public static void init(File configFile) {
+
+		Configuration config = new Configuration(configFile);
+		try {
 			config.load();
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
@@ -106,18 +115,48 @@ public final class ProjectEConfig
 			pickaxeAoeVeinMining = config.getBoolean("pickaxeAoeVeinMining", "items", false, "Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you like it did in ProjectE before version 1.4.4.");
 			harvBandGrass = config.getBoolean("harvBandGrass", "items", false, "Allows the Harvest Goddess Band to passively grow tall grass, flowers, etc, on top of grass blocks.");
 			disableAllRadiusMining = config.getBoolean("disableAllRadiusMining", "items", false, "If set to true, disables all radius-based mining functionaliy (right click of tools)");
+
+			nbtWhitelistConfig = config.getStringList("nbtWhitelist", "nbt", new String[]{
+				"Botania:specialFlower|type",
+				"Botania:specialFlower|color"
+			}, "Format: modid:itemname|nbt_key. These NBT tags will be preserved and act as distinct items in the transmutation table.");
+
+			dynamicEmcNbtConfig = config.getStringList("dynamicEmcNbt", "nbt", new String[]{
+				"mana|0.001"
+			}, "Format: nbt_key|emc_multiplier. When an item with this NBT is consumed, the value will be multiplied by the multiplier and added to EMC, then the tag is stripped.");
+
+			parseNBTConfigs();
+
 			PELogger.logInfo("Configuration file loaded .");
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			PELogger.logFatal("Caught exception while loading config file!");
 			e.printStackTrace();
 		}
-		finally
-		{
+		finally {
 			if (config.hasChanged())
-			{
 				config.save();
+		}
+	}
+
+	private static void parseNBTConfigs() {
+		nbtDistinctlist.clear();
+		for (String entry : nbtWhitelistConfig) {
+			String[] split = entry.split("\\|");
+			if (split.length == 2) {
+				nbtDistinctlist.computeIfAbsent(split[0], k -> new ArrayList<>()).add(split[1]);
+			}
+		}
+
+		dynamicEmcNbt.clear();
+		for (String entry : dynamicEmcNbtConfig) {
+			String[] split = entry.split("\\|");
+			if (split.length == 2) {
+				try {
+					dynamicEmcNbt.put(split[0], Double.parseDouble(split[1]));
+				} catch (NumberFormatException e) {
+					PELogger.logError("Invalid multiplier for dynamic EMC NBT: " + entry);
+				}
 			}
 		}
 	}
