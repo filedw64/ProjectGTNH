@@ -21,11 +21,26 @@ import moze_intel.projecte.gameObjs.gui.GUIPedestal;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
 public class ToolTipEvent
 {
+	// 预编译
+	private static final DecimalFormat NORMAL_FORMAT = new DecimalFormat("#.##");
+	private static final DecimalFormat SCI_FORMAT = new DecimalFormat("0.000E0");
+	private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###");
+
+	// 快速格式化
+	private static String formatEMC(double value) {
+		if (value < 1e5) {
+			return NORMAL_FORMAT.format(value);
+		} else {
+			return SCI_FORMAT.format(value);
+		}
+	}
+
 	@SubscribeEvent
 	public void tTipEvent(ItemTooltipEvent event)
 	{
@@ -97,115 +112,88 @@ public class ToolTipEvent
 
 		if (ProjectEConfig.showEMCTooltip)
 		{
+			// 缓存
+			String emcPrefix = StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix");
+			String stackEmcPrefix = StatCollector.translateToLocal("pe.emc.stackemc_tooltip_prefix");
+
 			if (EMCHelper.doesItemHaveEmc(current))
 			{
-                double value = EMCHelper.getEmcValue(current);
+				double value = EMCHelper.getEmcValue(current);
 
-				if (value < 1e5)
-					event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
-						" " + EnumChatFormatting.WHITE + String.format("%.2f", value));
-				else
-					event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
-						" " + EnumChatFormatting.WHITE + String.format("%.3e", value));
+				event.toolTip.add(EnumChatFormatting.YELLOW + emcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(value));
 
-                if (current.stackSize > 1)
+				if (current.stackSize > 1)
 				{
-                    double total = value * current.stackSize;
-					if (total > Double.MAX_VALUE)
+					double total = value * current.stackSize;
+					// 这里有Bug！
+					if (Double.isInfinite(total))
 					{
-						event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.stackemc_tooltip_prefix") + " " + EnumChatFormatting.OBFUSCATED + StatCollector.translateToLocal("pe.emc.too_much"));
+						event.toolTip.add(EnumChatFormatting.YELLOW + stackEmcPrefix + " " + EnumChatFormatting.OBFUSCATED + StatCollector.translateToLocal("pe.emc.too_much"));
 					}
 					else
 					{
-                        if (total < 1e5)
-						    event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.stackemc_tooltip_prefix") + " " + EnumChatFormatting.WHITE + String.format("%.2f", total));
-                        else
-                            event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.stackemc_tooltip_prefix") + " " + EnumChatFormatting.WHITE + String.format("%.3e", total));
-                    }
+						event.toolTip.add(EnumChatFormatting.YELLOW + stackEmcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(total));
+					}
 				}
 			}
 			else if (GTItemHelper.isGTfluidDisplay(current)) {
 				double value = GTItemHelper.GTfluidDisplayEMC(current);
 				if (value != 0) {
-					if (value < 1e5)
-						event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
-							" " + EnumChatFormatting.WHITE + String.format("%.2f", value));
-					else
-						event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") +
-							" " + EnumChatFormatting.WHITE + String.format("%.3e", value));
+					event.toolTip.add(EnumChatFormatting.YELLOW + emcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(value));
 				}
 			}
 		}
 
 		if (ProjectEConfig.showStatTooltip)
 		{
-			/*
-			  Collector ToolTips
+			/**
+			 * Collector ToolTips
 			 */
 			String unit = StatCollector.translateToLocal("pe.emc.name");
 			String rate = StatCollector.translateToLocal("pe.emc.rate");
+			// 提取共用字典
+			String maxGenRate = StatCollector.translateToLocal("pe.emc.maxgenrate_tooltip");
+			String maxStorage = StatCollector.translateToLocal("pe.emc.maxstorage_tooltip");
+			String maxOutRate = StatCollector.translateToLocal("pe.emc.maxoutrate_tooltip");
 
+			// 字符串拼接
 			if (currentBlock == ObjHandler.energyCollector)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxgenrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.COLLECTOR_MK1_GEN));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.COLLECTOR_MK1_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxGenRate + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK1_GEN + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK1_MAX + " " + unit);
 			}
 
 			if (currentBlock == ObjHandler.collectorMK2)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxgenrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.COLLECTOR_MK2_GEN));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.COLLECTOR_MK2_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxGenRate + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK2_GEN + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK2_MAX + " " + unit);
 			}
 
 			if (currentBlock == ObjHandler.collectorMK3)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxgenrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.COLLECTOR_MK3_GEN));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.COLLECTOR_MK3_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxGenRate + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK3_GEN + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.COLLECTOR_MK3_MAX + " " + unit);
 			}
 
-			/*
-			  Relay ToolTips
+			/**
+			 * Relay ToolTips
 			 */
 			if (currentBlock == ObjHandler.relay)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxoutrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.RELAY_MK1_OUTPUT));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.RELAY_MK1_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxOutRate + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK1_OUTPUT + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK1_MAX + " " + unit);
 			}
 
 			if (currentBlock == ObjHandler.relayMK2)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxoutrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.RELAY_MK2_OUTPUT));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.RELAY_MK2_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxOutRate + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK2_OUTPUT + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK2_MAX + " " + unit);
 			}
 
 			if (currentBlock == ObjHandler.relayMK3)
 			{
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxoutrate_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + rate, Constants.RELAY_MK3_OUTPUT));
-				event.toolTip.add(EnumChatFormatting.DARK_PURPLE
-						+ String.format(StatCollector.translateToLocal("pe.emc.maxstorage_tooltip")
-						+ EnumChatFormatting.BLUE + " %d " + unit, Constants.RELAY_MK3_MAX));
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxOutRate + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK3_OUTPUT + " " + rate);
+				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + maxStorage + EnumChatFormatting.BLUE + " " + Constants.RELAY_MK3_MAX + " " + unit);
 			}
 		}
 
@@ -215,16 +203,13 @@ public class ToolTipEvent
 			{
 				event.toolTip.add(EnumChatFormatting.GREEN + StatCollector.translateToLocal("pe.misc.wrenched_block"));
 
-                double stackEMC = current.stackTagCompound.getDouble("EMC");
+				// 复用stackEMC
+				double stackEMC = current.stackTagCompound.getDouble("EMC");
 				if (stackEMC > 0)
 				{
-                    if (stackEMC >= 1e5)
-					    event.toolTip.add(EnumChatFormatting.YELLOW + String.format(
-							StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + "%.3e", current.stackTagCompound.getDouble("EMC")));
-                    else
-                        event.toolTip.add(EnumChatFormatting.YELLOW + String.format(
-                            StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + "%.2f", current.stackTagCompound.getDouble("EMC")));
-                }
+					String storedEmcTooltip = StatCollector.translateToLocal("pe.emc.storedemc_tooltip");
+					event.toolTip.add(EnumChatFormatting.YELLOW + storedEmcTooltip + " " + EnumChatFormatting.RESET + formatEMC(stackEMC));
+				}
 			}
 			if (current.getItem() instanceof IItemEmc || current.stackTagCompound.hasKey("StoredEMC"))
 			{
@@ -237,12 +222,15 @@ public class ToolTipEvent
 					value = ((IItemEmc) current.getItem()).getStoredEmc(current);
 				}
 
+				// 这个地方我感觉不用管，我不知道能不能优化了
 				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + Constants.EMC_FORMATTER.format(value));
 			}
 
 			if (current.stackTagCompound.hasKey("StoredXP"))
 			{
-				event.toolTip.add(String.format(EnumChatFormatting.DARK_GREEN + StatCollector.translateToLocal("pe.misc.storedxp_tooltip") + " " + EnumChatFormatting.GREEN + "%,d", current.stackTagCompound.getInteger("StoredXP")));
+				// 替换 String.format
+				int storedXp = current.stackTagCompound.getInteger("StoredXP");
+				event.toolTip.add(EnumChatFormatting.DARK_GREEN + StatCollector.translateToLocal("pe.misc.storedxp_tooltip") + " " + EnumChatFormatting.GREEN + INT_FORMAT.format(storedXp));
 			}
 		}
 	}
