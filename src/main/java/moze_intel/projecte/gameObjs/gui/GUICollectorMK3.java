@@ -13,7 +13,7 @@ import moze_intel.projecte.utils.Constants;
 public class GUICollectorMK3 extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/collector3.png");
-	private final CollectorMK3Tile tile;
+	private CollectorMK3Tile tile;
 
 	public GUICollectorMK3(InventoryPlayer invPlayer, CollectorMK3Tile tile)
 	{
@@ -30,7 +30,7 @@ public class GUICollectorMK3 extends GuiContainer
 
 		double kleinCharge = tile.displayItemCharge;
 		if (kleinCharge != -1)
-			this.fontRendererObj.drawString(Constants.EMC_FORMATTER.format(kleinCharge), 91, 44, 4210752);
+			this.fontRendererObj.drawString(Constants.EMC_FORMATTER.get().format(kleinCharge), 91, 44, 4210752);
 	}
 
 	@Override

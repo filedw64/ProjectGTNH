@@ -15,7 +15,7 @@ import moze_intel.projecte.gameObjs.tiles.CollectorMK2Tile;
 
 public class CollectorMK2Container extends Container
 {
-	private final CollectorMK2Tile tile;
+	private CollectorMK2Tile tile;
 	private int sunLevel;
 
 	public CollectorMK2Container(InventoryPlayer invPlayer, CollectorMK2Tile collector)
