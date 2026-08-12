@@ -5,7 +5,6 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
-import moze_intel.projecte.gameObjs.items.tools.PEToolBase;
 import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.playerData.AlchBagProps;
 import moze_intel.projecte.playerData.AlchemicalBags;
@@ -30,7 +29,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 
@@ -140,31 +138,6 @@ public class PlayerEvents {
 				AlchemicalBags.syncPartial(player, bag.getItemDamage());
 
 				event.setCanceled(true);
-			}
-		}
-	}
-
-	@SubscribeEvent
-	public void onItemToss(ItemTossEvent event) {
-		EntityPlayer player = event.player;
-		ItemStack stack = event.entityItem.getEntityItem();
-
-		if (stack == null || !(stack.getItem() instanceof PEToolBase))
-			return;// 判断丢出的物品是否为我们需要保护的工具/武器
-
-		// 如果没有打开额外的GUI，openContainer 就是玩家自身的 inventoryContainer
-		if (player.openContainer == player.inventoryContainer) {
-
-			// 取消抛出事件
-			event.setCanceled(true);
-			event.entityItem.setDead();
-
-			// 将物品重新塞回玩家背包
-			player.inventory.addItemStackToInventory(stack);
-
-			// 在服务端强制同步玩家背包
-			if (!player.worldObj.isRemote && player instanceof EntityPlayerMP) {
-				player.inventoryContainer.detectAndSendChanges();
 			}
 		}
 	}
