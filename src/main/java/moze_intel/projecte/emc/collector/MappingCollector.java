@@ -6,6 +6,7 @@ import moze_intel.projecte.utils.PELogger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class MappingCollector<T, V extends Comparable<V>> extends AbstractMappingCollector<T,V> {
@@ -23,30 +24,26 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 	@Override
 	public void setValueBefore(T something, V value) {
 		if (something == null) return;
-		if (valueBefore.containsKey(something) && valueBefore.get(something).compareTo(value) != 0)
-			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, valueBefore.get(something), value);
-		valueBefore.put(something, value);
+		// 直接利用 put 返回的旧值，减少 containsKey 和 get 造成的多次哈希寻址
+		V old = valueBefore.put(something, value);
+		if (old != null && old.compareTo(value) != 0) {
+			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, old, value);
+		}
 		valueAfter.remove(something);
 	}
 
 	@Override
 	public void setValueAfter(T something, V value) {
 		if (something == null) return;
-		if (valueAfter.containsKey(something) && valueAfter.get(something).compareTo(value) != 0)
-			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, valueAfter.get(something), value);
-		valueAfter.put(something, value);
+		V old = valueAfter.put(something, value);
+		if (old != null && old.compareTo(value) != 0) {
+			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, old, value);
+		}
 	}
 
 	public static <T, V> Set<V> getOrCreateSet(Map<T, Set<V>> map, T key) {
-		Set<V> set;
-		if (map.containsKey(key)) {
-			set = map.get(key);
-		}
-        else {
-			set = new HashSet<>();
-			map.put(key, set);
-		}
-		return set;
+		// computeIfAbsent 一步到位
+		return map.computeIfAbsent(key, k -> new HashSet<>());
 	}
 
 	protected Set<Conversion> getConversionsFor(T something) {
@@ -71,9 +68,10 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		//Add the Conversions to the conversionsFor and usedIn Maps:
 		Conversion conv = new Conversion(output, outnum, ingredientCounts);
 		Set<Conversion> convForOut = getConversionsFor(output);
+		// 这里的 contains 依赖于正确的 equals 和 hashCode
 		if (convForOut.contains(conv))
-            return;
-        convForOut.add(conv);
+			return;
+		convForOut.add(conv);
 		addIngredientUsage(conv);
 	}
 
@@ -84,18 +82,18 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 			return;
 		}
 		Conversion conv = new Conversion(output, outnum, ingredientCounts);
-		if (overwriteConversion.containsKey(output)) {
-			Conversion oldConv = overwriteConversion.get(output);
+		// 返回旧值
+		Conversion oldConv = overwriteConversion.put(output, conv);
+		if (oldConv != null) {
 			PELogger.logWarn("Overwriting setValueFromConversion %s with %s", oldConv, conv);
 			for (T ingredient: oldConv.ingredientCounts.keySet()) {
 				getUsesFor(ingredient).remove(oldConv);
 			}
 		}
-		overwriteConversion.put(output, conv);
 		addIngredientUsage(conv);
 	}
 
-    protected class Conversion {
+	protected class Conversion {
 		public final T output;
 		public final int outputCount;
 		public final Map<T, Integer> ingredientCounts;
@@ -116,7 +114,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		}
 
 		@Override
-        public String toString() {
+		public String toString() {
 			if (value.compareTo(arithmetic.getZero()) != 0)
 				return value + " + " + ingredientsToString() + " => " + outputCount + "*" + output;
 			return ingredientsToString() + " => " + outputCount + "*" + output;
@@ -135,6 +133,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 
 		@Override
 		public boolean equals(Object obj) {
+			if (this == obj) return true;
 			if (!(obj instanceof MappingCollector<?,?>.Conversion other))
 				return false;
 			if (output.equals(other.output) && value.equals(other.value)) {
@@ -146,6 +145,17 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 				}
 			}
 			return false;
+		}
+
+		// 补充缺失的 hashCode() 方法，确保 HashSet 的查重机制正常工作
+		@Override
+		public int hashCode() {
+			int result = output != null ? output.hashCode() : 0;
+			result = 31 * result + (value != null ? value.hashCode() : 0);
+			if (ingredientCounts != null && !ingredientCounts.isEmpty()) {
+				result = 31 * result + ingredientCounts.hashCode();
+			}
+			return result;
 		}
 	}
 }
