@@ -19,21 +19,15 @@ import moze_intel.projecte.gameObjs.items.armor.GemArmorBase;
 public class TickEvents
 {
 	@SubscribeEvent
-	public void onServerTick(TickEvent.ServerTickEvent event)
-	{
+	public void onServerTick(TickEvent.ServerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END)
-		{
 			PlayerTimers.update();
-		}
 	}
 
 	@SubscribeEvent
-	public void playerTick(TickEvent.PlayerTickEvent event)
-	{
+	public void playerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END && event.side == Side.SERVER)
-		{
 			PlayerChecks.update(((EntityPlayerMP) event.player));
-		}
 	}
 
 	// 将高频的事件合并，减少 Forge 事件总线的反射调用开销
