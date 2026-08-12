@@ -1,11 +1,7 @@
 package moze_intel.projecte.config;
 
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.config.Configuration;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,8 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class ProjectEConfig
-{
+public final class ProjectEConfig {
 	public static boolean showUnlocalizedNames;
 	public static boolean showODNames;
 	public static boolean showEMCTooltip;
@@ -51,34 +46,20 @@ public final class ProjectEConfig
 	public static float katarDeathAura;
 	public static int projectileCooldown;
 	public static boolean disableAllRadiusMining;
-	public static int gemChestCooldown;
+    public static int gemChestCooldown;
 
-	public static boolean ignitionRingIgniteBlocks;
-	public static boolean zeroRingPlaceSnow;
-
-	public static boolean enableRingShiftRMB;
-	public static boolean enableArcanaShiftRMB;
-	public static boolean enableRepairShiftRMB;
-	public static int kleinStarPassiveGenTicks;
-	public static boolean redStarCamouflage;
-	public static int alchBagPages;
-
+	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
 	public static String[] dynamicEmcNbtConfig;
 
-	// 消除 Item.itemRegistry.getNameForObject() 开销
-	public static Map<Item, List<String>> parsedNbtWhitelist = new HashMap<>();
+	// 解析后的 nbt 配置
+	public static Map<String, List<String>> nbtDistinctlist = new HashMap<>();
 	public static Map<String, Double> dynamicEmcNbt = new HashMap<>();
 
-	// 提取常量
-	private static final String[] GT_STATS_KEYS = {"PrimaryMaterial", "SecondaryMaterial", "MaxDamage"};
+	public static void init(File configFile) {
 
-	public static void init(File configFile)
-	{
 		Configuration config = new Configuration(configFile);
-
-		try
-		{
+		try {
 			config.load();
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
@@ -94,15 +75,6 @@ public final class ProjectEConfig
 			gemChestCooldown = config.getInt("gemChestCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for Gem Chestplate explosion");
 
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
-			ignitionRingIgniteBlocks = config.getBoolean("ignitionRingIgniteBlocks", "items", false, "If true, the Ignition Ring will passively ignite surrounding blocks.");
-			zeroRingPlaceSnow = config.getBoolean("zeroRingPlaceSnow", "items", false, "If true, the Zero Ring will passively freeze water and place snow around the player.");
-
-			enableRingShiftRMB = config.getBoolean("enableRingShiftRMB", "items", false, "Enable Shift+RMB for basic rings (Zero/Ignition) to trigger ultimate abilities.");
-			enableArcanaShiftRMB = config.getBoolean("enableArcanaShiftRMB", "items", false, "Enable Shift+RMB for Arcana Ring to trigger ultimate fusion abilities.");
-			enableRepairShiftRMB = config.getBoolean("enableRepairShiftRMB", "items", false, "Enable Shift+RMB for Repair Talisman to instantly fully repair all items in inventory.");
-			kleinStarPassiveGenTicks = config.getInt("kleinStarPassiveGenTicks", "items", 12096000, -1, Integer.MAX_VALUE, "Ticks required for Klein Stars to passively fully charge. 168 hours = 12096000 ticks. Set to -1 to disable.");
-			redStarCamouflage = config.getBoolean("redStarCamouflage", "items", false, "If true, the Red Morning Star will act as all GT tools (wrench, crowbar, screwdriver, etc).");
-			alchBagPages = config.getInt("alchBagPages", "items", 3, 1, 10, "Amount of pages for the Alchemical Bag. Set to 1 to disable paging.");
 
 			craftableTome = config.getBoolean("craftableTome", "difficulty", false, "The Tome of Knowledge can be crafted.");
 			altCraftingMat = config.getBoolean("altCraftingMat", "difficulty", false, "If true some ProjectE items require a nether star instead of a diamond.");
@@ -111,19 +83,30 @@ public final class ProjectEConfig
 			katarDeathAura = config.getFloat("katarDeathAura", "difficulty", 1000F, 0, Integer.MAX_VALUE, "Amount of damage Katar 'C' key deals");
 
 			config.getCategory("pedestalcooldown").setComment("Cooldown for various items within the pedestal. A cooldown of -1 will disable the functionality.\n" +
-				"A cooldown of 0 will cause the actions to happen every tick. Use caution as a very low value could cause TPS issues.");
+					"A cooldown of 0 will cause the actions to happen every tick. Use caution as a very low value could cause TPS issues.");
 
 			archangelPedCooldown = config.getInt("archangelPedCooldown", "pedestalcooldown", 40, -1, Integer.MAX_VALUE, "Delay between Archangel Smite shooting arrows while in the pedestal.");
+
 			bodyPedCooldown = config.getInt("bodyPedCooldown", "pedestalcooldown", 10, -1, Integer.MAX_VALUE, "Delay between Body Stone healing 0.5 shanks while in the pedestal.");
+
 			evertidePedCooldown = config.getInt("evertidePedCooldown", "pedestalcooldown", 20, -1, Integer.MAX_VALUE, "Delay between Evertide Amulet trying to start rain while in the pedestal.");
+
 			harvestPedCooldown = config.getInt("harvestPedCooldown", "pedestalcooldown", 10, -1, Integer.MAX_VALUE, "Delay between Harvest Goddess trying to grow and harvest while in the pedestal.");
+
 			ignitePedCooldown = config.getInt("ignitePedCooldown", "pedestalcooldown", 40, -1, Integer.MAX_VALUE, "Delay between Ignition Ring trying to light entities on fire while in the pedestal.");
+
 			lifePedCooldown = config.getInt("lifePedCooldown", "pedestalcooldown", 5, -1, Integer.MAX_VALUE, "Delay between Life Stone healing both food and hunger by 0.5 shank/heart while in the pedestal.");
+
 			repairPedCooldown = config.getInt("repairPedCooldown", "pedestalcooldown", 20, -1, Integer.MAX_VALUE, "Delay between Talisman of Repair trying to repair player items while in the pedestal.");
+
 			swrgPedCooldown = config.getInt("swrgPedCooldown", "pedestalcooldown", 70, -1, Integer.MAX_VALUE, "Delay between SWRG trying to smite mobs while in the pedestal.");
+
 			soulPedCooldown = config.getInt("soulPedCooldown", "pedestalcooldown", 10, -1, Integer.MAX_VALUE, "Delay between Soul Stone healing 0.5 hearts while in the pedestal.");
+
 			volcanitePedCooldown = config.getInt("volcanitePedCooldown", "pedestalcooldown", 20, -1, Integer.MAX_VALUE, "Delay between Volcanite Amulet trying to stop rain while in the pedestal.");
+
 			zeroPedCooldown = config.getInt("zeroPedCooldown", "pedestalcooldown", 40, -1, Integer.MAX_VALUE, "Delay between Zero Ring trying to extinguish entities and freezing ground while in the pedestal.");
+
 
 			timePedBonus = config.getInt("timePedBonus", "effects", 18, 0, 256, "Bonus ticks given by the Watch of Flowing Time while in the pedestal. 0 = effectively no bonus.");
 			timePedMobSlowness = config.getFloat("timePedMobSlowness", "effects", 0.10F, 0.0F, 1.0F, "Factor the Watch of Flowing Time slows down mobs by while in the pedestal. Set to 1.0 for no slowdown.");
@@ -142,34 +125,26 @@ public final class ProjectEConfig
 				"mana|0.001"
 			}, "Format: nbt_key|emc_multiplier. When an item with this NBT is consumed, the value will be multiplied by the multiplier and added to EMC, then the tag is stripped.");
 
-			parseNbtConfigs();
+			parseNBTConfigs();
 
 			PELogger.logInfo("Configuration file loaded .");
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			PELogger.logFatal("Caught exception while loading config file!");
 			e.printStackTrace();
 		}
-		finally
-		{
+		finally {
 			if (config.hasChanged())
-			{
 				config.save();
-			}
 		}
 	}
 
-	private static void parseNbtConfigs() {
-		parsedNbtWhitelist.clear();
+	private static void parseNBTConfigs() {
+		nbtDistinctlist.clear();
 		for (String entry : nbtWhitelistConfig) {
 			String[] split = entry.split("\\|");
 			if (split.length == 2) {
-				// 启动时直接解析出 Item
-				Object obj = Item.itemRegistry.getObject(split[0]);
-				if (obj instanceof Item item) {
-					parsedNbtWhitelist.computeIfAbsent(item, k -> new ArrayList<>()).add(split[1]);
-				}
+				nbtDistinctlist.computeIfAbsent(split[0], k -> new ArrayList<>()).add(split[1]);
 			}
 		}
 
@@ -184,44 +159,5 @@ public final class ProjectEConfig
 				}
 			}
 		}
-	}
-
-	public static NBTTagCompound getFilteredNBT(ItemStack stack) {
-		if (stack == null || !stack.hasTagCompound() || stack.getItem() == null) return null;
-
-		// 延迟实例化
-		NBTTagCompound result = null;
-		NBTTagCompound original = stack.getTagCompound();
-
-		// 跳过缓慢的字符串注册表反查
-		List<String> allowedKeys = parsedNbtWhitelist.get(stack.getItem());
-		if (allowedKeys != null) {
-			for (String key : allowedKeys) {
-				if (original.hasKey(key)) {
-					if (result == null) result = new NBTTagCompound();
-					result.setTag(key, original.getTag(key).copy());
-				}
-			}
-		}
-
-		// 精简格雷工具 NBT 处理流程
-		if (GTItemHelper.isGTtool(stack) && original.hasKey("GT.ToolStats")) {
-			NBTTagCompound toolStats = original.getCompoundTag("GT.ToolStats");
-			NBTTagCompound newStats = null;
-
-			for (String key : GT_STATS_KEYS) {
-				if (toolStats.hasKey(key)) {
-					if (newStats == null) newStats = new NBTTagCompound();
-					newStats.setTag(key, toolStats.getTag(key).copy());
-				}
-			}
-
-			if (newStats != null) {
-				if (result == null) result = new NBTTagCompound();
-				result.setTag("GT.ToolStats", newStats);
-			}
-		}
-
-		return result;
 	}
 }

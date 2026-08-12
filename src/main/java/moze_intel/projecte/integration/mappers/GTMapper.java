@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration.GregTech;
+package moze_intel.projecte.integration.mappers;
 
 import bartworks.API.recipe.BartWorksRecipeMaps;
 import com.google.common.collect.ImmutableMap;
@@ -6,7 +6,7 @@ import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.util.GTRecipe;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.integration.AbstractIntegrationMapper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.item.ItemStack;
 
@@ -118,7 +118,7 @@ public class GTMapper extends AbstractIntegrationMapper {
 
 		/* 打包机: 2(可能有设计图) -> 1 */
 		processAllCategory(RecipeMaps.packagerRecipes);
-		
+
 		/* 化学反应釜: 2(可能有编程电路)+1 -> 2+1, 仅处理扣除单元后，输出只有一种物品/流体的 TODO: 扣除单元*/
 		processAllCategory(RecipeMaps.chemicalReactorRecipes);
 
@@ -264,7 +264,7 @@ public class GTMapper extends AbstractIntegrationMapper {
 			addGTRecipeConversion(cutter);
 		}
 	}
-	
+
 	private void processGTRecipeMapIgnoreAsh(RecipeMap<?> recipeMap) {
 		for (GTRecipe gtre : recipeMap.getAllRecipes()) {
 			GTRecipe ignoreAsh = gtre.copy();
@@ -279,7 +279,7 @@ public class GTMapper extends AbstractIntegrationMapper {
 				if (ch != 10000) return true;
 		return false;
 	}
-	
+
 	private void addGTRecipeConversion(GTRecipe gtre) {
 		Map<NormalizedSimpleStack, Integer> in = new HashMap<>(),
 			out = new HashMap<>();

@@ -22,7 +22,7 @@ public final class Comparators {
         if (o1 == null) return 1;
         if (o2 == null) return -1;
 
-        if (ItemHelper.areItemStacksEqualIgnoreNBT(o1, o2))
+        if (ItemHelper.basicAreStacksEqual(o1, o2))
             return o1.stackSize - o2.stackSize; // Same item id, same meta
 
 		if (o1.getItem() != o2.getItem())
