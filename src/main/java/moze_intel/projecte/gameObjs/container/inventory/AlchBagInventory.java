@@ -8,14 +8,19 @@ import moze_intel.projecte.playerData.AlchemicalBags;
 public class AlchBagInventory implements IInventory
 {
 	private final ItemStack invItem;
-	private final ItemStack[] inventory;
-	private final EntityPlayer player;
+	private ItemStack[] inventory;
+	private EntityPlayer player;
+	private final byte page; // 记录打开时的页数
 
 	public AlchBagInventory(EntityPlayer player, ItemStack stack)
 	{
-		invItem = stack;
+		this.invItem = stack;
 		this.player = player;
-		inventory = AlchemicalBags.get(player, (byte) stack.getItemDamage());
+
+		// 从炼金袋读取页数
+		this.page = stack.hasTagCompound() ? stack.getTagCompound().getByte("BagPage") : 0;
+
+		this.inventory = AlchemicalBags.get(player, (byte) stack.getItemDamage(), this.page);
 	}
 
 	@Override
@@ -123,8 +128,9 @@ public class AlchBagInventory implements IInventory
 	{
 		if (!player.worldObj.isRemote)
 		{
-			AlchemicalBags.set(player, (byte) invItem.getItemDamage(), inventory);
-			AlchemicalBags.syncPartial(player, invItem.getItemDamage());
+			// 保存时指定正确的页数
+			AlchemicalBags.set(player, (byte) invItem.getItemDamage(), this.page, inventory);
+			AlchemicalBags.syncPartial(player, invItem.getItemDamage(), this.page);
 		}
 	}
 
