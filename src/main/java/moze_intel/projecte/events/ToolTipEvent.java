@@ -29,7 +29,7 @@ public class ToolTipEvent
 {
 	// 预编译
 	private static final DecimalFormat NORMAL_FORMAT = new DecimalFormat("#.##");
-	private static final DecimalFormat SCI_FORMAT = new DecimalFormat("0.000E0");
+	private static final DecimalFormat SCI_FORMAT = new DecimalFormat("0.000e0");
 	private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###");
 
 	// 快速格式化
@@ -157,7 +157,7 @@ public class ToolTipEvent
 			if (current.stackTagCompound.getBoolean("ProjectEBlock")) {
 				event.toolTip.add(EnumChatFormatting.GREEN + StatCollector.translateToLocal("pe.misc.wrenched_block"));
 
-				// 复用stackEMC
+				// 复用 stackEMC
 				double stackEMC = current.stackTagCompound.getDouble("EMC");
 				if (stackEMC > 0) {
 					String storedEmcTooltip = StatCollector.translateToLocal("pe.emc.storedemc_tooltip");
