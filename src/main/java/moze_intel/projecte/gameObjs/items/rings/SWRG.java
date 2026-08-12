@@ -118,11 +118,7 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 			toRemove = 0.64F;
 		}
 
-		// 避免 toRemove 为 0 时的无意义调用
-		if (toRemove > 0)
-		{
-			removeEmc(stack, toRemove);
-		}
+		removeEmc(stack, toRemove);
 
 		playerMP.fallDistance = 0;
 	}
@@ -147,29 +143,26 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 	{
 		if (!world.isRemote)
 		{
-			int newMode = 0;
-
-			switch (stack.getItemDamage())
-			{
-				case 0:
-					newMode = 2;
-					break;
-				case 1:
-					newMode = 3;
-					break;
-				case 2:
-					newMode = 0;
-					break;
-				case 3:
-					newMode = 1;
-					break;
-			}
+			int newMode = switch (stack.getItemDamage()) {
+				case 0 -> 2;
+				case 1 -> 3;
+				case 2 -> 0;
+				case 3 -> 1;
+				default -> 0;
+			};
 
 			changeMode(stack, newMode);
 		}
 		return stack;
 	}
 
+	/**
+	 * Change the mode of SWRG. Modes:<p>
+	 * 0 = Ring Off<p>
+	 * 1 = Flight<p>
+	 * 2 = Shield<p>
+	 * 3 = Flight + Shield<p>
+	 */
 	public void changeMode(ItemStack stack, int mode)
 	{
 		stack.setItemDamage(mode);
@@ -178,6 +171,7 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 	@Override
 	public boolean canProvideFlight(ItemStack stack, EntityPlayerMP player)
 	{
+		// Dummy result - swrg needs special-casing
 		return false;
 	}
 
@@ -194,6 +188,7 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 		{
 			return ringOff;
 		}
+
 		else
 		{
 			return ringOn[MathHelper.clamp_int(dmg - 1, 0, 2)];
@@ -283,7 +278,7 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 		{
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.swrg.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-				StatCollector.translateToLocal("pe.swrg.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.swrgPedCooldown)));
+					StatCollector.translateToLocal("pe.swrg.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.swrgPedCooldown)));
 		}
 		return list;
 	}

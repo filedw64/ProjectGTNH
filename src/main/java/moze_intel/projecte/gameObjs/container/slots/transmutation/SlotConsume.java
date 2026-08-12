@@ -2,13 +2,9 @@ package moze_intel.projecte.gameObjs.container.slots.transmutation;
 
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.utils.EMCHelper;
-import moze_intel.projecte.config.ProjectEConfig;
-
-import java.util.Map;
 
 public class SlotConsume extends Slot
 {
@@ -25,26 +21,12 @@ public class SlotConsume extends Slot
 	{
 		if (stack == null) return;
 
-		double totalEmc = 0;
+		// 没有 super.putStack(stack)，这就是为什么物品放进来就消失了？
 
-		// 动态 NBT 转换为 EMC
-		if (stack.hasTagCompound()) {
-			NBTTagCompound nbt = stack.getTagCompound();
-			for (Map.Entry<String, Double> entry : ProjectEConfig.dynamicEmcNbt.entrySet()) {
-				String key = entry.getKey();
-				if (nbt.hasKey(key)) {
-					// 这样写应该能安全地读取大多数数值类型的 NBT (Int, Float, Double 等)
-					double val = nbt.getDouble(key);
-					totalEmc += val * entry.getValue() * stack.stackSize;
-				}
-			}
-		}
-
-		// 加上物品自身的 EMC
-		totalEmc += EMCHelper.getEmcValue(stack) * stack.stackSize;
-
-		inv.addEmc(totalEmc);
-		inv.handleKnowledge(stack);
+		//if (stack.getItem() != ObjHandler.tome) // 通常而言，知识之书没有 emc，但如果开放了合成，知识之书也应当转化为 emc
+		// 或者不？毕竟是添加了知识，相当于用 emc 去换知识了
+		inv.addEmc(EMCHelper.getEmcValue(stack) * stack.stackSize);
+		inv.handleKnowledge(stack); // 处理知识放在 addEmc 之后，这样 emc 增加后会刷新输出
 		this.onSlotChanged();
 	}
 

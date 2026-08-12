@@ -54,9 +54,8 @@ public class SyncPedestalPKT implements IMessage
 		{
 			TileEntity te = Minecraft.getMinecraft().theWorld.getTileEntity(message.x, message.y, message.z);
 
-			if (te instanceof DMPedestalTile)
+			if (te instanceof DMPedestalTile pedestal)
 			{
-				DMPedestalTile pedestal = ((DMPedestalTile) te);
 				pedestal.setActive(message.isActive);
 				pedestal.setInventorySlotContents(0, message.itemStack);
 			}

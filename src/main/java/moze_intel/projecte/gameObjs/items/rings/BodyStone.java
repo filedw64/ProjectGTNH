@@ -9,7 +9,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -33,14 +32,12 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer))
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		if (stack.getItemDamage() != 0)
 		{
@@ -128,18 +125,14 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 			DMPedestalTile tile = ((DMPedestalTile) world.getTileEntity(x, y, z));
 			if (tile.getActivityCooldown() == 0)
 			{
-				// 直接遍历维度玩家列表并判定碰撞箱
-				AxisAlignedBB bounds = tile.getEffectBounds();
-				for (Object obj : world.playerEntities)
+				List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class, tile.getEffectBounds());
+
+				for (EntityPlayerMP player : players)
 				{
-					if (obj instanceof EntityPlayerMP)
+					if (player.getFoodStats().needFood())
 					{
-						EntityPlayerMP player = (EntityPlayerMP) obj;
-						if (player.boundingBox.intersectsWith(bounds) && player.getFoodStats().needFood())
-						{
-							world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
-							player.getFoodStats().addStats(1, 1); // 1/2 shank
-						}
+						world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
+						player.getFoodStats().addStats(1, 1); // 1/2 shank
 					}
 				}
 
@@ -160,7 +153,7 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 		{
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.body.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-				StatCollector.translateToLocal("pe.body.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.bodyPedCooldown)));
+					StatCollector.translateToLocal("pe.body.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.bodyPedCooldown)));
 		}
 		return list;
 	}

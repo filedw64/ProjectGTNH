@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -38,8 +39,17 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 	{
 		super.onUpdate(stack, world, entity, slot, isHeld);
 		ObjHandler.blackHole.onUpdate(stack, world, entity, slot, isHeld);
-
-		// 移除了糟糕的 NBT 冷却读写逻辑，解放了每 tick 的性能开销
+		if (!world.isRemote) {
+			return;
+		}
+		NBTTagCompound nbt = stack.getTagCompound();
+		if (!nbt.hasKey("teleportCooldown"))
+			nbt.setByte("teleportCooldown", (byte) 10);
+		byte cd = nbt.getByte("teleportCooldown");
+		if (cd > 0) {
+			cd--;
+			nbt.setByte("teleportCooldown", cd);
+		}
 	}
 
 	@Override
@@ -72,9 +82,7 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 	@Override
 	public void doExtraFunction(ItemStack stack, EntityPlayer player)
 	{
-		// 使用世界时间戳替代 NBT 计算冷却
-		long lastTeleport = player.getEntityData().getLong("PE_VoidRingCooldown");
-		if (player.worldObj.getTotalWorldTime() - lastTeleport < 10)
+		if (stack.getTagCompound().getByte("teleportCooldown") > 0 )
 		{
 			return;
 		}
@@ -96,9 +104,7 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 			player.setPositionAndUpdate(event.targetX, event.targetY, event.targetZ);
 			player.worldObj.playSoundAtEntity(player, "mob.endermen.portal", 1.0F, 1.0F);
 			player.fallDistance = 0.0F;
-
-			// 世界时间戳
-			player.getEntityData().setLong("PE_VoidRingCooldown", player.worldObj.getTotalWorldTime());
+			stack.getTagCompound().setByte("teleportCooldown", ((byte) 10));
 		}
 	}
 

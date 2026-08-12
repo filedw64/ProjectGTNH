@@ -14,7 +14,6 @@ import moze_intel.projecte.gameObjs.items.KleinStar;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,7 +22,7 @@ import java.util.Map.Entry;
 public class RecipeShapelessHidden implements IRecipe
 {
 	private ItemStack output = null;
-	private ArrayList<Object> input = new ArrayList<>();
+	private final ArrayList<Object> input = new ArrayList<>();
 
 	public RecipeShapelessHidden(Block result, Object... recipe)
 	{
@@ -65,7 +64,6 @@ public class RecipeShapelessHidden implements IRecipe
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	RecipeShapelessHidden(ShapelessRecipes recipe, Map<ItemStack, String> replacements)
 	{
 		output = recipe.getRecipeOutput();

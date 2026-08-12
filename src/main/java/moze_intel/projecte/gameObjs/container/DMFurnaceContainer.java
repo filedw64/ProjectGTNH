@@ -15,7 +15,7 @@ import moze_intel.projecte.gameObjs.tiles.DMFurnaceTile;
 
 public class DMFurnaceContainer extends Container
 {
-	private DMFurnaceTile tile;
+	private final DMFurnaceTile tile;
 	private int lastCookTime;
 	private int lastBurnTime;
 	private int lastItemBurnTime;

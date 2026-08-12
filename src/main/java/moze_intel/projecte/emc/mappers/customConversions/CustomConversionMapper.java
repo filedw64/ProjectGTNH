@@ -28,21 +28,11 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.HashMap;
 import java.util.Map;
 
 public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 {
 	public static final ImmutableList<String> defaultfilenames = ImmutableList.of("metals", "example", "ODdefaults");
-
-	// 将 Gson 实例提取为静态常量
-	private static final Gson GSON;
-	static {
-		GsonBuilder builder = new GsonBuilder();
-		builder.registerTypeAdapter(CustomConversion.class, new CustomConversionDeserializer());
-		builder.registerTypeAdapter(FixedValues.class, new FixedValuesDeserializer());
-		GSON = builder.create();
-	}
 
 	@Override
 	public String getName()
@@ -71,14 +61,13 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			{
 				tryToWriteDefaultFiles();
 			}
-			File[] files = customConversionFolder.listFiles();
-			if (files != null) {
-				for (File f: files) {
-					if (f.isFile() && f.canRead() && f.getName().toLowerCase().endsWith(".json")) {
+			for (File f: customConversionFolder.listFiles()) {
+				if (f.isFile() && f.canRead()) {
+					if (f.getName().toLowerCase().endsWith(".json")) {
 						if (config.getBoolean(f.getName().substring(0, f.getName().length() - 5), "", true, String.format("Read file: %s?", f.getName()))) {
-							// 使用 try-with-resources 自动关闭 FileReader，修复可能的文件句柄泄漏漏洞
-							try (FileReader reader = new FileReader(f)) {
-								addMappingsFromFile(reader, mapper);
+							try
+							{
+								addMappingsFromFile(new FileReader(f), mapper);
 								PELogger.logInfo("Collected Mappings from " + f.getName());
 							} catch (Exception e) {
 								PELogger.logFatal("Exception when reading file: " + f);
@@ -103,8 +92,8 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	public static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, Double> mapper) {
-		Map<String, NormalizedSimpleStack> fakes = new HashMap<>();
-
+		Map<String, NormalizedSimpleStack> fakes = Maps.newHashMap();
+		//TODO implement buffered IMappingCollector to recover from failures
 		for (Map.Entry<String, ConversionGroup> entry : file.groups.entrySet())
 		{
 			PELogger.logDebug(String.format("Adding conversions from group '%s' with comment '%s'", entry.getKey(), entry.getValue().comment));
@@ -131,9 +120,10 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 					{
 						NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 						mapper.setValueBefore(something, entry.getValue());
-						if (something instanceof NormalizedSimpleStack.NSSOreDictionary nssOD)
+						if (something instanceof NormalizedSimpleStack.NSSOreDictionary)
 						{
-							for (ItemStack itemStack : OreDictionary.getOres(nssOD.od))
+							String odName = ((NormalizedSimpleStack.NSSOreDictionary) something).od;
+							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
 								mapper.setValueBefore(NormalizedSimpleStack.forItem(itemStack), entry.getValue());
 							}
@@ -146,9 +136,10 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 					{
 						NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 						mapper.setValueAfter(something, entry.getValue());
-						if (something instanceof NormalizedSimpleStack.NSSOreDictionary nssOD)
+						if (something instanceof NormalizedSimpleStack.NSSOreDictionary)
 						{
-							for (ItemStack itemStack : OreDictionary.getOres(nssOD.od))
+							String odName = ((NormalizedSimpleStack.NSSOreDictionary) something).od;
+							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
 								mapper.setValueAfter(NormalizedSimpleStack.forItem(itemStack), entry.getValue());
 							}
@@ -162,7 +153,8 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 						NormalizedSimpleStack out = getNSSfromJsonString(conversion.output, fakes);
 						if (conversion.evalOD && out instanceof NormalizedSimpleStack.NSSOreDictionary nssOD)
 						{
-							for (ItemStack itemStack : OreDictionary.getOres(nssOD.od))
+							String odName = nssOD.od;
+							for (ItemStack itemStack : OreDictionary.getOres(odName))
 							{
 								mapper.setValueFromConversion(conversion.count, NormalizedSimpleStack.forItem(itemStack), convertToNSSMap(conversion.ingredients, fakes));
 							}
@@ -177,14 +169,23 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		}
 	}
 
+
 	private static NormalizedSimpleStack getNSSfromJsonString(String s, Map<String, NormalizedSimpleStack> fakes) {
 		if (s.startsWith("OD|")) {
 			return NormalizedSimpleStack.forOreDictionary(s.substring(3));
 		}
 		else if (s.startsWith("FAKE|")) {
 			String fakeIdentifier = s.substring(5);
-			// 减少哈希查询
-			return fakes.computeIfAbsent(fakeIdentifier, NormalizedSimpleStack::forFake);
+			if (fakes.containsKey(fakeIdentifier))
+			{
+				return fakes.get(fakeIdentifier);
+			}
+			else
+			{
+				NormalizedSimpleStack nssFake = NormalizedSimpleStack.forFake(fakeIdentifier);
+				fakes.put(fakeIdentifier, nssFake);
+				return nssFake;
+			}
 		}
 		else if (s.startsWith("FLUID|")) {
 			String fluidName = s.substring("FLUID|".length());
@@ -198,21 +199,22 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	private static<V> Map<NormalizedSimpleStack, V> convertToNSSMap(Map<String, V> m, Map<String, NormalizedSimpleStack> fakes) throws Exception{
-		// 预先分配 Map 容量
-		Map<NormalizedSimpleStack, V> out = new HashMap<>(m.size());
+		Map<NormalizedSimpleStack, V> out = Maps.newHashMap();
 		for (Map.Entry<String, V> e: m.entrySet()) {
 			NormalizedSimpleStack nssItem = getNSSfromJsonString(e.getKey(), fakes);
-			if (nssItem != null) {
-				out.put(nssItem, e.getValue());
-			}
+			out.put(nssItem, e.getValue());
 		}
 		return out;
 	}
 
 	public static CustomConversionFile parseJson(Reader json) {
-		// 复用全局静态 GSON 实例
-		return GSON.fromJson(json, CustomConversionFile.class);
+		GsonBuilder builder = new GsonBuilder();
+		builder.registerTypeAdapter(CustomConversion.class, new CustomConversionDeserializer());
+		builder.registerTypeAdapter(FixedValues.class, new FixedValuesDeserializer());
+		Gson gson = builder.create();
+		return gson.fromJson(json, CustomConversionFile.class);
 	}
+
 
 	public static void tryToWriteDefaultFiles() {
 		for (String filename: defaultfilenames) {
@@ -227,20 +229,17 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			return;
 		}
 		try {
-			if (f.createNewFile() && f.canWrite())
-			{
-				// 使用 try-with-resources 自动关闭 InputStream 和 OutputStream
-				// 防止 IOUtils.copy 抛出异常时导致文件流泄漏
-				try (InputStream stream = CustomConversionMapper.class.getClassLoader().getResourceAsStream("defaultCustomConversions/" + filename + ".json");
-					 OutputStream outputStream = new FileOutputStream(f))
-				{
-					if (stream != null) {
-						IOUtils.copy(stream, outputStream);
-					}
-				}
-			}
+            if (f.createNewFile() && f.canWrite())
+            {
+                InputStream stream = CustomConversionMapper.class.getClassLoader().getResourceAsStream("defaultCustomConversions/" + filename + ".json");
+                OutputStream outputStream = new FileOutputStream(f);
+                IOUtils.copy(stream, outputStream);
+                stream.close();
+                outputStream.close();
+            }
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 }

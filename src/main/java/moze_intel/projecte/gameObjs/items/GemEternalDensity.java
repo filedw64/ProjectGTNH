@@ -63,11 +63,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			return;
 		}
 
-		// 扫描降频为每 20 Ticks (1秒) 扫描一次
-		if (world.getTotalWorldTime() % 20 == 0)
-		{
-			condense(stack, ((EntityPlayer) entity).inventory.mainInventory);
-		}
+		condense(stack, ((EntityPlayer) entity).inventory.mainInventory);
 	}
 
 	/**
@@ -85,17 +81,12 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		List<ItemStack> whitelist = getWhitelist(gem);
 
 		ItemStack target = getTarget(gem);
-		double targetEmc = EMCHelper.getEmcValue(target);
-
-		// 将 NBT 读取提到循环外部，一次性加载到内存列表
-		List<ItemStack> consumed = getItems(gem);
-		double addedEmc = 0;
 
 		for (int i = 0; i < inv.length; i++)
 		{
 			ItemStack s = inv[i];
 
-			if (s == null || !EMCHelper.doesItemHaveEmc(s) || s.getMaxStackSize() == 1 || EMCHelper.getEmcValue(s) >= targetEmc)
+			if (!EMCHelper.doesItemHaveEmc(s) || s.getMaxStackSize() == 1 || EMCHelper.getEmcValue(s) >= EMCHelper.getEmcValue(target))
 			{
 				continue;
 			}
@@ -103,47 +94,42 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			if ((isWhitelist && listContains(whitelist, s)) || (!isWhitelist && !listContains(whitelist, s)))
 			{
 				ItemStack copy = s.copy();
+				copy.stackSize = s.stackSize == 1 ? 1 : s.stackSize / 2;
 
-				// 一次吃掉整组物品，彻底清理槽位，而不是原版的只吃一点
-				addToList(consumed, copy);
-				inv[i] = null;
+				addToList(gem, copy);
 
-				addedEmc += EMCHelper.getEmcValue(copy) * copy.stackSize;
+				s.stackSize -= copy.stackSize;
+
+				if (s.stackSize <= 0)
+				{
+					inv[i] = null;
+				}
+
+				ItemPE.addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.stackSize);
 				hasChanged = true;
-				// 去除了 break;，一次循环直接吃光所有符合条件的槽位
+				break;
 			}
 		}
 
-		if (addedEmc > 0)
-		{
-			ItemPE.addEmcToStack(gem, addedEmc);
-		}
+        double value = EMCHelper.getEmcValue(target);
 
 		if (!EMCHelper.doesItemHaveEmc(target))
 		{
-			if (hasChanged) setItems(gem, consumed);
 			return hasChanged;
 		}
 
-		// 批量生成目标物品
-		while (getEmc(gem) >= targetEmc)
+		while (getEmc(gem) >= value)
 		{
 			ItemStack remain = ItemHelper.pushStackInInv(inv, ItemStack.copyItemStack(target));
 
 			if (remain != null)
 			{
-				break; // 背包满了
+				return false;
 			}
 
-			ItemPE.removeEmc(gem, targetEmc);
-			consumed.clear(); // 产出物品后清空吞噬记录
+			ItemPE.removeEmc(gem, value);
+			setItems(gem, new ArrayList<>());
 			hasChanged = true;
-		}
-
-		// 在所有计算（吞噬和产出）全部完成后，统一进行一次 NBT 写入
-		if (hasChanged)
-		{
-			setItems(gem, consumed);
 		}
 
 		return hasChanged;
@@ -238,7 +224,15 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		return list;
 	}
 
-	// 重载方法使其支持直接传入内存中的 List，避免频繁解包封包
+	private static void addToList(ItemStack gem, ItemStack stack)
+	{
+		List<ItemStack> list = getItems(gem);
+
+		addToList(list, stack);
+
+		setItems(gem, list);
+	}
+
 	private static void addToList(List<ItemStack> list, ItemStack stack)
 	{
 		boolean hasFound = false;
@@ -397,21 +391,17 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 	@Override
 	public void updateInAlchChest(World world, int x, int y, int z, ItemStack stack)
 	{
-		// 扫描降频为每 20 Ticks (1秒)，并且仅在真正发生改变时才执行 markDirty() 减少方块更新开销
-		if (!world.isRemote && stack.getItemDamage() == 1 && world.getTotalWorldTime() % 20 == 0)
+		if (!world.isRemote && stack.getItemDamage() == 1)
 		{
 			AlchChestTile tile = ((AlchChestTile) world.getTileEntity(x, y, z));
-			if (condense(stack, tile.getBackingInventoryArray()))
-			{
-				tile.markDirty();
-			}
+			condense(stack, tile.getBackingInventoryArray());
+			tile.markDirty();
 		}
 	}
 
 	@Override
 	public boolean updateInAlchBag(ItemStack[] inv, EntityPlayer player, ItemStack stack)
 	{
-		// 降频至每 20 Ticks (1秒) 处理一次
-		return !player.worldObj.isRemote && player.worldObj.getTotalWorldTime() % 20 == 0 && condense(stack, inv);
+		return !player.worldObj.isRemote && condense(stack, inv);
 	}
 }

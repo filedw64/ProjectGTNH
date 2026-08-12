@@ -33,14 +33,12 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer))
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		if (stack.getItemDamage() != 0)
 		{
@@ -98,17 +96,12 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 		boolean result = false;
 
 		for (int x = xCoord - 15; x <= xCoord + 15; x++)
-		{
 			for (int z = zCoord - 15; z <= zCoord + 15; z++)
 			{
-				// 防御性区块检测
-				if (!world.blockExists(x, yCoord, z)) continue;
-
 				Block crop = world.getBlock(x, yCoord, z);
 
-				if (crop instanceof IGrowable)
+				if (crop instanceof IGrowable growable)
 				{
-					IGrowable growable = (IGrowable) crop;
 
 					if (growable.func_149852_a(world, world.rand, x, yCoord, z))
 					{
@@ -121,7 +114,6 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 					}
 				}
 			}
-		}
 
 		return result;
 	}
@@ -129,7 +121,6 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	private boolean plantSeeds(World world, EntityPlayer player, int xCoord, int yCoord, int zCoord)
 	{
 		boolean result = false;
-		boolean inventoryChanged = false;
 
 		List<StackWithSlot> seeds = getAllSeeds(player.inventory.mainInventory);
 
@@ -139,12 +130,8 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 		}
 
 		for (int x = xCoord - 8; x <= xCoord + 8; x++)
-		{
 			for (int z = zCoord - 8; z <= zCoord + 8; z++)
 			{
-				// 防御性区块检测
-				if (!world.blockExists(x, yCoord, z)) continue;
-
 				Block block = player.worldObj.getBlock(x, yCoord, z);
 
 				if (block == null || block == Blocks.air)
@@ -155,13 +142,22 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 				for (int i = 0; i < seeds.size(); i++)
 				{
 					StackWithSlot s = seeds.get(i);
-					IPlantable plant = s.plantable; // 使用缓存
+					IPlantable plant;
+
+					if (s.stack.getItem() instanceof IPlantable)
+					{
+						plant = (IPlantable) s.stack.getItem();
+					}
+					else
+					{
+						plant = (IPlantable) Block.getBlockFromItem(s.stack.getItem());
+					}
 
 					if (block.canSustainPlant(world, x, yCoord, z, ForgeDirection.UP, plant) && world.isAirBlock(x, yCoord + 1, z))
 					{
 						world.setBlock(x, yCoord + 1, z, plant.getPlant(world, x, yCoord + 1, z));
 						player.inventory.decrStackSize(s.slot, 1);
-						inventoryChanged = true;
+						player.inventoryContainer.detectAndSendChanges();
 
 						s.stack.stackSize--;
 
@@ -174,19 +170,9 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 						{
 							result = true;
 						}
-
-						// 跳出内层种子循环
-						break;
 					}
 				}
 			}
-		}
-
-		// 将网络发包移出循环外
-		if (inventoryChanged)
-		{
-			player.inventoryContainer.detectAndSendChanges();
-		}
 
 		return result;
 	}
@@ -203,15 +189,15 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 			{
 				if (stack.getItem() instanceof IPlantable)
 				{
-					result.add(new StackWithSlot(stack, i, (IPlantable) stack.getItem()));
+					result.add(new StackWithSlot(stack, i));
 					continue;
 				}
 
 				Block block = Block.getBlockFromItem(stack.getItem());
 
-				if (block instanceof IPlantable)
+				if (block != null && block instanceof IPlantable)
 				{
-					result.add(new StackWithSlot(stack, i, (IPlantable) block));
+					result.add(new StackWithSlot(stack, i));
 				}
 			}
 		}
@@ -237,6 +223,7 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 
 		return null;
 	}
+
 
 	@Override
 	public void changeMode(EntityPlayer player, ItemStack stack)
@@ -285,7 +272,7 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.harvestgod.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.harvestgod.pedestal2"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-				StatCollector.translateToLocal("pe.harvestgod.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.harvestPedCooldown)));
+					StatCollector.translateToLocal("pe.harvestgod.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.harvestPedCooldown)));
 		}
 		return list;
 	}
@@ -294,13 +281,11 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	{
 		public final int slot;
 		public final ItemStack stack;
-		public final IPlantable plantable; // 提前缓存植物接口
 
-		public StackWithSlot(ItemStack stack, int slot, IPlantable plantable)
+		public StackWithSlot(ItemStack stack, int slot)
 		{
 			this.stack = stack.copy();
 			this.slot = slot;
-			this.plantable = plantable;
 		}
 	}
 }

@@ -13,7 +13,6 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.utils.AchievementHandler;
 import moze_intel.projecte.utils.EMCHelper;
 
@@ -58,36 +57,6 @@ public class KleinStar extends ItemPE implements IItemEmc
 		if (!stack.hasTagCompound())
 		{
 			stack.stackTagCompound = new NBTTagCompound();
-		}
-
-		if (!world.isRemote)
-		{
-			long currentTime = world.getTotalWorldTime();
-			long lastGenTime = stack.stackTagCompound.getLong("LastPassiveGen");
-
-			if (lastGenTime == 0)
-			{
-				stack.stackTagCompound.setLong("LastPassiveGen", currentTime);
-				return;
-			}
-
-			long elapsedTicks = currentTime - lastGenTime;
-
-			// 批处理优化
-			if (elapsedTicks >= 20)
-			{
-				double maxEmc = getMaximumEmc(stack);
-				double currentEmc = getStoredEmc(stack);
-
-				// Config 拦截
-				if (currentEmc < maxEmc && ProjectEConfig.kleinStarPassiveGenTicks > 0)
-				{
-					double emcToAdd = (maxEmc / (double) ProjectEConfig.kleinStarPassiveGenTicks) * elapsedTicks;
-					this.addEmc(stack, emcToAdd);
-				}
-
-				stack.stackTagCompound.setLong("LastPassiveGen", currentTime);
-			}
 		}
 	}
 
