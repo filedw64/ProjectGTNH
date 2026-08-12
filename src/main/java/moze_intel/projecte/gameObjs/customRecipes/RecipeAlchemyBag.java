@@ -9,9 +9,9 @@ import moze_intel.projecte.gameObjs.ObjHandler;
 
 public class RecipeAlchemyBag implements IRecipe
 {
-	private final ItemStack output;
-	private final ItemStack inputBag;
-	private final ItemStack inputDye;
+	private ItemStack output;
+	private ItemStack inputBag;
+	private ItemStack inputDye;
 
 	public RecipeAlchemyBag(ItemStack output, ItemStack inputBag, ItemStack inputDye)
 	{

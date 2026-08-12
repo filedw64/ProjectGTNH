@@ -82,7 +82,7 @@ public class ForestryMapper extends AbstractIntegrationMapper {
 			IngredientMap<NormalizedSimpleStack> inMap = new IngredientMap<>();
 
 			for (Object input : ingredients) {
-				if (!addIngredientToMap(inMap, input)) {
+				if (!addGridIngredientToMap(inMap, input)) {
 					PELogger.logWarn("Cannot process ingredient %s in %s", input, ingredients);
 					continue carpenter;
 				}
@@ -138,7 +138,7 @@ public class ForestryMapper extends AbstractIntegrationMapper {
 
 			Object[] ingredients = recipe.getIngredients();
 			for (Object input : ingredients) {
-				if (!addIngredientToMap(inMap, input))
+				if (!addGridIngredientToMap(inMap, input))
 					continue fabricator;
 			}
 
@@ -204,7 +204,7 @@ public class ForestryMapper extends AbstractIntegrationMapper {
 	}
 
 
-    private boolean addIngredientToMap(IngredientMap<NormalizedSimpleStack> inMap, Object input) {
+    private boolean addGridIngredientToMap(IngredientMap<NormalizedSimpleStack> inMap, Object input) {
         if (input == null) return true;
 
         if (input instanceof ItemStack is) {

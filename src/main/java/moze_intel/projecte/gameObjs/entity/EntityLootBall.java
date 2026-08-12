@@ -185,7 +185,7 @@ public class EntityLootBall extends Entity
 					this.worldObj.playSoundAtEntity(player, "random.pop", 0.2F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
 				}
 
-				if (!list.isEmpty())
+				if (list.size() > 0)
 				{
 					items = list;
 				}
@@ -277,7 +277,7 @@ public class EntityLootBall extends Entity
 				this.worldObj.playSoundAtEntity(player, "random.pop", 0.2F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
 			}
 
-			if (!list.isEmpty())
+			if (list.size() > 0)
 			{
 				items = list;
 			}

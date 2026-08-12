@@ -11,8 +11,8 @@ public class GTNSSItem extends NormalizedSimpleStack.NSSItem {
     public String secondary = "";
 
     public GTNSSItem(ItemStack stack) {
-        super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage());
-        if (stack.stackTagCompound == null || stack.stackTagCompound.hasNoTags()) return;
+		super(Item.itemRegistry.getNameForObject(stack.getItem()), stack.getItemDamage(), moze_intel.projecte.config.ProjectEConfig.getFilteredNBT(stack));
+		if (stack.stackTagCompound == null || stack.stackTagCompound.hasNoTags()) return;
         NBTTagCompound nbt = stack.getTagCompound().getCompoundTag("GT.ToolStats");
         primary = nbt.getString("PrimaryMaterial");
         secondary = nbt.getString("SecondaryMaterial");

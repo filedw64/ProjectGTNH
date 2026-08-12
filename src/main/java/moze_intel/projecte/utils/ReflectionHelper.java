@@ -15,17 +15,17 @@ public final class ReflectionHelper
 	private static final String[] entityFireImmuneNames = new String[] {"isImmuneToFire", "ae", "field_70178_ae"};
 	private static final String[] playerCapaWalkSpeedNames = new String[] {"walkSpeed", "g", "field_75097_g"};
 
-    static boolean getArrowInGround(EntityArrow instance)
+    protected static boolean getArrowInGround(EntityArrow instance)
 	{
 		return cpw.mods.fml.relauncher.ReflectionHelper.getPrivateValue(EntityArrow.class, instance, arrowInGroundNames);
 	}
 
-	static void setEntityFireImmunity(Entity instance, boolean value)
+	protected static void setEntityFireImmunity(Entity instance, boolean value)
 	{
 		cpw.mods.fml.relauncher.ReflectionHelper.setPrivateValue(Entity.class, instance, value, entityFireImmuneNames);
 	}
 
-	static void setPlayerCapabilityWalkspeed(PlayerCapabilities instance, float value)
+	protected static void setPlayerCapabilityWalkspeed(PlayerCapabilities instance, float value)
 	{
 		cpw.mods.fml.relauncher.ReflectionHelper.setPrivateValue(PlayerCapabilities.class, instance, value, playerCapaWalkSpeedNames);
 	}

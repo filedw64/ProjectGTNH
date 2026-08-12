@@ -19,7 +19,7 @@ import java.util.List;
 
 public class NEIPhiloSmeltingHandler extends ShapedRecipeHandler
 {
-	private static final String name = StatCollector.translateToLocal("pe.nei.philo");
+	private static String name = StatCollector.translateToLocal("pe.nei.philo");
 
 	private static final String id = "philoSmelting";
 

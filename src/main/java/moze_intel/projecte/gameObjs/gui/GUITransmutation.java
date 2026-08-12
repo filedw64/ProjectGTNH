@@ -5,12 +5,16 @@ import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotOutput;
 import moze_intel.projecte.gameObjs.gui.component.RefinedButton;
+import moze_intel.projecte.emc.FuelMapper;
+import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.utils.ItemSearchHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import org.lwjgl.opengl.GL11;
@@ -125,8 +129,10 @@ public class GUITransmutation extends GuiContainer {
 	protected void mouseClicked(int x, int y, int mouseButton) {
 		super.mouseClicked(x, y, mouseButton);
 
-		final int minX = textBoxFilter.xPosition, maxX = minX + textBoxFilter.width;
-		final int minY = textBoxFilter.yPosition, maxY = minY + textBoxFilter.height;
+		int minX = textBoxFilter.xPosition;
+		int minY = textBoxFilter.yPosition;
+		int maxX = minX + textBoxFilter.width;
+		int maxY = minY + textBoxFilter.height;
 
 		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY) {
 			inv.filter = "";
@@ -148,18 +154,68 @@ public class GUITransmutation extends GuiContainer {
 	@Override
 	protected void actionPerformed(GuiButton button) {
 		String srch = this.textBoxFilter.getText();
+		inv.filter = srch; // 确保在判断下一页之前，filter 已经是最新的
 
 		if (button.id == 1) {
 			if (inv.searchpage != 0)
 				inv.searchpage--;
 		}
-
 		else if (button.id == 2) {
-			if (inv.hasNextPage())
+			if (hasNextPage())
 				inv.searchpage++;
 		}
 
-		inv.filter = srch;
 		inv.updateOutputs();
+	}
+
+	//是否还有下一页物品
+	private boolean hasNextPage() {
+		ItemSearchHelper searchHelper = ItemSearchHelper.create(inv.filter);
+		double reqEmc = 0;
+		if (inv.getStackInSlot(8) != null) {
+			reqEmc = EMCHelper.getEmcValue(inv.getStackInSlot(8));
+		}
+		if (reqEmc > inv.emc || reqEmc == 0) {
+			reqEmc = inv.emc;
+		}
+
+		int matterCounter = 0;
+		int fuelCounter = 0;
+		int matterPagecounter = 0;
+		int fuelPagecounter = 0;
+		int matterStartIndex = inv.searchpage * 12;
+		int fuelStartIndex = inv.searchpage * 4;
+
+		for (ItemStack stack : inv.knowledge) {
+			if (EMCHelper.getEmcValue(stack) > reqEmc) {
+				continue;
+			}
+			if (!searchHelper.doesItemMatchFilter(stack)) {
+				continue;
+			}
+            //计数器解耦
+			if (FuelMapper.isStackFuel(stack)) {
+				if (fuelPagecounter < fuelStartIndex) {
+					fuelPagecounter++;
+					continue;
+				}
+				if (fuelCounter < 4) {
+					fuelCounter++;
+				} else {
+					return true;
+				}
+			} else {
+				if (matterPagecounter < matterStartIndex) {
+					matterPagecounter++;
+					continue;
+				}
+				if (matterCounter < 12) {
+					matterCounter++;
+				} else {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

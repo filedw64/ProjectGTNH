@@ -21,6 +21,8 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	private int activityCooldown = 0;
 	public double centeredX, centeredY, centeredZ;
 
+	private boolean boundsCalculated = false;
+
 	public DMPedestalTile()
 	{
 		super();
@@ -39,37 +41,43 @@ public class DMPedestalTile extends TileEmc implements IInventory
 				return;
 			}
 		}
-		centeredX = xCoord + 0.5;
-		centeredY = yCoord + 0.5;
-		centeredZ = zCoord + 0.5;
 
-		if (effectBounds == null)
+		// 优化：坐标和边界框是固定的，只需计算一次，不必每Tick重复计算
+		if (!boundsCalculated)
 		{
+			centeredX = xCoord + 0.5;
+			centeredY = yCoord + 0.5;
+			centeredZ = zCoord + 0.5;
 			effectBounds = AxisAlignedBB.getBoundingBox(centeredX - 4.5, centeredY - 4.5, centeredZ - 4.5,
-					centeredX + 4.5, centeredY + 4.5, centeredZ + 4.5);
+				centeredX + 4.5, centeredY + 4.5, centeredZ + 4.5);
+			boundsCalculated = true;
 		}
 
 		if (getActive())
 		{
-			if (getItemStack() != null)
+			ItemStack stack = getItemStack();
+			// 不但要有物品，而且必须是合法的 ProjectE 饰品
+			if (stack != null && stack.getItem() instanceof IPedestalItem)
 			{
-				Item item = getItemStack().getItem();
-				if (item instanceof IPedestalItem)
+				((IPedestalItem) stack.getItem()).updateInPedestal(worldObj, xCoord, yCoord, zCoord);
+
+				// 仅在客户端进行粒子运算，切断服务端的无效开销
+				if (worldObj.isRemote)
 				{
-					((IPedestalItem) item).updateInPedestal(worldObj, xCoord, yCoord, zCoord);
-				}
-				if (particleCooldown <= 0)
-				{
-					spawnParticles();
-					particleCooldown = 10;
-				}
-				else
-				{
-					particleCooldown--;
+					if (particleCooldown <= 0)
+					{
+						spawnParticles();
+						particleCooldown = 10;
+					}
+					else
+					{
+						particleCooldown--;
+					}
 				}
 			}
 			else
 			{
+				// 如果物品被拿走，或者被替换成了普通物品（作为展示台），自动静默关闭
 				setActive(false);
 			}
 		}
@@ -262,7 +270,7 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	@Override
 	public boolean isItemValidForSlot(int p_94041_1_, ItemStack p_94041_2_)
 	{
-		return true;
+		return true; // 允许放入任何物品作为展示台
 	}
 
 	@Override
@@ -278,28 +286,47 @@ public class DMPedestalTile extends TileEmc implements IInventory
 
 	public void setActive(boolean newState)
 	{
+		// 如果尝试开启，但里面不是 ProjectE 饰品，则拒绝开启
+		if (newState)
+		{
+			ItemStack stack = getItemStack();
+			if (stack == null || !(stack.getItem() instanceof IPedestalItem))
+			{
+				newState = false;
+			}
+		}
+
 		if (newState != this.getActive() && worldObj != null)
 		{
 			if (newState)
 			{
 				worldObj.playSoundEffect(centeredX, centeredY, centeredZ, "projecte:item.pecharge", 1.0F, 1.0F);
-				for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+
+				// 优化：切断服务端的无效粒子计算，仅客户端渲染
+				if (worldObj.isRemote)
 				{
-					this.worldObj.spawnParticle("witchMagic", centeredX + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+					for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+					{
+						this.worldObj.spawnParticle("witchMagic", centeredX + worldObj.rand.nextGaussian() * 0.13D,
+							yCoord + 1 + worldObj.rand.nextGaussian() * 0.13D,
+							centeredZ + worldObj.rand.nextGaussian() * 0.13D,
 							0.0D, 0.0D, 0.0D);
+					}
 				}
 			}
 			else
 			{
 				worldObj.playSoundEffect(centeredX, centeredY, centeredZ, "projecte:item.peuncharge", 1.0F, 1.0F);
-				for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+
+				if (worldObj.isRemote)
 				{
-					this.worldObj.spawnParticle("smoke", centeredX + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+					for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+					{
+						this.worldObj.spawnParticle("smoke", centeredX + worldObj.rand.nextGaussian() * 0.13D,
+							yCoord + 1 + worldObj.rand.nextGaussian() * 0.13D,
+							centeredZ + worldObj.rand.nextGaussian() * 0.13D,
 							0.0D, 0.0D, 0.0D);
+					}
 				}
 			}
 		}

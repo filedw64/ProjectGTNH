@@ -14,7 +14,7 @@ public class PedestalRenderer extends TileEntitySpecialRenderer
 {
 
 	private final ModelPedestal model = new ModelPedestal();
-	private final RenderItem ghostItemRenderer;
+	private RenderItem ghostItemRenderer;
 
 	public PedestalRenderer()
 	{
@@ -31,8 +31,9 @@ public class PedestalRenderer extends TileEntitySpecialRenderer
 	@Override
 	public void renderTileEntityAt(TileEntity te, double x, double y, double z, float f1)
 	{
-		if (te instanceof DMPedestalTile pedestal)
+		if (te instanceof DMPedestalTile)
 		{
+			DMPedestalTile pedestal = ((DMPedestalTile) te);
 
 			GL11.glDisable(GL11.GL_CULL_FACE);
 			GL11.glPushMatrix();

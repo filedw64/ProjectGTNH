@@ -19,7 +19,7 @@ import java.util.Set;
 
 public class NovaExplosion extends Explosion
 {
-	private final World worldObj;
+	private World worldObj;
 
 	NovaExplosion(World world, Entity entity, double x, double y, double z, float radius)
 	{
@@ -95,11 +95,14 @@ public class NovaExplosion extends Explosion
 		else
 			worldObj.spawnParticle("largeexplode", this.explosionX, this.explosionY, this.explosionZ, 1.0D, 0.0D, 0.0D);
 
-		Iterator<ChunkPosition> iterator;
+		Iterator iterator;
 		ChunkPosition chunkposition;
-		int i, j, k;
+		int i;
+		int j;
+		int k;
 		Block block;
 		List<ItemStack> list = Lists.newArrayList();
+
 
 		if (this.isSmoking)
 		{
@@ -130,14 +133,14 @@ public class NovaExplosion extends Explosion
 					d3 *= d7;
 					d4 *= d7;
 					d5 *= d7;
-					worldObj.spawnParticle("explode", (d0 + this.explosionX) / 2.0D, (d1 + this.explosionY) / 2.0D, (d2 + this.explosionZ) / 2.0D, d3, d4, d5);
+					worldObj.spawnParticle("explode", (d0 + this.explosionX * 1.0D) / 2.0D, (d1 + this.explosionY * 1.0D) / 2.0D, (d2 + this.explosionZ * 1.0D) / 2.0D, d3, d4, d5);
 					worldObj.spawnParticle("smoke", d0, d1, d2, d3, d4, d5);
 				}
 
 				if (block.getMaterial() != Material.air)
 				{
 					ArrayList<ItemStack> drops = block.getDrops(worldObj, i, j, k, worldObj.getBlockMetadata(i, j, k), 0);
-					if (drops != null && !drops.isEmpty())
+					if (drops != null && drops.size() > 0)
 						list.addAll(drops);
 
 					block.onBlockExploded(worldObj, i, j, k, this);

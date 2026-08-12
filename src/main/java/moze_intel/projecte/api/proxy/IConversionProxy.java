@@ -12,13 +12,13 @@ public interface IConversionProxy
 {
 	/**
 	 * Add a Conversion to the EMC Calculation.
-	 * <p>
+	 *
 	 * Adding a Conversion allows ProjectE to calculate the EMC value for the output based on the specified ingredients.
 	 * These do not need to be actually Conversions. You can use it to make the EMC value of an item relative to the EMC value of other items.
 	 * ProjectE will automatically select the Conversion with the lowest EMC value.
-	 * <p>
+	 *
 	 * Has to be called after {@code FMLInitializationEvent} and before {@code FMLServerStartingEvent}.
-	 * <p>
+	 *
 	 * You can use the following things for the {@code output}-Parameter and the keys in the {@code ingredients} Map:
 	 * <ul>
 	 *     <li>{@link ItemStack} - The ItemId and Metadata will be used to identify this ItemStack (May contain a {@code Block} or {@code Item}). You can use {@link net.minecraftforge.oredict.OreDictionary#WILDCARD_VALUE} as metadata.</li>
@@ -29,11 +29,11 @@ public interface IConversionProxy
 	 *     <li>{@link Object} - (No subclasses of {@code Object} - only {@code Object}!) can be used as a intermediate fake object for complex conversion.</li>
 	 * </ul>
 	 * All {@code Object}s will be assumed to be a single instance. No stacksize will be used.
-	 * <p>
+	 *
 	 * Use the {@code amount} parameter to specify how many {@code output}s are created.
 	 * Use the value in the {@code ingredients}-Map to specify how much of an ingredient is required.
 	 * (Use Millibuckets for Fluids)
-	 * <p>
+	 *
 	 * Examples:
 	 *
 	 * <pre>{@code
@@ -57,6 +57,9 @@ public interface IConversionProxy
 	 * }
 	 * </pre>
 	 *
+	 * @param amount
+	 * @param output
+	 * @param ingredients
 	 */
 	void addConversion(int amount, Object output, Map<Object, Integer> ingredients);
 }

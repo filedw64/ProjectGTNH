@@ -11,7 +11,7 @@ import moze_intel.projecte.gameObjs.tiles.AlchChestTile;
 @ChestContainer(isLargeChest = true, rowSize = 13)
 public class AlchChestContainer extends Container
 {
-	private final AlchChestTile tile;
+	private AlchChestTile tile;
 
 	public AlchChestContainer(InventoryPlayer invPlayer, AlchChestTile tile)
 	{

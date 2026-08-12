@@ -22,9 +22,9 @@ import java.util.UUID;
 
 public class TransmutationOffline
 {
-    private static final Map<UUID, List<ItemStack>> cachedKnowledge = Maps.newHashMap();
-    private static final Map<UUID, Double> cachedEmc = Maps.newHashMap();
-    private static final Map<UUID, Boolean> cachedFullKnowledge = Maps.newHashMap();
+    private static Map<UUID, List<ItemStack>> cachedKnowledge = Maps.newHashMap();
+    private static Map<UUID, Double> cachedEmc = Maps.newHashMap();
+    private static Map<UUID, Boolean> cachedFullKnowledge = Maps.newHashMap();
 
     public static void cleanAll()
     {

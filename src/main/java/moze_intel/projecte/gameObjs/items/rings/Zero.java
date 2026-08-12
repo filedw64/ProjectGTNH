@@ -6,14 +6,20 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import moze_intel.projecte.api.item.IModeChanger;
@@ -51,11 +57,29 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 			return;
 		}
 
-		AxisAlignedBB box = AxisAlignedBB.getBoundingBox(entity.posX - 3, entity.posY - 3, entity.posZ - 3, entity.posX + 3, entity.posY + 3, entity.posZ + 3);
-		WorldHelper.freezeInBoundingBox(world, box, ((EntityPlayer) entity), true);
+		EntityPlayer player = (EntityPlayer) entity;
+		AxisAlignedBB box = AxisAlignedBB.getBoundingBox(player.posX - 3, player.posY - 3, player.posZ - 3, player.posX + 3, player.posY + 3, player.posZ + 3);
+
+		// 根据 Config 决定是否在周围铺雪
+		if (ProjectEConfig.zeroRingPlaceSnow)
+		{
+			WorldHelper.freezeInBoundingBox(world, box, player, true);
+		}
+
+		// 给周围敌对生物附加缓慢 III
+		List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, box);
+		for (EntityLivingBase ent : entities)
+		{
+			if (ent instanceof IMob)
+			{
+				// 只有当没有缓慢效果或剩余时间小于10tick时才重新添加
+				if (!ent.isPotionActive(Potion.moveSlowdown) || ent.getActivePotionEffect(Potion.moveSlowdown).getDuration() < 10)
+				{
+					ent.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 60, 2));
+				}
+			}
+		}
 	}
-
-
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
@@ -64,8 +88,53 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 		{
 			int offset = 3 + this.getCharge(stack);
 			AxisAlignedBB box = player.boundingBox.expand(offset, offset, offset);
-			world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
-			WorldHelper.freezeInBoundingBox(world, box, player, false);
+
+			if (player.isSneaking() && stack.getItemDamage() != 0)
+			{
+				// Config 拦截
+				if (!ProjectEConfig.enableRingShiftRMB) return stack;
+
+				// Shift+右键大范围水源结冰，敌对生物永久缓慢 V
+				int minX = MathHelper.floor_double(box.minX);
+				int minY = MathHelper.floor_double(box.minY);
+				int minZ = MathHelper.floor_double(box.minZ);
+				int maxX = MathHelper.floor_double(box.maxX);
+				int maxY = MathHelper.floor_double(box.maxY);
+				int maxZ = MathHelper.floor_double(box.maxZ);
+
+				for (int x = minX; x <= maxX; x++)
+				{
+					for (int y = minY; y <= maxY; y++)
+					{
+						for (int z = minZ; z <= maxZ; z++)
+						{
+							if (!world.blockExists(x, y, z)) continue;
+							Block block = world.getBlock(x, y, z);
+							if (block == Blocks.water || block == Blocks.flowing_water)
+							{
+								world.setBlock(x, y, z, Blocks.ice, 0, 3);
+							}
+						}
+					}
+				}
+
+				List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, box);
+				for (EntityLivingBase ent : entities)
+				{
+					if (ent instanceof IMob)
+					{
+						// Integer.MAX_VALUE 时间的缓慢 5 (Amplifier 4)
+						ent.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, Integer.MAX_VALUE, 4));
+					}
+				}
+				world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
+			}
+			else
+			{
+				// 不潜行时，释放原版冻结
+				world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
+				WorldHelper.freezeInBoundingBox(world, box, player, false);
+			}
 		}
 
 		return stack;
@@ -173,7 +242,7 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.zero.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.zero.pedestal2"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-					StatCollector.translateToLocal("pe.zero.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.zeroPedCooldown)));
+				StatCollector.translateToLocal("pe.zero.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.zeroPedCooldown)));
 		}
 		return list;
 	}

@@ -37,6 +37,8 @@ public interface IEMCMapper<T, V extends Comparable<V>> {
 	 * <br/>
 	 * The Configuration Object will be a {@link PrefixConfiguration},
 	 * so you can use {@code ""} (Empty String) as a Category to write into the root-Category that is created for your IEMCMapper.
+	 * @param mapper
+	 * @param config
 	 */
     void addMappings(IMappingCollector<T, V> mapper, Configuration config);
 }
