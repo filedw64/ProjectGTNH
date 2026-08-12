@@ -7,7 +7,7 @@ import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import moze_intel.projecte.utils.EnchantmentBlacklist;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.item.Item;

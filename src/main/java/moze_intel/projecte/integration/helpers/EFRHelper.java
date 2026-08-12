@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration.EtFuturum;
+package moze_intel.projecte.integration.helpers;
 
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.SimpleStack;

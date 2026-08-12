@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.mappers;
 
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.item.Item;

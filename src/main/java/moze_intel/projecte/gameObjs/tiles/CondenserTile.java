@@ -206,7 +206,7 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			return ItemHelper.areItemStacksEqual(lock, stack);
 		}
 
-		//return ItemHelper.areItemStacksEqualIgnoreNBT(lock, stack);
+		//return ItemHelper.basicAreStacksEqual(lock, stack);
 	}
 
 	public int getProgressScaled()
