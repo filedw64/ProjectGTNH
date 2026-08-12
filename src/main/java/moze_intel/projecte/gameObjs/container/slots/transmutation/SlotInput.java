@@ -25,19 +25,23 @@ public class SlotInput extends Slot
 	}
 
 	@Override
-	public void putStack(ItemStack stack)
-	{
-		if (stack == null)
+	public void putStack(ItemStack stack) {
+		if (stack == null || stack.getItem() == null)
 			return;
 
-		super.putStack(stack);
-
-		if (stack.getItem() instanceof IItemEmc itemEmc)
-		{
+		if (stack.getItem() instanceof IItemEmc itemEmc) {
 			double toAdd = Math.min(itemEmc.getMaximumEmc(stack) - itemEmc.getStoredEmc(stack), inv.emc);
 			itemEmc.addEmc(stack, toAdd);
 			inv.removeEmc(toAdd);
+			inv.updateOutputs(); // 避免 return 后 emc 改变但未更新
 		}
+
+		if (ItemStack.areItemStacksEqual(stack, getStack())) {
+			super.putStack(stack);
+			return;
+		}
+
+		super.putStack(stack);
 
 		if (stack.getItem() != ObjHandler.tome)
 			inv.handleKnowledge(stack); // 若知识之书有 emc，被放入输入槽的时候不处理知识

@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.mappers;
 
 import com.cricketcraft.chisel.api.carving.CarvingUtils;
 import com.cricketcraft.chisel.api.carving.ICarvingGroup;
