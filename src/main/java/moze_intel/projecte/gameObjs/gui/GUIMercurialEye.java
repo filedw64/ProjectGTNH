@@ -12,7 +12,7 @@ import moze_intel.projecte.gameObjs.container.inventory.MercurialEyeInventory;
 public class GUIMercurialEye extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/mercurial_eye.png");
-	private final MercurialEyeInventory inventory;
+	private MercurialEyeInventory inventory;
 
 	public GUIMercurialEye(InventoryPlayer invPlayer, MercurialEyeInventory inventory)
 	{

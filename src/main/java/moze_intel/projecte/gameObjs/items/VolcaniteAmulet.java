@@ -19,6 +19,8 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidHandler;
 import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.api.item.IProjectileShooter;
@@ -26,7 +28,6 @@ import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityLavaProjectile;
 import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
 import moze_intel.projecte.utils.ClientKeyHelper;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.FluidHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PEKeybind;
@@ -34,8 +35,9 @@ import moze_intel.projecte.utils.PlayerHelper;
 
 import java.util.List;
 
+// 强化：添加了 IFluidContainerItem 接口实现
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
-public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBauble, IPedestalItem, IFireProtector
+public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBauble, IPedestalItem, IFireProtector, IFluidContainerItem
 {
 	public VolcaniteAmulet()
 	{
@@ -51,8 +53,9 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 		{
 			TileEntity tile = world.getTileEntity(x, y, z);
 
-			if (tile instanceof IFluidHandler tank)
+			if (tile instanceof IFluidHandler)
 			{
+				IFluidHandler tank = (IFluidHandler) tile;
 
 				if (FluidHelper.canFillTank(tank, FluidRegistry.LAVA, sideHit))
 				{
@@ -81,7 +84,7 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 				int k = mop.blockZ;
 				if (!(world.getTileEntity(i, j, k) instanceof IFluidHandler))
 				{
-					switch(mop.sideHit) // Ripped from vanilla ItemBucket and simplified
+					switch(mop.sideHit)
 					{
 						case 0: --j; break;
 						case 1: ++j; break;
@@ -114,7 +117,9 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int invSlot, boolean par5)
 	{
-		if (invSlot > 8 || !(entity instanceof EntityPlayer player)) return;
+		if (invSlot > 8 || !(entity instanceof EntityPlayer)) return;
+
+		EntityPlayer player = (EntityPlayer) entity;
 
 		int x = (int) Math.floor(player.posX);
 		int y = (int) (player.posY - player.getYOffset());
@@ -128,19 +133,8 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 				player.fallDistance = 0.0F;
 				player.onGround = true;
 			}
-
-			if (!world.isRemote && player.capabilities.getWalkSpeed() < 0.25F)
-			{
-				PlayerHelper.setPlayerWalkSpeed(player, 0.25F);
-			}
 		}
-		else if (!world.isRemote)
-		{
-			if (player.capabilities.getWalkSpeed() != Constants.PLAYER_WALK_SPEED)
-			{
-				PlayerHelper.setPlayerWalkSpeed(player, Constants.PLAYER_WALK_SPEED);
-			}
-		}
+		// 修复视野(FOV)缩放可能导致的眩晕和卡顿
 	}
 
 	@Override
@@ -156,6 +150,33 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 		player.worldObj.spawnEntityInWorld(new EntityLavaProjectile(player.worldObj, player));
 		return true;
 	}
+
+	/** Start IFluidContainerItem **/
+	@Override
+	public FluidStack getFluid(ItemStack container)
+	{
+		return new FluidStack(FluidRegistry.LAVA, 1073741823);
+	}
+
+	@Override
+	public int getCapacity(ItemStack container)
+	{
+		return 1073741823;
+	}
+
+	@Override
+	public int fill(ItemStack container, FluidStack resource, boolean doFill)
+	{
+		return 0;
+	}
+
+	@Override
+	public FluidStack drain(ItemStack container, int maxDrain, boolean doDrain)
+	{
+		// 可作为流体容器使用时
+		return new FluidStack(FluidRegistry.LAVA, maxDrain);
+	}
+	/** End IFluidContainerItem **/
 
 	@Override
 	@SideOnly(Side.CLIENT)
@@ -185,38 +206,8 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IBaub
 	@Optional.Method(modid = "Baubles")
 	public void onWornTick(ItemStack stack, EntityLivingBase ent)
 	{
-		if (!(ent instanceof EntityPlayer player))
-		{
-			return;
-		}
-
-		World world = player.worldObj;
-
-		int x = (int) Math.floor(player.posX);
-		int y = (int) (player.posY - player.getYOffset());
-		int z = (int) Math.floor(player.posZ);
-
-		if ((world.getBlock(x, y - 1, z) == Blocks.lava || world.getBlock(x, y - 1, z) == Blocks.flowing_lava) && world.getBlock(x, y, z) == Blocks.air)
-		{
-			if (!player.isSneaking())
-			{
-				player.motionY = 0.0D;
-				player.fallDistance = 0.0F;
-				player.onGround = true;
-			}
-
-			if (!world.isRemote && player.capabilities.getWalkSpeed() < 0.25F)
-			{
-				PlayerHelper.setPlayerWalkSpeed(player, 0.25F);
-			}
-		}
-		else if (!world.isRemote)
-		{
-			if (player.capabilities.getWalkSpeed() != Constants.PLAYER_WALK_SPEED)
-			{
-				PlayerHelper.setPlayerWalkSpeed(player, Constants.PLAYER_WALK_SPEED);
-			}
-		}
+		// 复用 onUpdate 逻辑
+		this.onUpdate(stack, ent.worldObj, ent, 0, false);
 	}
 
 	@Override
