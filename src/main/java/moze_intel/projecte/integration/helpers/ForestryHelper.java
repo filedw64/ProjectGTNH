@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration.Forestry;
+package moze_intel.projecte.integration.helpers;
 
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.SimpleStack;
@@ -14,7 +14,7 @@ public class ForestryHelper {
 		if (id == null) return false;
 		return (id.endsWith("Bag") || id.endsWith("BagT2")) && id.startsWith("Forestry:");
 	}
-	
+
 	public static boolean isForestryBag(ItemStack is) {
 		if (is == null || is.getItem() == null) return false;
 		return isForestryBag(is.getItem());

@@ -2,15 +2,15 @@ package moze_intel.projecte.emc.mappers;
 
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.integration.AvaritiaMapper;
-import moze_intel.projecte.integration.ChiselMapper;
-import moze_intel.projecte.integration.EtFuturum.EFRMapper;
-import moze_intel.projecte.integration.Forestry.ForestryMapper;
-import moze_intel.projecte.integration.GregTech.GTMapper;
+import moze_intel.projecte.integration.mappers.AvaritiaMapper;
+import moze_intel.projecte.integration.mappers.ChiselMapper;
+import moze_intel.projecte.integration.mappers.EFRMapper;
+import moze_intel.projecte.integration.mappers.ForestryMapper;
+import moze_intel.projecte.integration.mappers.GTMapper;
 import moze_intel.projecte.integration.Integration;
-import moze_intel.projecte.integration.NaturaMapper;
-import moze_intel.projecte.integration.PHCMapper;
-import moze_intel.projecte.integration.PHNMapper;
+import moze_intel.projecte.integration.mappers.NaturaMapper;
+import moze_intel.projecte.integration.mappers.PHCMapper;
+import moze_intel.projecte.integration.mappers.PHNMapper;
 import net.minecraftforge.common.config.Configuration;
 
 public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
