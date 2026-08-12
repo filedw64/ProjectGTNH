@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.mappers;
 
 import com.google.common.collect.ImmutableMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;

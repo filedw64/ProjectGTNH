@@ -1,6 +1,6 @@
 package moze_intel.projecte.integration.EtFuturum;
 
-import moze_intel.projecte.integration.AbstractIntegrationMapper;
+import moze_intel.projecte.integration.mappers.AbstractIntegrationMapper;
 
 public class EFRMapper extends AbstractIntegrationMapper {
     @Override

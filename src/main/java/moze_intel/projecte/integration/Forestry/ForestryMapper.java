@@ -12,7 +12,7 @@ import forestry.api.recipes.IStillRecipe;
 import forestry.api.recipes.RecipeManagers;
 import moze_intel.projecte.emc.IngredientMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.integration.AbstractIntegrationMapper;
+import moze_intel.projecte.integration.mappers.AbstractIntegrationMapper;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
