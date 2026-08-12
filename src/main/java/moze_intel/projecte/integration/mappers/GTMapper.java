@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration.GregTech;
+package moze_intel.projecte.integration.mappers;
 
 import bartworks.API.recipe.BartWorksRecipeMaps;
 import com.google.common.collect.ImmutableMap;
@@ -6,7 +6,7 @@ import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.util.GTRecipe;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
-import moze_intel.projecte.integration.mappers.AbstractIntegrationMapper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.item.ItemStack;
 

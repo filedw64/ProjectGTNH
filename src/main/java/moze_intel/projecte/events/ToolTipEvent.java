@@ -3,7 +3,7 @@ package moze_intel.projecte.events;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;

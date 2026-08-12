@@ -1,7 +1,7 @@
 package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
-import moze_intel.projecte.integration.GregTech.GTMapper;
+import moze_intel.projecte.integration.mappers.GTMapper;
 import moze_intel.projecte.integration.MineTweaker.TweakInit;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.integration.mappers.ChiselMapper;
