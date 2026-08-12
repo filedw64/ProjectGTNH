@@ -88,6 +88,26 @@ public class PlayerRender
 			GL11.glEnable(GL11.GL_LIGHTING);
 			GL11.glPopMatrix();
 		}
+		else {
+			final float hue = (System.currentTimeMillis() % 21000L) / 21000.0f;
+			final int color = Color.HSBtoRGB(hue, 1.0f, 1.0f);
+
+			final float r = ((color >> 16) & 0xFF) / 255.0f;
+			final float g = ((color >> 8) & 0xFF) / 255.0f;
+			final float b = (color & 0xFF) / 255.0f;
+
+			GL11.glColor4f(r, g, b, 0.5F);
+			if (isPioneer1)
+				Minecraft.getMinecraft().renderEngine.bindTexture(TEX_YUE);
+			else Minecraft.getMinecraft().renderEngine.bindTexture(TEX_HEART);
+		}
+
+		yuemodel.renderAll();
+
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glPopMatrix();
 	}
 
 	@SubscribeEvent
@@ -97,6 +117,5 @@ public class PlayerRender
 		if (boots != null && boots.getItem() instanceof GemFeet)
 		{
 			evt.newfov = evt.fov - 0.4F;
-		}
 	}
 }

@@ -52,62 +52,42 @@ public class ToolTipEvent
 			return;
 		Block currentBlock = Block.getBlockFromItem(currentItem);
 
-		if (currentBlock == ObjHandler.dmPedestal)
-		{
+		if (currentBlock == ObjHandler.dmPedestal) {
 			event.toolTip.add(StatCollector.translateToLocal("pe.pedestal.tooltip1"));
 			event.toolTip.add(StatCollector.translateToLocal("pe.pedestal.tooltip2"));
 		}
 
 		if (currentItem == ObjHandler.manual)
-		{
 			event.toolTip.add(StatCollector.translateToLocal("pe.manual.tooltip1"));
-		}
 
-		if (ProjectEConfig.showPedestalTooltip && currentItem instanceof IPedestalItem ipi)
-		{
-			if (ProjectEConfig.showPedestalTooltipInGUI)
-			{
-				if (Minecraft.getMinecraft().currentScreen instanceof GUIPedestal)
-				{
+		if (ProjectEConfig.showPedestalTooltip && currentItem instanceof IPedestalItem ipi) {
+			if (ProjectEConfig.showPedestalTooltipInGUI) {
+				if (Minecraft.getMinecraft().currentScreen instanceof GUIPedestal) {
 					event.toolTip.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal("pe.pedestal.on_pedestal") + " ");
 					List<String> description = ipi.getPedestalDescription();
-					if (description.isEmpty()) {
+					if (description.isEmpty())
 						event.toolTip.add(IPedestalItem.TOOLTIPDISABLED);
-					}
-					else {
-						event.toolTip.addAll(ipi.getPedestalDescription());
-					}
+					else event.toolTip.addAll(description);
 				}
 			}
-			else
-			{
+			else {
 				event.toolTip.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal("pe.pedestal.on_pedestal") + " ");
 				List<String> description = ipi.getPedestalDescription();
 				if (description.isEmpty())
-				{
 					event.toolTip.add(IPedestalItem.TOOLTIPDISABLED);
-				}
-				else
-				{
-					event.toolTip.addAll(ipi.getPedestalDescription());
-				}
+				else event.toolTip.addAll(description);
 			}
 		}
 
 		if (ProjectEConfig.showUnlocalizedNames)
-		{
 			event.toolTip.add("UN: " + Item.itemRegistry.getNameForObject(currentItem));
-		}
 
-		if (ProjectEConfig.showODNames)
-		{
+		if (ProjectEConfig.showODNames) {
 			for (int id : OreDictionary.getOreIDs(current))
-			{
 				event.toolTip.add("OD: " + OreDictionary.getOreName(id));
-			}
-			if (currentBlock instanceof BlockFluidBase bfb) {
+
+			if (currentBlock instanceof BlockFluidBase bfb)
 				event.toolTip.add("Fluid: " + bfb.getFluid().getName());
-			}
 		}
 
 		if (ProjectEConfig.showEMCTooltip)
@@ -197,10 +177,8 @@ public class ToolTipEvent
 			}
 		}
 
-		if (current.hasTagCompound())
-		{
-			if (current.stackTagCompound.getBoolean("ProjectEBlock"))
-			{
+		if (current.hasTagCompound()) {
+			if (current.stackTagCompound.getBoolean("ProjectEBlock")) {
 				event.toolTip.add(EnumChatFormatting.GREEN + StatCollector.translateToLocal("pe.misc.wrenched_block"));
 
 				// 复用stackEMC
@@ -211,16 +189,11 @@ public class ToolTipEvent
 					event.toolTip.add(EnumChatFormatting.YELLOW + storedEmcTooltip + " " + EnumChatFormatting.RESET + formatEMC(stackEMC));
 				}
 			}
-			if (current.getItem() instanceof IItemEmc || current.stackTagCompound.hasKey("StoredEMC"))
-			{
-				double value = 0;
+			if (current.getItem() instanceof IItemEmc || current.stackTagCompound.hasKey("StoredEMC")) {
+				double value;
 				if (current.stackTagCompound.hasKey("StoredEMC"))
-				{
 					value = current.stackTagCompound.getDouble("StoredEMC");
-				} else
-				{
-					value = ((IItemEmc) current.getItem()).getStoredEmc(current);
-				}
+				else value = ((IItemEmc) current.getItem()).getStoredEmc(current);
 
 				// 这个地方我感觉不用管，我不知道能不能优化了
 				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + Constants.EMC_FORMATTER.get().format(value));

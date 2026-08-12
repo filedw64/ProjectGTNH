@@ -9,6 +9,8 @@ import moze_intel.projecte.handlers.PlayerTimers;
 import moze_intel.projecte.network.PacketHandler;
 import moze_intel.projecte.network.packets.CheckUpdatePKT;
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 public class ConnectionHandler
 {

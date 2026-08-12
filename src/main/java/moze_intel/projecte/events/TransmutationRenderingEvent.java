@@ -1,9 +1,13 @@
 package moze_intel.projecte.events;
 
-import com.google.common.collect.Lists;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.items.ItemMode;
+import moze_intel.projecte.utils.MetaBlock;
+import moze_intel.projecte.utils.WorldTransmutations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -19,12 +23,8 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.common.util.ForgeDirection;
 import org.lwjgl.opengl.GL11;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.gameObjs.items.ItemMode;
-import moze_intel.projecte.utils.MetaBlock;
-import moze_intel.projecte.utils.WorldTransmutations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SideOnly(Side.CLIENT)
@@ -56,8 +56,7 @@ public class TransmutationRenderingEvent
 	}
 
 	@SubscribeEvent
-	public void onOverlay(DrawBlockHighlightEvent event)
-	{
+	public void onOverlay(DrawBlockHighlightEvent event) {
 		EntityPlayer player = Minecraft.getMinecraft().thePlayer;
 		World world = player.worldObj;
 		ItemStack stack = player.getHeldItem();
@@ -74,13 +73,25 @@ public class TransmutationRenderingEvent
 
 		MovingObjectPosition mop = event.target;
 
-		if (mop != null && mop.typeOfHit == MovingObjectType.BLOCK)
-		{
-			ForgeDirection orientation = ForgeDirection.getOrientation(mop.sideHit);
-			MetaBlock current = new MetaBlock(world, mop.blockX, mop.blockY, mop.blockZ);
-			transmutationResult = WorldTransmutations.getWorldTransmutation(current, player.isSneaking());
+		if (mop == null || mop.typeOfHit != MovingObjectType.BLOCK) {
+			transmutationResult = null;
+			return;
+		}
 
-			if (transmutationResult != null)
+		ForgeDirection orientation = ForgeDirection.getOrientation(mop.sideHit);
+		MetaBlock current = new MetaBlock(world, mop.blockX, mop.blockY, mop.blockZ);
+		transmutationResult = WorldTransmutations.getWorldTransmutation(current, player.isSneaking());
+
+		if (transmutationResult == null)
+			return;
+
+		ItemMode philoStone = (ItemMode) stack.getItem();
+		byte charge = philoStone.getCharge(stack);
+		renderCount = 0; // 重置渲染计数器
+
+		switch (philoStone.getMode(stack))
+		{
+			case 0: // Cube
 			{
 				byte charge = ((ItemMode) stack.getItem()).getCharge(stack);
 				renderCount = 0; // 重置渲染计数器
@@ -136,6 +147,17 @@ public class TransmutationRenderingEvent
 						break;
 					}
 				}
+				else {
+					for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
+						for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
+							addBlockToRenderList(world, current, x, y, mop.blockZ);
+				}
+				break;
+			}
+			case 2: // Line
+			{
+				String dir = Direction.directions[MathHelper.floor_double((double)((player.rotationYaw * 4F) / 360F) + 0.5D) & 3];
+				int side = orientation.offsetX != 0 ? 0 : orientation.offsetZ != 0 ? 1 : dir.equals("NORTH") || dir.equals("SOUTH") ? 0 : 1;
 
 				if (renderCount > 0)
 				{
@@ -149,8 +171,7 @@ public class TransmutationRenderingEvent
 		}
 	}
 
-	private void drawAll()
-	{
+	private void drawAll() {
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -233,8 +254,7 @@ public class TransmutationRenderingEvent
 		}
 	}
 
-	private float getPulseProportion()
-	{
-		return (float) (0.5F * Math.sin(System.currentTimeMillis() / 350.0) + 0.5F);
+	private float getPulseProportion() {
+		return (float) (0.5D * Math.sin(System.currentTimeMillis() / 350.0D) + 0.5D);
 	}
 }
