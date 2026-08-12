@@ -1,4 +1,4 @@
-package moze_intel.projecte.integration;
+package moze_intel.projecte.integration.mappers;
 
 public class PHNMapper extends AbstractIntegrationMapper {
     @Override
