@@ -223,7 +223,7 @@ public class ToolTipEvent
 				}
 
 				// 这个地方我感觉不用管，我不知道能不能优化了
-				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + Constants.EMC_FORMATTER.get().format(value));
+				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + Constants.EMC_FORMATTER.format(value));
 			}
 
 			if (current.stackTagCompound.hasKey("StoredXP"))
