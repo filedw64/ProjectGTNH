@@ -54,7 +54,7 @@ public class PlayerEvents {
 	public void onEntityJoinWorld(EntityJoinWorldEvent event) {
 		Entity ent = event.entity;
 		if (!ent.worldObj.isRemote && ent instanceof EntityPlayerMP player) {
-            Transmutation.sync(player);
+			Transmutation.sync(player);
 			AlchemicalBags.syncFull(player);
 		}
 	}
