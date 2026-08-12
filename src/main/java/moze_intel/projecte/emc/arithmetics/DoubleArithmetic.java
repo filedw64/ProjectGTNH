@@ -1,6 +1,8 @@
 package moze_intel.projecte.emc.arithmetics;
 
-public class DoubleArithmetic implements IValueArithmetic<Double>{
+public class DoubleArithmetic implements IValueArithmetic<Double> {
+	public final static DoubleArithmetic INSTANCE = new DoubleArithmetic();
+
     @Override
     public boolean isZero(Double value) {
         return value == 0.0;
