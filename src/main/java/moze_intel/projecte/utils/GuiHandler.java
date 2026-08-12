@@ -5,7 +5,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
-import moze_intel.projecte.gameObjs.container.AlchBagPageContainer;
 import moze_intel.projecte.gameObjs.container.AlchChestContainer;
 import moze_intel.projecte.gameObjs.container.CollectorMK1Container;
 import moze_intel.projecte.gameObjs.container.CollectorMK2Container;
@@ -26,7 +25,6 @@ import moze_intel.projecte.gameObjs.container.inventory.AlchBagInventory;
 import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
 import moze_intel.projecte.gameObjs.container.inventory.MercurialEyeInventory;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
-import moze_intel.projecte.gameObjs.gui.GUIAlchBagPage;
 import moze_intel.projecte.gameObjs.gui.GUIAlchChest;
 import moze_intel.projecte.gameObjs.gui.GUICollectorMK1;
 import moze_intel.projecte.gameObjs.gui.GUICollectorMK2;
@@ -63,38 +61,46 @@ public class GuiHandler implements IGuiHandler {
 
 		switch (ID) {
 			case Constants.ALCH_CHEST_GUI:
-				if (tile instanceof AlchChestTile) return new AlchChestContainer(player.inventory, (AlchChestTile) tile);
+				if (tile instanceof AlchChestTile)
+					return new AlchChestContainer(player.inventory, (AlchChestTile) tile);
 				break;
 			case Constants.ALCH_BAG_GUI:
 				return new AlchBagContainer(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
-			case 66:
-				return new AlchBagPageContainer(player, player.getHeldItem());
 			case Constants.CONDENSER_GUI:
-				if (tile instanceof CondenserTile) return new CondenserContainer(player.inventory, (CondenserTile) tile);
+				if (tile instanceof CondenserTile)
+					return new CondenserContainer(player.inventory, (CondenserTile) tile);
 				break;
 			case Constants.RM_FURNACE_GUI:
-				if (tile instanceof RMFurnaceTile) return new RMFurnaceContainer(player.inventory, (RMFurnaceTile) tile);
+				if (tile instanceof RMFurnaceTile)
+					return new RMFurnaceContainer(player.inventory, (RMFurnaceTile) tile);
 				break;
 			case Constants.DM_FURNACE_GUI:
-				if (tile instanceof DMFurnaceTile) return new DMFurnaceContainer(player.inventory, (DMFurnaceTile) tile);
+				if (tile instanceof DMFurnaceTile)
+					return new DMFurnaceContainer(player.inventory, (DMFurnaceTile) tile);
 				break;
 			case Constants.COLLECTOR1_GUI:
-				if (tile instanceof CollectorMK1Tile) return new CollectorMK1Container(player.inventory, (CollectorMK1Tile) tile);
+				if (tile instanceof CollectorMK1Tile)
+					return new CollectorMK1Container(player.inventory, (CollectorMK1Tile) tile);
 				break;
 			case Constants.COLLECTOR2_GUI:
-				if (tile instanceof CollectorMK2Tile) return new CollectorMK2Container(player.inventory, (CollectorMK2Tile) tile);
+				if (tile instanceof CollectorMK2Tile)
+					return new CollectorMK2Container(player.inventory, (CollectorMK2Tile) tile);
 				break;
 			case Constants.COLLECTOR3_GUI:
-				if (tile instanceof CollectorMK3Tile) return new CollectorMK3Container(player.inventory, (CollectorMK3Tile) tile);
+				if (tile instanceof CollectorMK3Tile)
+					return new CollectorMK3Container(player.inventory, (CollectorMK3Tile) tile);
 				break;
 			case Constants.RELAY1_GUI:
-				if (tile instanceof RelayMK1Tile) return new RelayMK1Container(player.inventory, (RelayMK1Tile) tile);
+				if (tile instanceof RelayMK1Tile)
+					return new RelayMK1Container(player.inventory, (RelayMK1Tile) tile);
 				break;
 			case Constants.RELAY2_GUI:
-				if (tile instanceof RelayMK2Tile) return new RelayMK2Container(player.inventory, (RelayMK2Tile) tile);
+				if (tile instanceof RelayMK2Tile)
+					return new RelayMK2Container(player.inventory, (RelayMK2Tile) tile);
 				break;
 			case Constants.RELAY3_GUI:
-				if (tile instanceof RelayMK3Tile) return new RelayMK3Container(player.inventory, (RelayMK3Tile) tile);
+				if (tile instanceof RelayMK3Tile)
+					return new RelayMK3Container(player.inventory, (RelayMK3Tile) tile);
 				break;
 			case Constants.MERCURIAL_GUI:
 				return new MercurialEyeContainer(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
@@ -111,6 +117,7 @@ public class GuiHandler implements IGuiHandler {
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
 		}
+
 		return null;
 	}
 
@@ -120,38 +127,46 @@ public class GuiHandler implements IGuiHandler {
 
 		switch (ID) {
 			case Constants.ALCH_CHEST_GUI:
-				if (tile instanceof AlchChestTile) return new GUIAlchChest(player.inventory, (AlchChestTile) tile);
+				if (tile instanceof AlchChestTile)
+					return new GUIAlchChest(player.inventory, (AlchChestTile) tile);
 				break;
 			case Constants.ALCH_BAG_GUI:
 				return new GUIAlchChest(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
-			case 66:
-				return new GUIAlchBagPage(new AlchBagPageContainer(player, player.getHeldItem()));
 			case Constants.CONDENSER_GUI:
-				if (tile instanceof CondenserTile) return new GUICondenser(player.inventory, (CondenserTile) tile);
+				if (tile instanceof CondenserTile)
+					return new GUICondenser(player.inventory, (CondenserTile) tile);
 				break;
 			case Constants.RM_FURNACE_GUI:
-				if (tile instanceof RMFurnaceTile) return new GUIRMFurnace(player.inventory, (RMFurnaceTile) tile);
+				if (tile instanceof RMFurnaceTile)
+					return new GUIRMFurnace(player.inventory, (RMFurnaceTile) tile);
 				break;
 			case Constants.DM_FURNACE_GUI:
-				if (tile instanceof DMFurnaceTile) return new GUIDMFurnace(player.inventory, (DMFurnaceTile) tile);
+				if (tile instanceof DMFurnaceTile)
+					return new GUIDMFurnace(player.inventory, (DMFurnaceTile) tile);
 				break;
 			case Constants.COLLECTOR1_GUI:
-				if (tile instanceof CollectorMK1Tile) return new GUICollectorMK1(player.inventory, (CollectorMK1Tile) tile);
+				if (tile instanceof CollectorMK1Tile)
+					return new GUICollectorMK1(player.inventory, (CollectorMK1Tile) tile);
 				break;
 			case Constants.COLLECTOR2_GUI:
-				if (tile instanceof CollectorMK2Tile) return new GUICollectorMK2(player.inventory, (CollectorMK2Tile) tile);
+				if (tile instanceof CollectorMK2Tile)
+					return new GUICollectorMK2(player.inventory, (CollectorMK2Tile) tile);
 				break;
 			case Constants.COLLECTOR3_GUI:
-				if (tile instanceof CollectorMK3Tile) return new GUICollectorMK3(player.inventory, (CollectorMK3Tile) tile);
+				if (tile instanceof CollectorMK3Tile)
+					return new GUICollectorMK3(player.inventory, (CollectorMK3Tile) tile);
 				break;
 			case Constants.RELAY1_GUI:
-				if (tile instanceof RelayMK1Tile) return new GUIRelayMK1(player.inventory, (RelayMK1Tile) tile);
+				if (tile instanceof RelayMK1Tile)
+					return new GUIRelayMK1(player.inventory, (RelayMK1Tile) tile);
 				break;
 			case Constants.RELAY2_GUI:
-				if (tile instanceof RelayMK2Tile) return new GUIRelayMK2(player.inventory, (RelayMK2Tile) tile);
+				if (tile instanceof RelayMK2Tile)
+					return new GUIRelayMK2(player.inventory, (RelayMK2Tile) tile);
 				break;
 			case Constants.RELAY3_GUI:
-				if (tile instanceof RelayMK3Tile) return new GUIRelayMK3(player.inventory, (RelayMK3Tile) tile);
+				if (tile instanceof RelayMK3Tile)
+					return new GUIRelayMK3(player.inventory, (RelayMK3Tile) tile);
 				break;
 			case Constants.MERCURIAL_GUI:
 				return new GUIMercurialEye(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
@@ -160,6 +175,7 @@ public class GuiHandler implements IGuiHandler {
 			case Constants.TRANSMUTATION_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), false);
 			case Constants.ETERNAL_DENSITY_GUI:
+				//player.getHeldItem(); // 这里哪来的这行鬼代码？？
 				return new GUIEternalDensity(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
 			case Constants.CONDENSER_MK2_GUI:
 				return new GUICondenserMK2(player.inventory, (CondenserMK2Tile) tile);
@@ -168,6 +184,7 @@ public class GuiHandler implements IGuiHandler {
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
 		}
+
 		return null;
 	}
 }

@@ -17,7 +17,10 @@ public final class FuelMapper
 
 	public static void loadMap()
 	{
-		FUEL_MAP.clear(); // 直接 clear，不需要判空
+		if (!FUEL_MAP.isEmpty())
+		{
+			FUEL_MAP.clear();
+		}
 
 		addToMap(new ItemStack(Items.coal, 1, 1));
 		addToMap(new ItemStack(Items.redstone));
@@ -48,17 +51,19 @@ public final class FuelMapper
 
 	public static boolean isStackFuel(ItemStack stack)
 	{
-		return indexInMap(stack) != -1;
+		return mapContains(new SimpleStack(stack));
 	}
 
 	public static boolean isStackMaxFuel(ItemStack stack)
 	{
-		return indexInMap(stack) == FUEL_MAP.size() - 1;
+		return indexInMap(new SimpleStack(stack)) == FUEL_MAP.size() - 1;
 	}
 
 	public static ItemStack getFuelUpgrade(ItemStack stack)
 	{
-		int index = indexInMap(stack);
+		SimpleStack fuel = new SimpleStack(stack);
+
+		int index = indexInMap(fuel);
 
 		if (index == -1)
 		{
@@ -85,15 +90,24 @@ public final class FuelMapper
 		}
 	}
 
-	// 复用单次创建的 SimpleStack 对象
-	private static int indexInMap(ItemStack stack)
+	private static boolean mapContains(SimpleStack stack)
 	{
-		if (stack == null || stack.getItem() == null)
+		if (!stack.isValid())
 		{
-			return -1;
+			return false;
 		}
-		SimpleStack ss = new SimpleStack(stack);
-		ss.qnty = 1;
-		return FUEL_MAP.indexOf(ss);
+
+		SimpleStack copy = stack.copy();
+		copy.qnty = 1;
+
+		return FUEL_MAP.contains(copy);
+	}
+
+	private static int indexInMap(SimpleStack stack)
+	{
+		SimpleStack copy = stack.copy();
+		copy.qnty = 1;
+
+		return FUEL_MAP.indexOf(copy);
 	}
 }

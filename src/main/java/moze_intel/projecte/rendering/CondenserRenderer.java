@@ -21,12 +21,11 @@ public class CondenserRenderer extends TileEntitySpecialRenderer
 	@Override
 	public void renderTileEntityAt(TileEntity tile, double x, double y, double z, float var8)
 	{
-		if (!(tile instanceof CondenserTile))
+		if (!(tile instanceof CondenserTile condenser))
 		{
 			return;
 		}
 
-		CondenserTile condenser = (CondenserTile) tile;
 		ForgeDirection direction = null;
 
 		if (condenser.getWorldObj() != null)

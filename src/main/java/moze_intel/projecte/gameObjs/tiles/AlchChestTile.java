@@ -151,8 +151,7 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 	{
 		super.updateEntity();
 
-		// 修复了 Java 运算符优先级的 Bug
-		if (++ticksSinceSync % 80 == 0)
+		if (++ticksSinceSync % 20 * 4 == 0)
 		{
 			worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.alchChest, 1, numPlayersUsing);
 		}
@@ -199,15 +198,22 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 			}
 		}
 
-		// 只在服务端运行物品的 Tick 逻辑
-		if (!worldObj.isRemote)
+		if (worldObj.isRemote)
 		{
-			for (ItemStack stack : inventory)
+			if (worldObj.getChunkFromBlockCoords(xCoord, zCoord).isEmpty())
 			{
-				if (stack != null && stack.getItem() instanceof IAlchChestItem)
-				{
-					((IAlchChestItem) stack.getItem()).updateInAlchChest(worldObj, xCoord, yCoord, zCoord, stack);
-				}
+				// Handle condition where this method is called even after the clientside chunk has unloaded.
+				// This will make IAlchChestItems below crash with an NPE since the TE they get back is null
+				// Don't you love vanilla???
+				return;
+			}
+		}
+
+		for (ItemStack stack : inventory)
+		{
+			if (stack != null && stack.getItem() instanceof IAlchChestItem)
+			{
+				((IAlchChestItem) stack.getItem()).updateInAlchChest(worldObj, xCoord, yCoord, zCoord, stack);
 			}
 		}
 	}

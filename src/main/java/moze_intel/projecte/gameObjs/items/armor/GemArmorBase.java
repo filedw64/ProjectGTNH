@@ -56,14 +56,6 @@ public abstract class GemArmorBase extends ItemArmor implements ISpecialArmor
 	@Override
 	public ArmorProperties getProperties(EntityLivingBase player, ItemStack armor, DamageSource source, double damage, int slot)
 	{
-		if (player instanceof EntityPlayer && hasFullSet((EntityPlayer) player))
-		{
-			if (!source.canHarmInCreative())
-			{
-				return new ArmorProperties(1, 1.0D, Integer.MAX_VALUE);
-			}
-		}
-
 		EnumArmorType type = ((GemArmorBase) armor.getItem()).armorPiece;
 		if (source.isExplosion())
 		{

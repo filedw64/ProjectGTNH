@@ -11,7 +11,7 @@ import moze_intel.projecte.gameObjs.container.slots.mercurial.SlotMercurialTarge
 
 public class MercurialEyeContainer extends Container
 {
-	private MercurialEyeInventory inventory;
+	private final MercurialEyeInventory inventory;
 
 	public MercurialEyeContainer(InventoryPlayer invPlayer, MercurialEyeInventory mercEyeInv)
 	{

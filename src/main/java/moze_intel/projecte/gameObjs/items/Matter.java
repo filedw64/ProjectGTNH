@@ -30,7 +30,7 @@ public class Matter extends ItemPE
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		return super.getUnlocalizedName() + "_" + names[MathHelper.clamp_int(stack.getItemDamage(), 0, 1)]; // 顺手防一手越界
+		return super.getUnlocalizedName() + "_" + names[stack.getItemDamage()];
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class Matter extends ItemPE
 			{
 				player.addStat(AchievementHandler.DARK_MATTER, 1);
 			}
-			else if (stack.getItemDamage() == 1)
+			else
 			{
 				player.addStat(AchievementHandler.RED_MATTER, 1);
 			}
@@ -63,8 +63,7 @@ public class Matter extends ItemPE
 	@SideOnly(Side.CLIENT)
 	public IIcon getIconFromDamage(int par1)
 	{
-		// 这里原本有个bug，修了，防止数组越界导致客户端崩溃
-		return icons[MathHelper.clamp_int(par1, 0, 1)];
+		return icons[MathHelper.clamp_int(par1, 0, 2)];
 	}
 
 	@Override

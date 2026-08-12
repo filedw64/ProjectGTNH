@@ -420,9 +420,8 @@ public final class WorldHelper
 					}
 					// Carrot, cocoa, wheat, grass (creates flowers and tall grass in vicinity),
 					// Mushroom, potato, sapling, stems, tallgrass
-					else if (crop instanceof IGrowable)
+					else if (crop instanceof IGrowable growable)
 					{
-						IGrowable growable = (IGrowable) crop;
 						if(harvest && !growable.func_149851_a(world, x, y, z, false))
 						{
 							if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))

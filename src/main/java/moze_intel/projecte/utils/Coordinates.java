@@ -53,12 +53,10 @@ public class Coordinates
 	@Override
 	public boolean equals(Object other)
 	{
-		if (!(other instanceof Coordinates))
+		if (!(other instanceof Coordinates c))
 		{
 			return false;
 		}
-
-		Coordinates c = (Coordinates) other;
 
 		return (x == c.x && y == c.y && z == c.z);
 	}

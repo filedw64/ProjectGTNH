@@ -14,7 +14,7 @@ import moze_intel.projecte.gameObjs.entity.EntityNovaCatalystPrimed;
 @SideOnly(Side.CLIENT)
 public class NovaCatalystRenderer extends Render
 {
-	private RenderBlocks blockRenderer = new RenderBlocks();
+	private final RenderBlocks blockRenderer = new RenderBlocks();
 
 	public NovaCatalystRenderer()
 	{

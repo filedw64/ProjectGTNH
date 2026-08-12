@@ -15,7 +15,7 @@ public class AlchBagContainer extends Container
 
 	public AlchBagContainer(InventoryPlayer invPlayer, AlchBagInventory invBag)
 	{
-		this.inventory = invBag;
+		inventory = invBag;
 
 		//Bag Inventory
 		for (int i = 0; i < 8; i++)
@@ -61,7 +61,6 @@ public class AlchBagContainer extends Container
 		{
 			return null;
 		}
-
 		if (stack.stackSize == 0)
 		{
 			slot.putStack((ItemStack) null);
@@ -78,7 +77,6 @@ public class AlchBagContainer extends Container
 	@Override
 	public ItemStack slotClick(int slot, int button, int flag, EntityPlayer player)
 	{
-		// 防止玩家套娃
 		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getStack() == player.getHeldItem())
 		{
 			return null;

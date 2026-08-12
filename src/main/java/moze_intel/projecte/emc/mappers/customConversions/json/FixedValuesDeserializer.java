@@ -21,14 +21,14 @@ public class FixedValuesDeserializer implements JsonDeserializer<FixedValues>
 		FixedValues fixed = new FixedValues();
 		JsonObject o = json.getAsJsonObject();
 		for(Map.Entry<String, JsonElement> entry: o.entrySet()) {
-			if (entry.getKey().equals("before")) {
-				fixed.setValueBefore = parseSetValueMap(entry.getValue().getAsJsonObject());
-			} else if (entry.getKey().equals("after")) {
-				fixed.setValueAfter = parseSetValueMap(entry.getValue().getAsJsonObject());
-			} else if (entry.getKey().equals("conversion")) {
-				fixed.conversion = context.deserialize(entry.getValue().getAsJsonArray(), new TypeToken<List<CustomConversion>>(){}.getType());
-			} else {
-				throw new JsonParseException(String.format("Can not parse \"%s\":%s in fixedValues", entry.getKey(), entry.getValue()));
+			switch (entry.getKey()) {
+				case "before" -> fixed.setValueBefore = parseSetValueMap(entry.getValue().getAsJsonObject());
+				case "after" -> fixed.setValueAfter = parseSetValueMap(entry.getValue().getAsJsonObject());
+				case "conversion" ->
+					fixed.conversion = context.deserialize(entry.getValue().getAsJsonArray(), new TypeToken<List<CustomConversion>>() {
+					}.getType());
+				default ->
+					throw new JsonParseException(String.format("Can not parse \"%s\": %s in fixedValues", entry.getKey(), entry.getValue()));
 			}
 		}
 		return fixed;

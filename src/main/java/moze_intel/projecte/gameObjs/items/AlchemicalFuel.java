@@ -13,9 +13,7 @@ import java.util.List;
 
 public class AlchemicalFuel extends ItemPE
 {
-	// 提取为静态常量，节省内存
-	private static final String[] NAMES = new String[] {"alchemical_coal", "mobius", "aeternalis"};
-
+	private final String[] names = new String[] {"alchemical_coal", "mobius", "aeternalis"};
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
 
@@ -29,36 +27,33 @@ public class AlchemicalFuel extends ItemPE
 	@Override
 	public String getUnlocalizedName(ItemStack stack)
 	{
-		int meta = stack.getItemDamage();
-		// 更简洁的越界检查
-		if (meta < 0 || meta >= NAMES.length)
+		if (stack.getItemDamage() > 2)
 		{
 			return "pe.debug.metainvalid";
 		}
-		return super.getUnlocalizedName() + "_" + NAMES[meta];
+
+		return super.getUnlocalizedName()+ "_" + names[MathHelper.clamp_int(stack.getItemDamage(), 0, 2)];
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
 	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list)
 	{
-		for (int i = 0; i < NAMES.length; ++i)
+		for (int i = 0; i < 3; ++i)
 			list.add(new ItemStack(item, 1, i));
 	}
 
-	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIconFromDamage(int par1)
 	{
-		return icons[MathHelper.clamp_int(par1, 0, NAMES.length - 1)];
+		return icons[MathHelper.clamp_int(par1, 0, 2)];
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register)
 	{
-		icons = new IIcon[NAMES.length];
-		for (int i = 0; i < NAMES.length; i++)
-			icons[i] = register.registerIcon(this.getTexture("fuels", NAMES[i]));
+		icons = new IIcon[3];
+		for (int i = 0; i < 3; i++)
+			icons[i] = register.registerIcon(this.getTexture("fuels", names[i]));
 	}
 }

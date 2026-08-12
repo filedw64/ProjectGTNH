@@ -34,9 +34,9 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 	public PhilosophersStone()
 	{
 		super("philosophers_stone", (byte)4, new String[] {
-			StatCollector.translateToLocal("pe.philstone.mode1"),
-			StatCollector.translateToLocal("pe.philstone.mode2"),
-			StatCollector.translateToLocal("pe.philstone.mode3")});
+				StatCollector.translateToLocal("pe.philstone.mode1"),
+				StatCollector.translateToLocal("pe.philstone.mode2"),
+				StatCollector.translateToLocal("pe.philstone.mode3")});
 		this.setContainerItem(this);
 		this.setNoRepair();
 	}
@@ -141,16 +141,13 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 	 */
 	private void doWorldTransmutation(World world, MetaBlock pointed, MetaBlock result, Coordinates coords, int type, int side, int charge, EntityPlayer player)
 	{
-		// 优化：引入数组作为引用传递的计数器，限制单次操作的粒子发包上限
-		int[] particleCount = new int[] {0};
-
 		if (type == 0)
 		{
 			for (int i = coords.x - charge; i <= coords.x + charge; i++)
 				for (int j = coords.y - charge; j <= coords.y + charge; j++)
 					for (int k = coords.z - charge; k <= coords.z + charge; k++)
 					{
-						changeBlock(world, pointed, result, i, j, k, player, particleCount);
+						changeBlock(world, pointed, result, i, j, k, player);
 					}
 		}
 		else if (type == 1)
@@ -160,7 +157,7 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 				for (int i = coords.x - charge; i <= coords.x + charge; i++)
 					for (int j = coords.z - charge; j <= coords.z + charge; j++)
 					{
-						changeBlock(world, pointed, result, i, coords.y, j, player, particleCount);
+						changeBlock(world, pointed, result, i, coords.y, j, player);
 					}
 			}
 			else if (side == 1)
@@ -168,7 +165,7 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 				for (int i = coords.y - charge; i <= coords.y + charge; i++)
 					for (int j = coords.z - charge; j <= coords.z + charge; j++)
 					{
-						changeBlock(world, pointed, result, coords.x, i, j, player, particleCount);
+						changeBlock(world, pointed, result, coords.x, i, j, player);
 					}
 			}
 			else
@@ -176,7 +173,7 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 				for (int i = coords.x - charge; i <= coords.x + charge; i++)
 					for (int j = coords.y - charge; j <= coords.y + charge; j++)
 					{
-						changeBlock(world, pointed, result, i, j, coords.z, player, particleCount);
+						changeBlock(world, pointed, result, i, j, coords.z, player);
 					}
 			}
 		}
@@ -186,32 +183,29 @@ public class PhilosophersStone extends ItemMode implements IProjectileShooter, I
 			{
 				for (int i = coords.z - charge; i <= coords.z + charge; i++)
 				{
-					changeBlock(world, pointed, result, coords.x, coords.y, i, player, particleCount);
+					changeBlock(world, pointed, result, coords.x, coords.y, i, player);
 				}
 			}
 			else
 			{
 				for (int i = coords.x - charge; i <= coords.x + charge; i++)
 				{
-					changeBlock(world, pointed, result, i, coords.y, coords.z, player, particleCount);
+					changeBlock(world, pointed, result, i, coords.y, coords.z, player);
 				}
 			}
 		}
 	}
 
-	private void changeBlock(World world, MetaBlock pointed, MetaBlock result, int x, int y, int z, EntityPlayer player, int[] particleCount)
+	private void changeBlock(World world, MetaBlock pointed, MetaBlock result, int x, int y, int z, EntityPlayer player)
 	{
 		MetaBlock block = new MetaBlock(world, x, y, z);
 
 		if (block.equals(pointed))
 		{
 			PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, result.getBlock(), result.getMeta());
-
-			// 优化：发包风暴拦截。只允许前10次随机触发发送粒子包
-			if (particleCount[0] < 10 && world.rand.nextInt(8) == 0)
+			if (world.rand.nextInt(8) == 0)
 			{
 				PacketHandler.sendToAllAround(new ParticlePKT("largesmoke", x, y + 1, z), new TargetPoint(world.provider.dimensionId, x, y + 1, z, 32));
-				particleCount[0]++;
 			}
 		}
 	}

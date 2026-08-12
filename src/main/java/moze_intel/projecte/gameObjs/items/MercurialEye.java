@@ -19,7 +19,6 @@ import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.common.util.ForgeDirection;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.item.IExtraFunction;
-import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.PlayerHelper;
@@ -51,8 +50,7 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 
 			ItemStack[] inventory = getInventory(stack);
 
-			// 不再需要卡莱恩之星 (inventory[0])，只检查目标方块 (inventory[1])
-			if (inventory[1] == null)
+			if (inventory[0] == null || inventory[1] == null)
 			{
 				return stack;
 			}
@@ -65,10 +63,9 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 			}
 
 			int newMeta = inventory[1].getItemDamage();
-			double reqEmc = EMCHelper.getEmcValue(inventory[1]);
 
-			// 直接从玩家的转化桌网络获取当前 EMC 余额
-			double playerEmc = Transmutation.getEmc(player);
+			double kleinEmc = ItemPE.getEmc(inventory[0]);
+            double reqEmc = EMCHelper.getEmcValue(inventory[1]);
 
 			byte charge = getCharge(stack);
 			byte mode = this.getMode(stack);
@@ -78,12 +75,12 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 			Vec3 look = player.getLookVec();
 
 			AxisAlignedBB box = AxisAlignedBB.getBoundingBox(
-				mop.blockX,
-				mop.blockY,
-				mop.blockZ,
-				mop.blockX,
-				mop.blockY,
-				mop.blockZ
+					mop.blockX,
+					mop.blockY,
+					mop.blockZ,
+					mop.blockX,
+					mop.blockY,
+					mop.blockZ
 			);
 
 			int dX = 0, dY = 0, dZ = 0;
@@ -147,9 +144,6 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 
 			if (box != null)
 			{
-				boolean hasAction = false;
-
-				breakLoop: // 定义外层标签，用于在 EMC 耗尽时彻底退出循环
 				for (int x = (int) box.minX; x <= (int) box.maxX; x++)
 				{
 					for (int y = (int) box.minY; y <= (int) box.maxY; y++)
@@ -161,14 +155,12 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 
 							if (mode == NORMAL_MODE && oldBlock == Blocks.air)
 							{
-								if (playerEmc < reqEmc)
-								{
-									break breakLoop; // EMC 不足时直接跳出所有循环，不再空转
-								}
+								if (kleinEmc < reqEmc)
+									break;
 								if (PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 								{
-									playerEmc -= reqEmc;
-									hasAction = true;
+									removeKleinEMC(stack, reqEmc);
+									kleinEmc -= reqEmc;
 								}
 							}
 							else if (mode == TRANSMUTATION_MODE)
@@ -178,53 +170,82 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 									continue;
 								}
 
-								double emc = EMCHelper.getEmcValue(new ItemStack(oldBlock, 1, oldMeta));
+                                double emc = EMCHelper.getEmcValue(new ItemStack(oldBlock, 1, oldMeta));
 
 								if (emc > reqEmc)
 								{
 									if (PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 									{
-										double difference = emc - reqEmc;
-										playerEmc += difference;
-										hasAction = true;
+                                        double difference = emc - reqEmc;
+										kleinEmc += MathHelper.clamp_double(kleinEmc, 0, EMCHelper.getKleinStarMaxEmc(inventory[0]));
+										addKleinEMC(stack, difference);
 									}
 								}
 								else if (emc < reqEmc)
 								{
-									double difference = reqEmc - emc;
+                                    double difference = reqEmc - emc;
 
-									if (playerEmc >= difference)
+									if (kleinEmc >= difference)
 									{
 										if (PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 										{
-											playerEmc -= difference;
-											hasAction = true;
+											kleinEmc -= difference;
+											removeKleinEMC(stack, difference);
 										}
 									}
 								}
 								else
 								{
-									if (PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
-									{
-										hasAction = true;
-									}
+									PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta);
 								}
 							}
 						}
 					}
 				}
-
-				// 只有在确实发生改变时，才消耗 EMC、同步网络数据并播放音效
-				if (hasAction)
-				{
-					Transmutation.setEmc(player, playerEmc);
-					Transmutation.sync(player);
-					player.worldObj.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 0.80F + ((0.20F / (float)numCharges) * charge));
-				}
+				player.worldObj.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 0.80F + ((0.20F / (float)numCharges) * charge));
 			}
 		}
 
 		return stack;
+	}
+
+	private void addKleinEMC(ItemStack eye, double amount)
+	{
+		NBTTagList list = eye.stackTagCompound.getTagList("Items", NBT.TAG_COMPOUND);
+
+		for (int i = 0; i < list.tagCount(); i++)
+		{
+			NBTTagCompound nbt = list.getCompoundTagAt(i);
+
+			if (nbt.getByte("Slot") == 0)
+			{
+				ItemStack kleinStar = ItemStack.loadItemStackFromNBT(nbt);
+
+				NBTTagCompound tag = nbt.getCompoundTag("tag");
+
+				double newEmc = MathHelper.clamp_double(tag.getDouble("StoredEMC") + amount, 0, EMCHelper.getKleinStarMaxEmc(kleinStar));
+
+				tag.setDouble("StoredEMC", newEmc);
+				break;
+			}
+		}
+	}
+
+	private void removeKleinEMC(ItemStack eye, double amount)
+	{
+		NBTTagList list = eye.stackTagCompound.getTagList("Items", NBT.TAG_COMPOUND);
+
+		for (int i = 0; i < list.tagCount(); i++)
+		{
+			NBTTagCompound nbt = list.getCompoundTagAt(i);
+
+			if (nbt.getByte("Slot") == 0)
+			{
+				NBTTagCompound tag = nbt.getCompoundTag("tag");
+				tag.setDouble("StoredEMC", tag.getDouble("StoredEMC") - amount);
+				break;
+			}
+		}
 	}
 
 	private ItemStack[] getInventory(ItemStack eye)
