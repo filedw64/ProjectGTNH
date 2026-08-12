@@ -1,7 +1,8 @@
-package moze_intel.projecte.integration.GregTech;
+package moze_intel.projecte.integration.helpers;
 
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FluidSimpleStack;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -24,14 +25,14 @@ public class GTItemHelper {
 	public static boolean isNullGTtool(ItemStack is) {
 		return isGTtool(is) && (is.stackTagCompound == null || is.stackTagCompound.hasNoTags());
 	}
-	
+
 	public static boolean isGTfluidDisplay(Item item) {
 		if (item == null) return false;
 		String id = Item.itemRegistry.getNameForObject(item);
 		if (id == null) return false;
 		return id.equals("gregtech:gt.GregTech_FluidDisplay");
 	}
-	
+
 	public static boolean isGTfluidDisplay(ItemStack is) {
 		if (is == null) return false;
 		return isGTfluidDisplay(is.getItem());
@@ -48,7 +49,7 @@ public class GTItemHelper {
         if (damage == maxdamage || maxdamage == 0) return 0.0;
         return res * (maxdamage - damage) / maxdamage;
     }
-	
+
 	public static boolean isAsh(ItemStack stack) {
 		if (stack == null || stack.getItem() == null) return false;
 		int[] oreIDs = OreDictionary.getOreIDs(stack);
@@ -60,7 +61,7 @@ public class GTItemHelper {
 		}
 		return false;
 	}
-	
+
 	public static double GTfluidDisplayEMC(ItemStack is) {
 		if (!isGTfluidDisplay(is)) return 0.0;
 		if (is.stackTagCompound == null || is.stackTagCompound.hasNoTags()) return 0.0;
