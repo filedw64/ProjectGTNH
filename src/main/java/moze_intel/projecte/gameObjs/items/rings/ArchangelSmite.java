@@ -90,9 +90,12 @@ public class ArchangelSmite extends RingToggle implements IPedestalItem, IModeCh
 			{
 				if (!world.getEntitiesWithinAABB(EntityLiving.class, tile.getEffectBounds()).isEmpty())
 				{
+					// 将假玩家的获取提至循环外
+					EntityPlayer fakePlayer = FakePlayerFactory.get(((WorldServer) world), PECore.FAKEPLAYER_GAMEPROFILE);
+
 					for (int i = 0; i < 3; i++)
 					{
-						EntityHomingArrow arrow = new EntityHomingArrow(world, FakePlayerFactory.get(((WorldServer) world), PECore.FAKEPLAYER_GAMEPROFILE), 2.0F);
+						EntityHomingArrow arrow = new EntityHomingArrow(world, fakePlayer, 2.0F);
 						arrow.posX = tile.centeredX;
 						arrow.posY = tile.centeredY + 2;
 						arrow.posZ = tile.centeredZ;
@@ -119,7 +122,7 @@ public class ArchangelSmite extends RingToggle implements IPedestalItem, IModeCh
 		if (ProjectEConfig.archangelPedCooldown != -1) {
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.archangel.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-					StatCollector.translateToLocal("pe.archangel.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.archangelPedCooldown)));
+				StatCollector.translateToLocal("pe.archangel.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.archangelPedCooldown)));
 		}
 		return list;
 	}
