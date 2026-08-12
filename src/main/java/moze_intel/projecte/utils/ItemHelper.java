@@ -1,6 +1,8 @@
 package moze_intel.projecte.utils;
 
+import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
+import moze_intel.projecte.integration.GregTech.GTItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
@@ -12,41 +14,22 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Helpers for Inventories, ItemStacks, Items, and the Ore Dictionary.
  * Notice: Please try to keep methods tidy and alphabetically ordered. Thanks!
  */
-public final class ItemHelper
-{
+public final class ItemHelper {
 	/**
 	 * @return True if the only aspect these stacks differ by is stack size, false if item, meta, or nbt differ.
 	 */
-	public static boolean areItemStacksEqual(ItemStack stack1, ItemStack stack2)
-	{
-		return ItemStack.areItemStacksEqual(getNormalizedStack(stack1), getNormalizedStack(stack2));
+	public static boolean areItemStacksEqual(ItemStack stack1, ItemStack stack2) {
+		// 减少 new 对象带来的开销
+		return stack1.isItemEqual(stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
 	}
 
-	public static boolean areItemStacksEqualIgnoreNBT(ItemStack stack1, ItemStack stack2)
-	{
-		if (stack1.getItem() != stack2.getItem())
-		{
-			return false;
-		}
-
-
-		if (stack1.getItemDamage() == OreDictionary.WILDCARD_VALUE || stack2.getItemDamage() == OreDictionary.WILDCARD_VALUE)
-		{
-			return true;
-		}
-
-		return stack1.getItemDamage() == stack2.getItemDamage();
-	}
-
-	public static boolean basicAreStacksEqual(ItemStack stack1, ItemStack stack2)
-	{
+	public static boolean basicAreStacksEqual(ItemStack stack1, ItemStack stack2) {
 		return (stack1.getItem() == stack2.getItem()) && (stack1.getItemDamage() == stack2.getItemDamage());
 	}
 
@@ -74,15 +57,14 @@ public final class ItemHelper
 			}
 		}
 
-		Collections.sort(list, Comparators.ITEMSTACK_ASCENDING);
+		list.sort(Comparators.ITEMSTACK_ASCENDING);
 		trimItemList(list);
 	}
 
 	/**
 	 * Compacts and sorts list of items, without regard for stack sizes
 	 */
-	public static void compactItemListNoStacksize(List<ItemStack> list)
-	{
+	public static void compactItemListIgnoreStacksize(List<ItemStack> list) {
 		for (int i = 0; i < list.size(); i++)
 		{
 			ItemStack s = list.get(i);
@@ -151,10 +133,56 @@ public final class ItemHelper
 	}
 
 	/**
-	 * Returns an ItemStack with stacksize 1.
+	 * Filter nbt tags that truly differ items.
+	 *
+	 * @param stack The ItemStack needs to filter nbt for
+	 * @return filtered nbt from stack.stackTagCompound
 	 */
-	public static ItemStack getNormalizedStack(ItemStack stack)
-	{
+	public static NBTTagCompound filterNBT(ItemStack stack) {
+		if (stack == null || stack.getItem() == null) return null;
+		if (stack.stackTagCompound == null || stack.stackTagCompound.hasNoTags()) return null;
+
+		NBTTagCompound result = new NBTTagCompound();
+		NBTTagCompound original = stack.getTagCompound();
+
+		// 白名单 NBT
+		String itemName = Item.itemRegistry.getNameForObject(stack.getItem());
+		if (ProjectEConfig.nbtDistinctlist.containsKey(itemName)) {
+			for (String key : ProjectEConfig.nbtDistinctlist.get(itemName)) {
+				if (original.hasKey(key))
+					result.setTag(key, original.getTag(key).copy());
+			}
+		}
+
+		// 整合 GT 工具核心 NBT
+		if (GTItemHelper.isGTtool(stack) && original.hasKey("GT.ToolStats")) {
+			NBTTagCompound toolStats = original.getCompoundTag("GT.ToolStats");
+			NBTTagCompound newStats = new NBTTagCompound();
+
+			// 主材料与副材料
+			if (toolStats.hasKey("PrimaryMaterial")) {
+				newStats.setTag("PrimaryMaterial", toolStats.getTag("PrimaryMaterial").copy());
+			}
+			if (toolStats.hasKey("SecondaryMaterial")) {
+				newStats.setTag("SecondaryMaterial", toolStats.getTag("SecondaryMaterial").copy());
+			}
+
+			// MaxDamage
+			if (toolStats.hasKey("MaxDamage")) {
+				newStats.setTag("MaxDamage", toolStats.getTag("MaxDamage").copy());
+			}
+
+			if (!newStats.hasNoTags())
+				result.setTag("GT.ToolStats", newStats);
+		}
+
+		return result.hasNoTags() ? null : result;
+	}
+
+	/**
+	 * Returns an ItemStack with stacksize = 1.
+	 */
+	public static ItemStack getNormalizedStack(ItemStack stack) {
 		ItemStack result = stack.copy();
 		result.stackSize = 1;
 		return result;
@@ -275,9 +303,6 @@ public final class ItemHelper
 		return null;
 	}
 
-	/**
-	 *	@throws NullPointerException
-	 */
 	public static ItemStack getStackFromString(String internal, int metaData)
 	{
 		Item item = (Item) Item.itemRegistry.getObject(internal);
@@ -290,39 +315,73 @@ public final class ItemHelper
 		return new ItemStack(item, 1, metaData);
 	}
 
-	public static boolean hasSpace(IInventory inv, ItemStack stack)
-	{
-		for (int i = 0; i < inv.getSizeInventory(); i++)
-		{
+	@Deprecated
+	public static boolean hasSpace(IInventory inv, ItemStack stack) {
+		return hasSpaceForSingle(inv, stack);
+	}
+
+	@Deprecated
+	public static boolean hasSpace(ItemStack[] inv, ItemStack stack) {
+		return hasSpaceForSingle(inv, stack);
+	}
+
+	/**
+	 * Ignore stack size.
+	 * @return space in the inv for the stack
+	 */
+	public static int getSpaceFor(IInventory inv, ItemStack stack) {
+		int stackable = 0;
+		final int maxStack = stack.getMaxStackSize();
+		for (int i = 0; i < inv.getSizeInventory(); i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
-
-			if (invStack == null)
-			{
-				return true;
-			}
-
-			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize())
-			{
-				return true;
-			}
+			if (invStack == null) stackable += 64;
+			else if (areItemStacksEqual(stack, invStack) && invStack.stackSize < maxStack)
+				stackable += maxStack - invStack.stackSize;
 		}
+		return stackable;
+	}
 
+	/**
+	 * Ignore stack size.
+	 * @return space in the inv for the stack
+	 */
+	public static int getSpaceFor(ItemStack[] inv, ItemStack stack) {
+		int stackable = 0;
+		final int maxStack = stack.getMaxStackSize();
+		for (ItemStack invStack : inv) {
+			if (invStack == null) stackable += 64;
+			else if (areItemStacksEqual(stack, invStack) && invStack.stackSize < maxStack)
+				stackable += maxStack - invStack.stackSize;
+		}
+		return stackable;
+	}
+
+	/**
+	 * Ignore stack size.
+	 * @return does inv have space for one item in stack
+	 */
+	public static boolean hasSpaceForSingle(IInventory inv, ItemStack stack) {
+		for (int i = 0; i < inv.getSizeInventory(); i++) {
+			ItemStack invStack = inv.getStackInSlot(i);
+			if (invStack == null)
+				return true;
+			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize())
+				return true;
+		}
 		return false;
 	}
 
-	public static boolean hasSpace(ItemStack[] inv, ItemStack stack)
-	{
-		for (ItemStack invStack : inv)
-		{
-			if (invStack == null) {
+	/**
+	 * Ignore stack size.
+	 * @return does inv have space for one item in stack
+	 */
+	public static boolean hasSpaceForSingle(ItemStack[] inv, ItemStack stack) {
+		for (ItemStack invStack : inv) {
+			if (invStack == null)
 				return true;
-			}
-
-			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize()) {
+			if (areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize())
 				return true;
-			}
 		}
-
 		return false;
 	}
 
@@ -400,35 +459,30 @@ public final class ItemHelper
 	}
 
 	/**
-	 *	Returns an itemstack if the stack passed could not entirely fit in the inventory, otherwise returns null.
+	 * Returns an itemstack if the stack passed could not entirely fit in the inventory, otherwise returns null.
 	 */
 	public static ItemStack pushStackInInv(IInventory inv, ItemStack stack)
 	{
 		int limit;
 
-		if (inv instanceof InventoryPlayer) {
+		if (inv instanceof InventoryPlayer)
 			limit = ((InventoryPlayer) inv).mainInventory.length;
-		}
-		else {
-			limit = inv.getSizeInventory();
-		}
+		else limit = inv.getSizeInventory();
 
 		for (int i = 0; i < limit; i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
 
-			if (invStack == null)
-			{
+			if (invStack == null) {
 				inv.setInventorySlotContents(i, stack);
 				return null;
 			}
 
-			if (inv.isItemValidForSlot(i, stack)
-				&& areItemStacksEqual(stack, invStack) && invStack.stackSize < invStack.getMaxStackSize())
+			if (inv.isItemValidForSlot(i, stack) && areItemStacksEqual(stack, invStack)
+				&& invStack.stackSize < invStack.getMaxStackSize())
 			{
 				int remaining = invStack.getMaxStackSize() - invStack.stackSize;
 
-				if (remaining >= stack.stackSize)
-				{
+				if (remaining >= stack.stackSize) {
 					invStack.stackSize += stack.stackSize;
 					inv.setInventorySlotContents(i, invStack);
 					return null;
@@ -444,7 +498,7 @@ public final class ItemHelper
 	}
 
 	/**
-	 *	Returns an itemstack if the stack passed could not entirely fit in the inventory, otherwise returns null.
+	 * Returns an itemstack if the stack passed could not entirely fit in the inventory, otherwise returns null.
 	 */
 	public static ItemStack pushStackInInv(ItemStack[] inv, ItemStack stack)
 	{
