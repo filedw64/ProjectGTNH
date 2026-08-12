@@ -2,7 +2,7 @@ package moze_intel.projecte.utils;
 
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityLootBall;
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
