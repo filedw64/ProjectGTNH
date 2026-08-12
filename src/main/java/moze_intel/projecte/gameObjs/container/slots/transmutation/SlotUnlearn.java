@@ -26,9 +26,7 @@ public class SlotUnlearn extends Slot
 	public void putStack(ItemStack stack)
 	{
 		if (stack != null)
-		{
 			inv.handleUnlearn(stack);
-		}
 
 		super.putStack(stack);
 	}

@@ -1,18 +1,22 @@
 package moze_intel.projecte.config;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
+import moze_intel.projecte.utils.FileHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -20,20 +24,16 @@ public final class CustomEMCParser
 {
 	private static final String VERSION = "#0.2";
 	private static File CONFIG;
-	private static Path CONFIG_PATH;
 	private static boolean loaded;
-
-	public static Map<NormalizedSimpleStack, Double> userValues = Maps.newHashMap();
 
 	public static void init()
 	{
 		CONFIG = new File(PECore.CONFIG_DIR, "custom_emc.cfg");
-		CONFIG_PATH = CONFIG.toPath();
 		loaded = false;
 
-		try
+		if (!CONFIG.exists())
 		{
-			if (!CONFIG.exists())
+			try
 			{
 				if (CONFIG.createNewFile())
 				{
@@ -41,7 +41,17 @@ public final class CustomEMCParser
 					loaded = true;
 				}
 			}
-			else
+			catch (IOException e)
+			{
+				PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
+				e.printStackTrace();
+            }
+		}
+		else
+		{
+			BufferedReader reader = null;
+
+			try
 			{
 				// 使用 NIO Files 一次性读取
 				List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
@@ -50,15 +60,22 @@ public final class CustomEMCParser
 					PELogger.logFatal("Found old custom EMC file: resetting.");
 					writeDefaultFile();
 				}
-				loaded = true;
 			}
-		}
-		catch (IOException e)
-		{
-			PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
-			e.printStackTrace();
+			catch (IOException e)
+			{
+				PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
+				e.printStackTrace();
+			}
+			finally
+			{
+				FileHelper.closeStream(reader);
+			}
+
+			loaded = true;
 		}
 	}
+
+	public static Map<NormalizedSimpleStack, Double> userValues = Maps.newHashMap();
 
 	public static void readUserData()
 	{
@@ -68,72 +85,56 @@ public final class CustomEMCParser
 			return;
 		}
 
+		Entry entry;
+		LineNumberReader reader = null;
 		userValues.clear();
 		try
 		{
-			List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
-			int i = 0;
+			reader = new LineNumberReader(new FileReader(CONFIG));
 
-			while (i < lines.size())
+			while ((entry = getNextEntry(reader)) != null)
 			{
-				String line = lines.get(i).trim();
-				i++;
-
-				if (line.isEmpty() || line.length() < 3 || line.charAt(0) == '#' || line.charAt(1) != ':') continue;
-
-				if (line.charAt(0) == 'S')
+				if (entry.name.contains(":"))
 				{
-					String name = line.substring(2);
-					int meta = -1;
-					double emc = -1;
+					ItemStack stack = ItemHelper.getStackFromString(entry.name, entry.meta);
 
-					// 向下探查 Meta 和 EMC
-					while (i < lines.size())
+					if (stack == null)
 					{
-						String nextLine = lines.get(i).trim();
-						if (nextLine.startsWith("M:")) {
-							meta = Integer.parseInt(nextLine.substring(2));
-						} else if (nextLine.startsWith("E:")) {
-							emc = Double.parseDouble(nextLine.substring(2));
-							i++;
-							break; // 找到了 EMC，这个 Entry 结束
-						}
-						i++;
+						PELogger.logFatal("Error in custom EMC file: couldn't find item: " + entry.name);
+						PELogger.logFatal("At line number: " + reader.getLineNumber());
+						continue;
 					}
 
-					if (emc == -1) continue; // 格式错误？
-
-					if (name.contains(":"))
+					if (entry.emc <= 0)
 					{
-						ItemStack stack = ItemHelper.getStackFromString(name, meta);
-						if (stack == null)
-						{
-							PELogger.logFatal("Error in custom EMC file: couldn't find item: " + name);
-							continue;
-						}
-
-						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
-						else PELogger.logInfo("Registered custom EMC for: " + name + "(" + emc + ")");
-
-						userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
+						PELogger.logInfo("Removed " + entry.name + " from EMC mapping");
 					}
 					else
 					{
-						// 合并 Oredictionary 的获取操作
-						List<ItemStack> odItems = ItemHelper.getODItems(name);
-						if (odItems.isEmpty())
-						{
-							PELogger.logFatal("Error in custom EMC file: no OD entry for " + name);
-							continue;
-						}
+						PELogger.logInfo("Registered custom EMC for: " + entry.name + "(" + entry.emc + ")");
+					}
+					userValues.put(NormalizedSimpleStack.forItem(stack), entry.emc > 0 ? entry.emc  : 0.0);
+				}
+				else
+				{
+					if (OreDictionary.getOres(entry.name).isEmpty())
+					{
+						PELogger.logFatal("Error in custom EMC file: no OD entry for " + entry.name);
+						PELogger.logFatal("At line number: " + reader.getLineNumber());
+						continue;
+					}
 
-						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
-						else PELogger.logInfo("Registered custom EMC for: " + name + "(" + emc + ")");
-
-						for (ItemStack stack : odItems)
-						{
-							userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
-						}
+					if (entry.emc <= 0)
+					{
+						PELogger.logInfo("Removed " + entry.name + " from EMC mapping");
+					}
+					else
+					{
+						PELogger.logInfo("Registered custom EMC for: " + entry.name + "(" + entry.emc + ")");
+					}
+					for (ItemStack stack : ItemHelper.getODItems(entry.name))
+					{
+						userValues.put(NormalizedSimpleStack.forItem(stack), entry.emc > 0 ? entry.emc  : 0);
 					}
 				}
 			}
@@ -141,141 +142,326 @@ public final class CustomEMCParser
 		catch (Exception e)
 		{
 			e.printStackTrace();
+		}
+		finally
+		{
+			FileHelper.closeStream(reader);
 		}
 	}
 
 	public static boolean addToFile(String toAdd, int meta, double emc)
 	{
-		if (!loaded) return false;
+		if (!loaded)
+		{
+			PELogger.logFatal("ERROR: configurations files are not loaded!");
+			return false;
+		}
+
+		PrintWriter writer = null;
+		boolean result = false;
 
 		try
 		{
-			// 优化 3：只读一次文件进内存，直接在内存 List 中进行状态机查找和修改，彻底消除 O(2N) 的双重 IO 灾难
-			List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
+			List<String> file = readAllFile();
+			List<Entry> entries = getAllEntries();
+
+			boolean hasFound = false;
 			boolean isOD = !toAdd.contains(":");
-			boolean found = false;
 
-			for (int i = 0; i < lines.size(); i++)
+			for (Entry e : entries)
 			{
-				String line = lines.get(i).trim();
-				if (line.startsWith("S:") && line.substring(2).equals(toAdd))
+				if (!e.name.equals(toAdd) || (!isOD && e.meta != meta))
 				{
-					int eIndex = -1;
-					boolean metaMatches = isOD; // 如果是 OD，直接认为 Meta 匹配
-
-					// 往下找 M: 和 E:
-					for (int j = i + 1; j < lines.size(); j++) {
-						String subLine = lines.get(j).trim();
-						if (subLine.startsWith("M:") && !isOD) {
-							if (Integer.parseInt(subLine.substring(2)) == meta) {
-								metaMatches = true;
-							}
-						} else if (subLine.startsWith("E:")) {
-							eIndex = j;
-							break; // 找到当前 Entry 的 E 行
-						} else if (subLine.startsWith("S:")) {
-							break; // 越界到了下一个 Entry
-						}
-					}
-
-					if (metaMatches && eIndex != -1) {
-						lines.set(eIndex, "E:" + emc);
-						found = true;
-						break;
-					}
+					continue;
 				}
+
+				file.set(e.emcIndex - 1, "E:" + emc);
+				hasFound = true;
+				break;
 			}
 
-			if (!found)
+			if (hasFound)
 			{
-				lines.add("");
-				lines.add("S:" + toAdd);
-				if (!isOD) lines.add("M:" + meta);
-				lines.add("E:" + emc);
-			}
+				writer = new PrintWriter(new FileOutputStream(CONFIG, false));
 
-			// 一次性写回
-			Files.write(CONFIG_PATH, lines, StandardCharsets.UTF_8);
-			return true;
+				for (String s : file)
+				{
+					writer.println(s);
+				}
+
+				result = true;
+			}
+			else
+			{
+				writer = new PrintWriter(new FileOutputStream(CONFIG, true));
+
+				writer.append("\n");
+				writer.append("S:").append(toAdd).append("\n");
+
+				if (toAdd.contains(":"))
+				{
+					writer.append("M:").append(String.valueOf(meta)).append("\n");
+				}
+
+				writer.append("E:").append(String.valueOf(emc)).append("\n");
+
+				result = true;
+			}
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			return false;
 		}
+		finally
+		{
+			FileHelper.closeStream(writer);
+		}
+
+		return result;
 	}
 
 	public static boolean removeFromFile(String toRemove, int meta)
 	{
-		if (!loaded) return false;
+		if (!loaded)
+		{
+			PELogger.logFatal("ERROR: configurations files are not loaded!");
+			return false;
+		}
+
+		PrintWriter writer = null;
+		boolean result = false;
 
 		try
 		{
-			List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
+			List<String> file = readAllFile();
+			List<Entry> entries = getAllEntries();
+
 			boolean isOD = !toRemove.contains(":");
-			boolean removed = false;
 
-			for (int i = 0; i < lines.size(); i++)
+			for (Entry e : entries)
 			{
-				String line = lines.get(i).trim();
-				if (line.startsWith("S:") && line.substring(2).equals(toRemove))
+				if (!e.name.equals(toRemove) || (!isOD && e.meta != meta))
 				{
-					int sIndex = i;
-					int mIndex = -1;
-					int eIndex = -1;
-					boolean metaMatches = isOD;
+					continue;
+				}
 
-					for (int j = i + 1; j < lines.size(); j++) {
-						String subLine = lines.get(j).trim();
-						if (subLine.startsWith("M:") && !isOD) {
-							mIndex = j;
-							if (Integer.parseInt(subLine.substring(2)) == meta) {
-								metaMatches = true;
-							}
-						} else if (subLine.startsWith("E:")) {
-							eIndex = j;
-							break;
-						} else if (subLine.startsWith("S:")) {
-							break;
-						}
-					}
+				file.remove(e.emcIndex - 1);
 
-					if (metaMatches && eIndex != -1) {
-						// 从后往前删
-						lines.remove(eIndex);
-						if (mIndex != -1) lines.remove(mIndex);
-						lines.remove(sIndex);
-						removed = true;
-						break;
-					}
+				if (!isOD)
+				{
+					file.remove(e.metaIndex - 1);
+				}
+
+				file.remove(e.nameIndex - 1);
+
+				result = true;
+				break;
+			}
+
+			if (result)
+			{
+				writer = new PrintWriter(new FileOutputStream(CONFIG, false));
+
+				for (String s : file)
+				{
+					writer.println(s);
 				}
 			}
-
-			if (removed)
-			{
-				Files.write(CONFIG_PATH, lines, StandardCharsets.UTF_8);
-			}
-			return removed;
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			return false;
 		}
+		finally
+		{
+			FileHelper.closeStream(writer);
+		}
+
+		return result;
+	}
+
+	private static List<String> readAllFile()
+	{
+		List<String> list = Lists.newArrayList();
+		BufferedReader reader = null;
+
+		try
+		{
+			reader = new BufferedReader(new FileReader(CONFIG));
+
+			String s;
+
+			while ((s = reader.readLine()) != null)
+			{
+				list.add(s);
+			}
+
+			return list;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			FileHelper.closeStream(reader);
+		}
+
+		return Lists.newArrayList();
+	}
+
+	private static List<Entry> getAllEntries()
+	{
+		List<Entry> list = Lists.newArrayList();
+		LineNumberReader reader = null;
+
+		try
+		{
+			reader = new LineNumberReader(new FileReader(CONFIG));
+
+			Entry e;
+
+			while ((e = getNextEntry(reader)) != null)
+			{
+				list.add(e);
+			}
+
+			return list;
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			FileHelper.closeStream(reader);
+		}
+
+		return Lists.newArrayList();
+	}
+
+	private static Entry getNextEntry(LineNumberReader reader) throws IOException
+	{
+		String line;
+
+		while ((line = getNextLine(reader)) != null)
+		{
+			if (line.charAt(0) == 'S')
+			{
+				String name = line.substring(2);
+				int nameIndex = reader.getLineNumber();
+
+				line = getNextLine(reader);
+
+				int meta = -1;
+				int metaIndex = -1;
+
+				if (name.contains(":"))
+				{
+					if (line == null || line.charAt(0) != 'M')
+					{
+						continue;
+					}
+
+                    metaIndex = reader.getLineNumber();
+
+					try
+					{
+						meta = Integer.parseInt(line.substring(2));
+					}
+					catch (NumberFormatException e)
+					{
+						e.printStackTrace();
+						continue;
+					}
+
+					line = getNextLine(reader);
+				}
+
+				if (line == null || line.charAt(0) != 'E')
+				{
+					continue;
+				}
+
+                double emc;
+				int emcIndex = reader.getLineNumber();
+
+				try
+				{
+					emc = Double.parseDouble(line.substring(2));
+				}
+				catch (NumberFormatException e)
+				{
+					e.printStackTrace();
+					continue;
+				}
+
+				return new Entry(name, meta, emc, nameIndex, metaIndex, emcIndex);
+			}
+		}
+
+		return null;
+	}
+
+	private static String getNextLine(LineNumberReader reader) throws IOException
+	{
+		String line;
+
+		while ((line = reader.readLine()) != null)
+		{
+			line = line.trim();
+
+			if (line.isEmpty() || line.length() < 3 || line.charAt(0) == '#' || line.charAt(1) != ':')
+			{
+				continue;
+			}
+
+			return line;
+		}
+
+		return null;
 	}
 
 	private static void writeDefaultFile()
 	{
-		List<String> lines = new ArrayList<>();
-		lines.add(VERSION);
-		lines.add("Custom EMC file");
-		lines.add("This file is used for custom EMC registration, it is recommended that you do not modify it manually.");
-		lines.add("In game commands are avaliable to set custom values. Type /projecte in game for usage info.");
+		PrintWriter writer = null;
 
-		try {
-			Files.write(CONFIG_PATH, lines, StandardCharsets.UTF_8);
-		} catch (IOException e) {
+		try
+		{
+			writer = new PrintWriter(CONFIG);
+
+			writer.println(VERSION);
+			writer.println("Custom EMC file");
+			writer.println("This file is used for custom EMC registration, it is recommended that you do not modify it manually.");
+			writer.println("In game commands are avaliable to set custom values. Type /projecte in game for usage info.");
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
+		}
+		finally
+		{
+			FileHelper.closeStream(writer);
+		}
+	}
+
+	private static class Entry
+	{
+		public String name;
+		public int meta;
+		public Double emc;
+		public int nameIndex;
+		public int metaIndex;
+		public int emcIndex;
+
+		public Entry(String name, int meta, Double emc, int nameIndex, int metaIndex, int emcIndex)
+		{
+			this.name = name;
+			this.meta = meta;
+			this.emc = emc;
+			this.nameIndex = nameIndex;
+			this.metaIndex = metaIndex;
+			this.emcIndex = emcIndex;
 		}
 	}
 }

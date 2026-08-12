@@ -108,7 +108,7 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 									continue;
 								}
 
-								if (ItemHelper.areItemStacksEqualIgnoreNBT(entry.getKey(), blockStack))
+								if (ItemHelper.basicAreStacksEqual(entry.getKey(), blockStack))
 								{
                                     double currentValue = EMCHelper.getEmcValue(entry.getValue());
 
