@@ -15,12 +15,23 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import moze_intel.projecte.gameObjs.ObjHandler;
 
 public class RecipesCovalenceRepair implements IRecipe
 {
 	private ItemStack output;
+
+	private boolean isGTTool(ItemStack stack)
+	{
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("GT.ToolStats");
+	}
+
+	private boolean isTiConTool(ItemStack stack)
+	{
+		return stack.hasTagCompound() && stack.getTagCompound().hasKey("InfiTool");
+	}
 
 	@Override
 	public boolean matches(InventoryCrafting inv, World world)
@@ -70,7 +81,7 @@ public class RecipesCovalenceRepair implements IRecipe
 			return false;
 		}
 
-		if (!correctDustCount(dustCounter, tool.getItem()))
+		if (!correctDustCount(dustCounter, tool))
 		{
 			return false;
 		}
@@ -84,14 +95,43 @@ public class RecipesCovalenceRepair implements IRecipe
 		}
 
 		output = tool.copy();
-		output.setItemDamage(0);
+
+		// 精准修复 NBT，防止 GT 工具变异和匠魂工具损坏标签残留
+		if (isTiConTool(output))
+		{
+			NBTTagCompound infi = output.getTagCompound().getCompoundTag("InfiTool");
+			infi.setInteger("Damage", 0);
+			if (infi.getBoolean("Broken"))
+			{
+				infi.setBoolean("Broken", false);
+			}
+		}
+		else if (isGTTool(output))
+		{
+			NBTTagCompound gt = output.getTagCompound().getCompoundTag("GT.ToolStats");
+			gt.setLong("Damage", 0L);
+		}
+		else
+		{
+			// 原版工具修复
+			output.setItemDamage(0);
+		}
+
 		return true;
 	}
 
-	private boolean correctDustCount(int dustCounter, Item toRepair)
+	private boolean correctDustCount(int dustCounter, ItemStack stack)
 	{
+		// 对于所有的 GT 和 匠魂工具，认为统一需要 3 个共价粉（不知道怎么适配，就这样吧）
+		if (isGTTool(stack) || isTiConTool(stack))
+		{
+			return dustCounter == 3;
+		}
+
+		Item toRepair = stack.getItem();
+
 		if (toRepair instanceof ItemSpade || toRepair instanceof ItemShears
-				|| toRepair instanceof ItemFlintAndSteel || toRepair instanceof ItemFishingRod)
+			|| toRepair instanceof ItemFlintAndSteel || toRepair instanceof ItemFishingRod)
 		{
 			return dustCounter == 1;
 		}
@@ -106,23 +146,38 @@ public class RecipesCovalenceRepair implements IRecipe
 			return dustCounter == 3;
 		}
 
-		if (toRepair instanceof ItemArmor armor)
+		if (toRepair instanceof ItemArmor)
 		{
-            return switch (armor.armorType) {
-                case 0 -> dustCounter == 5;
-                case 1 -> dustCounter == 8;
-                case 2 -> dustCounter == 7;
-                case 3 -> dustCounter == 4;
-                default -> false;
-            };
+			ItemArmor armor = (ItemArmor) toRepair;
+			return switch (armor.armorType) {
+				case 0 -> dustCounter == 5;
+				case 1 -> dustCounter == 8;
+				case 2 -> dustCounter == 7;
+				case 3 -> dustCounter == 4;
+				default -> false;
+			};
 		}
 
 		return dustCounter == 3;
-
 	}
 
 	private boolean isItemRepairable(ItemStack stack)
 	{
+		// GT 和 匠魂工具兼容判定
+		if (isTiConTool(stack))
+		{
+			NBTTagCompound infi = stack.getTagCompound().getCompoundTag("InfiTool");
+			return infi.getBoolean("Broken") || infi.getInteger("Damage") > 0;
+		}
+
+		if (isGTTool(stack))
+		{
+			NBTTagCompound gt = stack.getTagCompound().getCompoundTag("GT.ToolStats");
+			if (gt.getBoolean("Electric")) return false; // 拒绝共价粉给电动工具充电
+			return gt.getLong("Damage") > 0;
+		}
+
+		// 原版拦截
 		if (stack.getHasSubtypes())
 		{
 			return false;
@@ -145,6 +200,12 @@ public class RecipesCovalenceRepair implements IRecipe
 
 	private int getDustType(ItemStack stack)
 	{
+		// GT 和匠魂的工具普遍属于中后期工业级物品，这里强制要求使用高级共价粉
+		if (isGTTool(stack) || isTiConTool(stack))
+		{
+			return 2;
+		}
+
 		Item item = stack.getItem();
 
 		if (item instanceof ItemShears || item instanceof ItemFlintAndSteel)
@@ -192,7 +253,7 @@ public class RecipesCovalenceRepair implements IRecipe
 	@Override
 	public ItemStack getCraftingResult(InventoryCrafting var1)
 	{
-		return output.copy();
+		return output != null ? output.copy() : null;
 	}
 
 	@Override
