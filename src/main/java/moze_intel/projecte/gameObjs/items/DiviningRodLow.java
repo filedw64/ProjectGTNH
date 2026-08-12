@@ -3,12 +3,6 @@ package moze_intel.projecte.gameObjs.items;
 import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import moze_intel.projecte.api.item.IModeChanger;
-import moze_intel.projecte.utils.Coordinates;
-import moze_intel.projecte.utils.EMCHelper;
-import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.PlayerHelper;
-import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
@@ -23,11 +17,16 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import moze_intel.projecte.api.item.IModeChanger;
+import moze_intel.projecte.utils.Comparators;
+import moze_intel.projecte.utils.Coordinates;
+import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.utils.PlayerHelper;
+import moze_intel.projecte.utils.WorldHelper;
 
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class DiviningRodLow extends ItemPE implements IModeChanger
 {
@@ -69,12 +68,15 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 		{
 			PlayerHelper.swingItem(player);
 			List<Double> emcValues = Lists.newArrayList();
-            double totalEmc = 0;
+			double totalEmc = 0;
 			int numBlocks = 0;
 
 			byte mode = getMode(stack);
 			int depth = getDepthFromMode(mode);
 			AxisAlignedBB box = WorldHelper.getDeepBox(new Coordinates(mop), ForgeDirection.getOrientation(mop.sideHit), depth);
+
+			// 引入局部缓存
+			Map<Long, Double> localEmcCache = new HashMap<>();
 
 			for (int i = (int) box.minX; i <= box.maxX; i++)
 				for (int j = (int) box.minY; j <= box.maxY; j++)
@@ -87,70 +89,65 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 							continue;
 						}
 
-						List<ItemStack> drops = block.getDrops(world, i, j, k, world.getBlockMetadata(i, j, k), 0);
+						int meta = world.getBlockMetadata(i, j, k);
+						// 将 BlockID 和 Meta 组合成一个 long 作为唯一 Key
+						long stateKey = ((long) Block.getIdFromBlock(block) << 32) | (meta & 0xFFFFFFFFL);
 
-						if (drops.isEmpty())
+						double blockEmc = 0;
+
+						// 如果缓存中已有该方块的计算结果，直接使用
+						if (localEmcCache.containsKey(stateKey))
 						{
-							continue;
+							blockEmc = localEmcCache.get(stateKey);
 						}
-
-						ItemStack blockStack = drops.get(0);
-                        double blockEmc = EMCHelper.getEmcValue(blockStack);
-
-						if (blockEmc == 0)
+						else
 						{
-							Map<ItemStack, ItemStack> map = FurnaceRecipes.smelting().getSmeltingList();
+							List<ItemStack> drops = block.getDrops(world, i, j, k, meta, 0);
 
-							for (Entry<ItemStack, ItemStack> entry : map.entrySet())
+							if (!drops.isEmpty())
 							{
-								if (entry == null || entry.getKey() == null)
-								{
-									continue;
-								}
+								ItemStack blockStack = drops.get(0);
+								blockEmc = EMCHelper.getEmcValue(blockStack);
 
-								if (ItemHelper.basicAreStacksEqual(entry.getKey(), blockStack))
+								if (blockEmc == 0)
 								{
-                                    double currentValue = EMCHelper.getEmcValue(entry.getValue());
-
-									if (currentValue != 0)
+									// 删除了灾难级的 for 循环
+									ItemStack smeltResult = FurnaceRecipes.smelting().getSmeltingResult(blockStack);
+									if (smeltResult != null)
 									{
-										if (!emcValues.contains(currentValue))
-										{
-											emcValues.add(currentValue);
-										}
-
-										totalEmc += currentValue;
+										blockEmc = EMCHelper.getEmcValue(smeltResult);
 									}
 								}
 							}
+							// 存入缓存
+							localEmcCache.put(stateKey, blockEmc);
 						}
-						else
+
+						if (blockEmc > 0)
 						{
 							if (!emcValues.contains(blockEmc))
 							{
 								emcValues.add(blockEmc);
 							}
-
 							totalEmc += blockEmc;
 						}
 
 						numBlocks++;
 					}
 
-
 			if (numBlocks == 0)
 			{
 				return stack;
 			}
 
-            double[] maxValues = new double[3];
+			double[] maxValues = new double[3];
 
 			for (int i = 0; i < 3; i++)
 			{
 				maxValues[i] = 1;
 			}
 
-			emcValues.sort(Comparator.reverseOrder());
+			emcValues.sort(Comparators.DOUBLE_DESCENDING);
 
 			int num = Math.min(emcValues.size(), 3);
 
@@ -173,7 +170,6 @@ public class DiviningRodLow extends ItemPE implements IModeChanger
 		}
 
 		return stack;
-
 	}
 
 	/**

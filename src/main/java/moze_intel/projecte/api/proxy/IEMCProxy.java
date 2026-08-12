@@ -24,8 +24,8 @@ public interface IEMCProxy
      *     <li>{@link String} - will be interpreted as an OreDictionary name.</li>
      *     <li>{@link Object} - (No subclasses of {@code Object} - only {@code Object}!) can be used as a intermediate fake object for complex recipes.</li>
      * </ul>
-     * @param o the object need to register emc value
-     * @param value the emc value
+     * @param o
+     * @param value
      * @see IConversionProxy#addConversion(int, Object, Map)
      */
     void registerCustomEMC(Object o, double value);

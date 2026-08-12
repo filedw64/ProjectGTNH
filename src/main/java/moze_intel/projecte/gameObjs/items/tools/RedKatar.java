@@ -13,6 +13,7 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -24,7 +25,7 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 	public RedKatar()
 	{
 		super("rm_katar", (byte)4, new String[] {
-				StatCollector.translateToLocal("pe.katar.mode1"), StatCollector.translateToLocal("pe.katar.mode2"),
+			StatCollector.translateToLocal("pe.katar.mode1"), StatCollector.translateToLocal("pe.katar.mode2"),
 		});
 		this.setNoRepair();
 		this.peToolMaterial = "rm_tools";
@@ -44,15 +45,17 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 	@Override
 	public boolean hitEntity(ItemStack stack, EntityLivingBase damaged, EntityLivingBase damager)
 	{
-		boolean flag = ProjectEConfig.useOldDamage;
-		attackWithCharge(stack, damaged, damager, flag ? KATAR_BASE_ATTACK : 1.0F);
+		if (!damager.worldObj.isRemote)
+		{
+			damaged.hurtResistantTime = 0;
+			damaged.attackEntityFrom(DamageSource.outOfWorld, 1000.0F * (getCharge(stack) + 1));
+		}
 		return true;
 	}
 
 	@Override
 	public boolean onBlockStartBreak(ItemStack stack, int x, int y, int z, EntityPlayer player)
 	{
-		// Shear
 		shearBlock(stack, x, y, z, player);
 		return false;
 	}
@@ -61,35 +64,25 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
 	{
 		player.setItemInUse(stack, this.getMaxItemUseDuration(stack));
-		if (world.isRemote)
-		{
-			return stack;
-		}
+		if (world.isRemote) return stack;
+
 		MovingObjectPosition mop = this.getMovingObjectPositionFromPlayer(world, player, false);
 		if (mop != null)
 		{
 			if (mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
 			{
 				Block blockHit = world.getBlock(mop.blockX, mop.blockY, mop.blockZ);
-				if (blockHit instanceof BlockGrass || blockHit instanceof BlockDirt)
-				{
-					// Hoe
+				if (blockHit instanceof BlockGrass || blockHit instanceof BlockDirt) {
 					tillAOE(stack, player, world, mop.blockX, mop.blockY, mop.blockZ, world.getBlockMetadata(mop.blockX, mop.blockY, mop.blockZ), 0);
-				}
-				else if (blockHit instanceof BlockLog)
-				{
-					// Axe
+				} else if (blockHit instanceof BlockLog) {
 					clearOdAOE(world, stack, player, "logWood", 0);
-				}
-				else if (blockHit instanceof BlockLeaves) {
-					// Shear leaves
+				} else if (blockHit instanceof BlockLeaves) {
 					clearOdAOE(world, stack, player, "treeLeaves", 0);
 				}
 			}
 		}
 		else
 		{
-			// Shear
 			shearEntityAOE(stack, player, 0);
 		}
 
@@ -99,7 +92,7 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 	@Override
 	public void doExtraFunction(ItemStack stack, EntityPlayer player)
 	{
-		attackAOE(stack, player, getMode(stack) == 1, ProjectEConfig.katarDeathAura, 0);
+		attackAOE(stack, player, getMode(stack) == 1, 10000.0F, 0);
 	}
 
 	@Override
@@ -117,17 +110,11 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
 	{
-		if (ProjectEConfig.useOldDamage)
-		{
-			return super.getAttributeModifiers(stack);
-		}
-
-		byte charge = stack.stackTagCompound == null ? 0 : getCharge(stack);
-		float damage = KATAR_BASE_ATTACK + charge; // Sword
-
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
+		// 面板伤害显示高一点
+		byte charge = stack.stackTagCompound == null ? 0 : getCharge(stack);
+		float damage = 1000.0F * (charge + 1);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Weapon modifier", damage, 0));
 		return multimap;
 	}
-
 }
