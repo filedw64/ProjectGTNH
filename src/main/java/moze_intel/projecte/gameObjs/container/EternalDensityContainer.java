@@ -10,7 +10,7 @@ import moze_intel.projecte.gameObjs.container.slots.SlotGhost;
 
 public class EternalDensityContainer extends Container
 {
-	private final EternalDensityInventory inventory;
+	private EternalDensityInventory inventory;
 
 	public EternalDensityContainer(InventoryPlayer invPlayer, EternalDensityInventory gemInv)
 	{

@@ -43,7 +43,7 @@ public final class CustomEMCParser
 			}
 			else
 			{
-				// 用 NIO Files 一次性读取
+				// 使用 NIO Files 一次性读取
 				List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
 				if (lines.isEmpty() || !lines.get(0).equals(VERSION))
 				{

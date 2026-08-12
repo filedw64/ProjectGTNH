@@ -20,7 +20,7 @@ import moze_intel.projecte.utils.ItemHelper;
 public class CondenserTile extends TileEmcDirection implements IInventory, ISidedInventory, IEmcAcceptor
 {
 	protected ItemStack[] inventory;
-	private ItemStack lock;
+	protected ItemStack lock;
 	protected boolean loadChecks;
 	protected boolean isAcceptingEmc;
 	private int ticksSinceSync;
@@ -60,7 +60,8 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			condense();
 		}
 
-		if (numPlayersUsing > 0)
+		// 降低发包频率，从每 Tick 一次降低为每 5 Tick 一次
+		if (numPlayersUsing > 0 && this.worldObj.getTotalWorldTime() % 5 == 0)
 		{
 			PacketHandler.sendToAllAround(new CondenserSyncPKT(displayEmc, requiredEmc, this.xCoord, this.yCoord, this.zCoord),
 				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
@@ -81,7 +82,7 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 
 		if (EMCHelper.doesItemHaveEmc(lock))
 		{
-            double lockEmc = EMCHelper.getEmcValue(lock);
+			double lockEmc = EMCHelper.getEmcValue(lock);
 
 			if (requiredEmc != lockEmc)
 			{
@@ -139,12 +140,6 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		if (inventory[slot] == null)
 		{
 			ItemStack lockCopy = lock.copy();
-
-			/*if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
-			{
-				lockCopy.setTagCompound(new NBTTagCompound());
-			}*/
-
 			inventory[slot] = lockCopy;
 		}
 		else
@@ -200,13 +195,7 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		{
 			return false;
 		}
-
-		//if (NBTWhitelist.shouldDupeWithNBT(lock))
-		{
-			return ItemHelper.areItemStacksEqual(lock, stack);
-		}
-
-		//return ItemHelper.areItemStacksEqualIgnoreNBT(lock, stack);
+		return ItemHelper.areItemStacksEqual(lock, stack);
 	}
 
 	public int getProgressScaled()

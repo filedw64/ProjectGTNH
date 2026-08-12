@@ -24,12 +24,12 @@ public class Relay extends BlockDirection
 	private IIcon front;
 	@SideOnly(Side.CLIENT)
 	private IIcon top;
-	private final int tier;
+	private int tier;
 
 	public Relay(int tier)
 	{
 		super(Material.rock);
-		this.setBlockName("pe_relay_MK" + tier);
+		this.setBlockName("pe_relay_MK" + Integer.toString(tier));
 		this.setLightLevel(Constants.COLLECTOR_LIGHT_VALS[tier - 1]);
 		this.setHardness(10.0f);
 		this.tier = tier;
@@ -79,7 +79,7 @@ public class Relay extends BlockDirection
 	{
 		this.blockIcon = register.registerIcon("projecte:relays/other");
 		this.front = register.registerIcon("projecte:relays/front");
-		this.top = register.registerIcon("projecte:relays/top_"+ tier);
+		this.top = register.registerIcon("projecte:relays/top_"+Integer.toString(tier));
 	}
 
 	@Override
@@ -108,12 +108,13 @@ public class Relay extends BlockDirection
 	@Override
 	public TileEntity createTileEntity(World world, int meta)
 	{
-		return switch (tier) {
-			case 1 -> new RelayMK1Tile();
-			case 2 -> new RelayMK2Tile();
-			case 3 -> new RelayMK3Tile();
-			default -> null;
-		};
+		switch (tier)
+		{
+			case 1: return new RelayMK1Tile();
+			case 2: return new RelayMK2Tile();
+			case 3: return new RelayMK3Tile();
+			default: return null;
+		}
 	}
 
 	@Override

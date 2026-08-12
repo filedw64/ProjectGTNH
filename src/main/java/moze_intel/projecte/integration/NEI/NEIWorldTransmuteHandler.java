@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 
 public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 {
-	private static final String name = StatCollector.translateToLocal("pe.nei.worldtransmute");
+	private static String name = StatCollector.translateToLocal("pe.nei.worldtransmute");
 	private static final String id = "worldTransmutation";
 
 	@Override
@@ -33,8 +33,8 @@ public class NEIWorldTransmuteHandler extends TemplateRecipeHandler
 
 	public class CachedTransmutationRecipe extends CachedRecipe
 	{
-		private final MetaBlock input;
-		private final MetaBlock output;
+		private MetaBlock input;
+		private MetaBlock output;
 		public boolean sneaking;
 
 		public CachedTransmutationRecipe(MetaBlock in, boolean sneak)

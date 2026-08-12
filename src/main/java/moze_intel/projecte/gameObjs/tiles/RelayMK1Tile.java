@@ -21,12 +21,14 @@ import moze_intel.projecte.utils.ItemHelper;
 public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory, IEmcAcceptor, IEmcProvider
 {
 	private ItemStack[] inventory;
-	private final int invBufferSize;
+	private int invBufferSize;
 	private final int chargeRate;
 	public int displayEmc;
 	public double displayChargingEmc;
 	public double displayRawEmc;
 	private int numUsing;
+
+	private int ticksExisted = 0;
 
 	public RelayMK1Tile()
 	{
@@ -52,15 +54,24 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			return;
 		}
 
+		ticksExisted++;
+
+		// 能量传输保持每Tick运行，保证吞吐量
 		sendEmc();
-		sortInventory();
+
+		// 将每 Tick 排序降低为每 10 Tick (0.5秒) 排序一次，极大降低 CPU 占用
+		if (ticksExisted % 10 == 0)
+		{
+			sortInventory();
+		}
 
 		ItemStack stack = inventory[0];
 
 		if (stack != null)
 		{
-			if(stack.getItem() instanceof IItemEmc itemEmc)
+			if(stack.getItem() instanceof IItemEmc)
 			{
+				IItemEmc itemEmc = ((IItemEmc) stack.getItem());
 				double emcVal = itemEmc.getStoredEmc(stack);
 
 				if (emcVal > chargeRate)
@@ -76,7 +87,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			}
 			else
 			{
-                double emcVal = EMCHelper.getEmcValue(stack);
+				double emcVal = EMCHelper.getEmcValue(stack);
 
 				if (emcVal > 0 && (this.getStoredEmc() + emcVal) <= this.getMaximumEmc())
 				{
@@ -97,10 +108,11 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		displayChargingEmc = getChargingEMC();
 		displayRawEmc = getRawEmc();
 
-		if (numUsing > 0)
+		// 将 GUI 同步发包从每秒 20 次降低到每秒 4 次（每 5 Tick），解决打开界面时的网络拥堵
+		if (numUsing > 0 && ticksExisted % 5 == 0)
 		{
 			PacketHandler.sendToAllAround(new RelaySyncPKT(displayEmc, displayChargingEmc, displayRawEmc, this.xCoord, this.yCoord, this.zCoord),
-					new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
+				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
 		}
 	}
 
@@ -163,12 +175,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-        if (!((starEmc + toSend) <= maxStarEmc)) {
-            toSend = maxStarEmc - starEmc;
-        }
-        itemEmc.addEmc(chargeable, toSend);
-        this.removeEMC(toSend);
-    }
+		if (!((starEmc + toSend) <= maxStarEmc)) {
+			toSend = maxStarEmc - starEmc;
+		}
+		itemEmc.addEmc(chargeable, toSend);
+		this.removeEMC(toSend);
+	}
 
 	public int getEmcScaled(int i)
 	{
@@ -224,7 +236,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			return (int) Math.round(displayRawEmc * i / ((IItemEmc) inventory[0].getItem()).getMaximumEmc(inventory[0]));
 		}
 
-        double emc = EMCHelper.getEmcValue(inventory[0]);
+		double emc = EMCHelper.getEmcValue(inventory[0]);
 
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
 	}
@@ -358,7 +370,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		int[] indexes = new int[inventory.length - 2];
+		int indexes[] = new int[inventory.length - 2];
 		byte counter = 0;
 
 		for (int i = 1; i < inventory.length - 1; i++)

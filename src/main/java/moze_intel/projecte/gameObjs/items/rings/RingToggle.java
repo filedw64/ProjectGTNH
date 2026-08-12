@@ -14,7 +14,7 @@ import moze_intel.projecte.gameObjs.items.ItemPE;
 
 public abstract class RingToggle extends ItemPE implements IModeChanger
 {
-	private final String name;
+	private String name;
 	@SideOnly(Side.CLIENT)
 	private IIcon ringOn;
 	@SideOnly(Side.CLIENT)

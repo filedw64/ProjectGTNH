@@ -13,7 +13,7 @@ import moze_intel.projecte.gameObjs.tiles.RMFurnaceTile;
 public class GUIRMFurnace extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/rmfurnace.png");
-	private final RMFurnaceTile tile;
+	private RMFurnaceTile tile;
 
 	public GUIRMFurnace(InventoryPlayer invPlayer, RMFurnaceTile tile)
 	{

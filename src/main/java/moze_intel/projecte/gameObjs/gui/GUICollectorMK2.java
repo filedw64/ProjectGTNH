@@ -13,7 +13,7 @@ import moze_intel.projecte.utils.Constants;
 public class GUICollectorMK2 extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/collector2.png");
-	private final CollectorMK2Tile tile;
+	private CollectorMK2Tile tile;
 
 	public GUICollectorMK2(InventoryPlayer invPlayer, CollectorMK2Tile tile)
 	{

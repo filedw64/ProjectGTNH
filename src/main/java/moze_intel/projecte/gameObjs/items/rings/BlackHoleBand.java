@@ -49,27 +49,30 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (stack.getItemDamage() != 1 || !(entity instanceof EntityPlayer player))
+		if (stack.getItemDamage() != 1 || !(entity instanceof EntityPlayer))
 		{
 			return;
 		}
 
+		EntityPlayer player = (EntityPlayer) entity;
 		AxisAlignedBB bBox = player.boundingBox.expand(7, 7, 7);
-		List<EntityItem> itemList = world.getEntitiesWithinAABB(EntityItem.class, bBox);
 
-		for (EntityItem item : itemList)
+		// 合并AABB查询
+		List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, bBox);
+		for (Entity e : entities)
 		{
-			if (ItemHelper.hasSpace(player.inventory.mainInventory, item.getEntityItem()))
+			if (e instanceof EntityItem)
 			{
-				WorldHelper.gravitateEntityTowards(item, player.posX, player.posY, player.posZ);
+				EntityItem item = (EntityItem) e;
+				if (ItemHelper.hasSpace(player.inventory.mainInventory, item.getEntityItem()))
+				{
+					WorldHelper.gravitateEntityTowards(item, player.posX, player.posY, player.posZ);
+				}
 			}
-		}
-
-		List<EntityLootBall> ballList = world.getEntitiesWithinAABB(EntityLootBall.class, bBox);
-
-		for (EntityLootBall ball : ballList)
-		{
-			WorldHelper.gravitateEntityTowards(ball, player.posX, player.posY, player.posZ);
+			else if (e instanceof EntityLootBall)
+			{
+				WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
+			}
 		}
 	}
 
@@ -116,24 +119,31 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 		if (tile != null)
 		{
 			List<EntityItem> list = world.getEntitiesWithinAABB(EntityItem.class, tile.getEffectBounds());
+			List<TileEntity> adjacentTiles = null; // 优化：提取并懒加载相邻方块，避免多个物品同tick触发时重复请求六个方向方块
+
 			for (EntityItem item : list)
 			{
 				WorldHelper.gravitateEntityTowards(item, x + 0.5, y + 0.5, z + 0.5);
 				if (!world.isRemote && item.getDistanceSq(x + 0.5, y + 0.5, z + 0.5) < 1.21 && !item.isDead)
 				{
-					suckDumpItem(item, tile);
+					if (adjacentTiles == null)
+					{
+						adjacentTiles = WorldHelper.getAdjacentTileEntities(world, tile);
+					}
+					suckDumpItem(item, adjacentTiles);
 				}
 			}
 		}
 	}
 
-	private void suckDumpItem(EntityItem item, DMPedestalTile tile)
+	// 传参改为已缓存的相邻方块列表
+	private void suckDumpItem(EntityItem item, List<TileEntity> adjacentTiles)
 	{
-		List<TileEntity> list = WorldHelper.getAdjacentTileEntities(tile.getWorldObj(), tile);
-		for (TileEntity tileEntity : list)
+		for (TileEntity tileEntity : adjacentTiles)
 		{
-			if (tileEntity instanceof IInventory inv)
+			if (tileEntity instanceof IInventory)
 			{
+				IInventory inv = ((IInventory) tileEntity);
 				ItemStack result = ItemHelper.pushStackInInv(inv, item.getEntityItem());
 				if (result != null)
 				{
@@ -152,8 +162,8 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 	public List<String> getPedestalDescription()
 	{
 		return Lists.newArrayList(
-				EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.bhb.pedestal1"),
-				EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.bhb.pedestal2")
+			EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.bhb.pedestal1"),
+			EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.bhb.pedestal2")
 		);
 	}
 
@@ -168,29 +178,35 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 			double centeredY = tile.yCoord + 0.5;
 			double centeredZ = tile.zCoord + 0.5;
 
-			for (EntityItem e : (List<EntityItem>) tile.getWorldObj().getEntitiesWithinAABB(EntityItem.class, aabb))
+			// 合并AABB查询
+			List<Entity> entities = tile.getWorldObj().getEntitiesWithinAABB(Entity.class, aabb);
+			for (Entity e : entities)
 			{
-				WorldHelper.gravitateEntityTowards(e, centeredX, centeredY, centeredZ);
-				if (!e.worldObj.isRemote && !e.isDead && e.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
+				if (e instanceof EntityItem)
 				{
-					ItemStack result = ItemHelper.pushStackInInv(tile, e.getEntityItem());
-					if (result != null)
+					EntityItem item = (EntityItem) e;
+					WorldHelper.gravitateEntityTowards(item, centeredX, centeredY, centeredZ);
+					if (!world.isRemote && !item.isDead && item.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
 					{
-						e.setEntityItemStack(result);
-					}
-					else
-					{
-						e.setDead();
+						ItemStack result = ItemHelper.pushStackInInv(tile, item.getEntityItem());
+						if (result != null)
+						{
+							item.setEntityItemStack(result);
+						}
+						else
+						{
+							item.setDead();
+						}
 					}
 				}
-			}
-
-			for (EntityLootBall e : (List<EntityLootBall>) tile.getWorldObj().getEntitiesWithinAABB(EntityLootBall.class, aabb))
-			{
-				WorldHelper.gravitateEntityTowards(e, centeredX, centeredY, centeredZ);
-				if (!e.worldObj.isRemote && !e.isDead && e.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
+				else if (e instanceof EntityLootBall)
 				{
-					ItemHelper.pushLootBallInInv(tile, e);
+					EntityLootBall ball = (EntityLootBall) e;
+					WorldHelper.gravitateEntityTowards(ball, centeredX, centeredY, centeredZ);
+					if (!world.isRemote && !ball.isDead && ball.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
+					{
+						ItemHelper.pushLootBallInInv(tile, ball);
+					}
 				}
 			}
 		}
@@ -201,15 +217,15 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 	{
 		if (stack.getItemDamage() == 1)
 		{
-
-			for (EntityItem e : (List<EntityItem>) player.worldObj.getEntitiesWithinAABB(EntityItem.class, player.boundingBox.expand(5, 5, 5)))
+			AxisAlignedBB box = player.boundingBox.expand(5, 5, 5);
+			// 合并AABB查询
+			List<Entity> entities = player.worldObj.getEntitiesWithinAABB(Entity.class, box);
+			for (Entity e : entities)
 			{
-				WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
-			}
-
-			for (EntityLootBall e : (List<EntityLootBall>) player.worldObj.getEntitiesWithinAABB(EntityLootBall.class, player.boundingBox.expand(5, 5, 5)))
-			{
-				WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
+				if (e instanceof EntityItem || e instanceof EntityLootBall)
+				{
+					WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
+				}
 			}
 		}
 		return false;

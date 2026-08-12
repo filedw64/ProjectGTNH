@@ -26,8 +26,9 @@ public final class ComparatorHelper
 		ItemStack charging = tile.getChargingItem();
 		if (charging != null)
 		{
-			if (charging.getItem() instanceof IItemEmc itemEmc)
+			if (charging.getItem() instanceof IItemEmc)
 			{
+				IItemEmc itemEmc = ((IItemEmc) charging.getItem());
 				double max = itemEmc.getMaximumEmc(charging);
 				double current = itemEmc.getStoredEmc(charging);
 				return MathUtils.scaleToRedstone(current, max);

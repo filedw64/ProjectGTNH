@@ -28,11 +28,22 @@ public class SlotLock extends Slot
 	@Override
 	public void putStack(ItemStack stack)
 	{
-		if (stack == null || stack.getItem() == null)
+		if (stack == null || stack.getItem() == null) {
+			super.putStack(null);
 			return;
+		}
 
-		if (!ItemStack.areItemStacksEqual(stack, getStack()))
+		// 如果放入的物品是同一个对象引用，跳过学习和EMC结算逻辑
+		if (stack == this.getStack()) {
+			super.putStack(stack);
+			return;
+		}
+
+		boolean isSame = ItemStack.areItemStacksEqual(stack, this.getStack());
+
+		if (!isSame) {
 			inv.searchpage = 0; // 只有当放入的物品改变时才刷新页码
+		}
 
 		super.putStack(stack);
 
@@ -43,8 +54,9 @@ public class SlotLock extends Slot
 			inv.addEmc(toRemove);
 		}
 
-		if (stack.getItem() != ObjHandler.tome)
-			inv.handleKnowledge(stack);
+		if (stack.getItem() != ObjHandler.tome) {
+			if (!isSame) inv.handleKnowledge(stack);
+		}
 		else inv.updateOutputs(); // 能来到这里，则知识之书也有 emc，应该以知识之书的 emc 来筛选物品
 	}
 

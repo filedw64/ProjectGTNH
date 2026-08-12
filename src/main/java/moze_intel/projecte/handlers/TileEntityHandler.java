@@ -13,7 +13,7 @@ public class TileEntityHandler
 
 	public static void addCondenser(CondenserTile tile)
 	{
-		PELogger.logDebug(String.format("Added condenser at coords %s, %s, %s", tile.xCoord, tile.yCoord, tile.zCoord));
+		PELogger.logDebug(String.format("Added condenser at coords %s, %s, %s", Integer.toString(tile.xCoord), Integer.toString(tile.yCoord), Integer.toString(tile.zCoord)));
 		CONDENSERS.add(tile);
 	}
 
@@ -21,7 +21,7 @@ public class TileEntityHandler
 	{
 		if (CONDENSERS.remove(tile))
 		{
-			PELogger.logDebug(String.format("Removed condenser at coords %s, %s, %s", tile.xCoord, tile.yCoord, tile.zCoord));
+			PELogger.logDebug(String.format("Removed condenser at coords %s, %s, %s", Integer.toString(tile.xCoord), Integer.toString(tile.yCoord), Integer.toString(tile.zCoord)));
 		}
 	}
 

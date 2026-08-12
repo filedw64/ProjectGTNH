@@ -4,19 +4,20 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.gameObjs.gui.GUIManual;
-import moze_intel.projecte.utils.Comparators;
-import moze_intel.projecte.utils.PELogger;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.gui.GUIManual;
+import moze_intel.projecte.utils.Comparators;
+import moze_intel.projecte.utils.PELogger;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,14 @@ public class ManualPageHandler
         IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
         if (resourceManager instanceof IReloadableResourceManager)
         {
-            ((IReloadableResourceManager) resourceManager).registerReloadListener(p_110549_1_ -> ManualPageHandler.reset());
+            ((IReloadableResourceManager) resourceManager).registerReloadListener(new IResourceManagerReloadListener()
+            {
+                @Override
+                public void onResourceManagerReload(IResourceManager p_110549_1_)
+                {
+                    ManualPageHandler.reset();
+                }
+            });
         }
 
         reset();
@@ -54,7 +62,7 @@ public class ManualPageHandler
     {
         for (PageCategory e : PageCategory.values())
         {
-            categoryMap.put(e, Lists.newArrayList());
+            categoryMap.put(e, Lists.<AbstractPage>newArrayList());
         }
 
         addTextPage("introduction", PageCategory.NONE);
@@ -149,8 +157,11 @@ public class ManualPageHandler
 
         for (List<AbstractPage> categoryPages : categoryMap.values())
         {
-            categoryPages.sort(Comparators.PAGE_HEADER);
-			pages.addAll(categoryPages);
+            Collections.sort(categoryPages, Comparators.PAGE_HEADER);
+            for (AbstractPage page : categoryPages)
+            {
+                pages.add(page);
+            }
         }
         PELogger.logDebug("Built %d standard pages", pages.size());
         generateDummyIndexPages();
@@ -196,7 +207,7 @@ public class ManualPageHandler
             if (i == list.size() - 1)
             {
                 // Handle last page being odd
-                spreads.add(ImmutablePair.of(list.get(i), null));
+                spreads.add(ImmutablePair.of(list.get(i), ((AbstractPage) null)));
                 continue;
             }
             spreads.add(ImmutablePair.of(list.get(i), list.get(i + 1)));

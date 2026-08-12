@@ -1,13 +1,10 @@
 package moze_intel.projecte.utils;
 
 import com.google.common.collect.Maps;
-import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.emc.EMCMapper;
-import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.SimpleStack;
 import moze_intel.projecte.integration.EtFuturum.EFRHelper;
 import moze_intel.projecte.integration.Forestry.ForestryHelper;
 import moze_intel.projecte.integration.GregTech.GTItemHelper;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -15,6 +12,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.emc.EMCMapper;
+import moze_intel.projecte.emc.FuelMapper;
+import moze_intel.projecte.emc.SimpleStack;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ public final class EMCHelper
 			}
 			else if (!metRequirement)
 			{
-				if (FuelMapper.isStackFuel(stack))
+				if(FuelMapper.isStackFuel(stack))
 				{
                     double emc = getEmcValue(stack);
 					int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / emc));
@@ -100,27 +101,42 @@ public final class EMCHelper
 		return -1;
 	}
 
-	public static boolean doesBlockHaveEmc(Block block) {
-		return block != null && doesItemHaveEmc(new ItemStack(block));
+	public static boolean doesBlockHaveEmc(Block block)
+	{
+		if (block == null)
+		{
+			return false;
+		}
+
+		return doesItemHaveEmc(new ItemStack(block));
 	}
 
-	public static boolean doesItemHaveEmc(Item item) {
-		return item != null && doesItemHaveEmc(new ItemStack(item));
-	}
-
-	public static boolean doesItemHaveEmc(ItemStack stack) {
+	public static boolean doesItemHaveEmc(ItemStack stack)
+	{
 		if (stack == null || stack.getItem() == null)
 			return false;
 
-        SimpleStack ss = SimpleStack.getFor(stack);
+        SimpleStack iStack = SimpleStack.getFor(stack);
 
-		if (!ss.isValid())
+		if (!iStack.isValid())
 			return false;
 
 		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0)
-			ss.damage = 0;
+		{
+			iStack.damage = 0;
+		}
 
-		return EMCMapper.mapContains(ss);
+		return EMCMapper.mapContains(iStack);
+	}
+
+	public static boolean doesItemHaveEmc(Item item)
+	{
+		if (item == null)
+		{
+			return false;
+		}
+
+		return doesItemHaveEmc(new ItemStack(item));
 	}
 
 	public static Double getEmcValue(Block Block)
@@ -128,23 +144,31 @@ public final class EMCHelper
 		SimpleStack stack = new SimpleStack(new ItemStack(Block));
 
 		if (stack.isValid() && EMCMapper.mapContains(stack))
+		{
 			return EMCMapper.getEmcValue(stack);
+		}
 
 		return 0.0;
 	}
 
 	public static Double getEmcValue(Item item)
 	{
-		SimpleStack stack = new SimpleStack(new ItemStack(item));
+		SimpleStack stack;
+
+        if (GTItemHelper.isGTtool(item))
+            stack = new GTSimpleStack(new ItemStack(item));
+        else stack = new SimpleStack(new ItemStack(item));
 
 		if (stack.isValid() && EMCMapper.mapContains(stack))
+		{
 			return EMCMapper.getEmcValue(stack);
+		}
 
 		return 0.0;
 	}
 
 	/**
-	 * Ignore stack size
+	 * Does not consider stack size
 	 */
 	public static double getEmcValue(ItemStack stack)
 	{
@@ -152,28 +176,28 @@ public final class EMCHelper
 
         if (EFRHelper.isShulkerBox(stack))
             return EFRHelper.ShulkerBoxEMC(stack);
-
+		
 		if (ForestryHelper.isForestryBag(stack))
 			return ForestryHelper.ForestryBagEMC(stack);
 
         if (GTItemHelper.isGTtool(stack))
             return GTItemHelper.GTtoolEMC(stack);
 
-		SimpleStack ss = SimpleStack.getFor(stack);
+		SimpleStack sstack = new SimpleStack(stack);
 
-		if (!ss.isValid()) return 0.0;
+		if (!sstack.isValid()) return 0.0;
 
-		if (EMCMapper.mapContains(ss))
+		if (EMCMapper.mapContains(sstack))
 		{
-			return EMCMapper.getEmcValue(ss) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
+			return EMCMapper.getEmcValue(sstack) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 		}
 
 		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0)
 		{
 			//We don't have an emc value for id:metadata, so lets check if we have a value for id:0 and apply a damage multiplier based on that emc value.
-            ss.damage = 0;
-            if (EMCMapper.mapContains(ss)) {
-                Double emc = EMCMapper.getEmcValue(ss);
+            sstack.damage = 0;
+            if (EMCMapper.mapContains(sstack)) {
+                Double emc = EMCMapper.getEmcValue(sstack);
 
                 int rest = (stack.getMaxDamage() - stack.getItemDamage());
 

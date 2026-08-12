@@ -3,7 +3,6 @@ package moze_intel.projecte.integration;
 import com.google.common.collect.ImmutableMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.utils.PELogger;
 import net.minecraft.item.ItemStack;
 
 public abstract class AbstractIntegrationMapper {
@@ -11,12 +10,7 @@ public abstract class AbstractIntegrationMapper {
     protected IMappingCollector<NormalizedSimpleStack, Double> mapper;
     public final void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
         this.mapper = mapper;
-		try {
-			doAddMappings(); // 避免一个 IntegrationMapper 出错，后续的联动都丢失
-		}
-		catch (Exception e) {
-			PELogger.logError("Exception when processing %s: %s", this.getClass().getName(), e);
-		}
+        doAddMappings();
     }
 
     protected abstract void doAddMappings();

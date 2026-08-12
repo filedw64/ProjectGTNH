@@ -55,7 +55,9 @@ public class DestructionCatalyst extends ItemCharge
 			AxisAlignedBB box = WorldHelper.getDeepBox(coords, direction, --numRows);
 
 			List<ItemStack> drops = Lists.newArrayList();
+			int particleCount = 0; // 单次挖掘发送的粒子数据包数量
 
+			breakLoop: // 在燃料耗尽时直接跳出所有循环
 			for (int x = (int) box.minX; x <= box.maxX; x++)
 				for (int y = (int) box.minY; y <= box.maxY; y++)
 					for (int z = (int) box.minZ; z <= box.maxZ; z++)
@@ -70,28 +72,27 @@ public class DestructionCatalyst extends ItemCharge
 
 						if (!consumeFuel(player, stack, 8, true))
 						{
-							break;
+							break breakLoop; // 优化：燃料不足时，直接跳出最外层循环，避免无意义的遍历和背包检查
 						}
 
-						if (!hasAction)
-						{
-							hasAction = true;
-						}
+						hasAction = true;
 
 						if (PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
 						{
 							List<ItemStack> list = WorldHelper.getBlockDrops(world, player, block, stack, x, y, z);
-							if (list != null && !list.isEmpty())
-                            {
-                                drops.addAll(list);
-                            }
+							if (list != null && list.size() > 0)
+							{
+								drops.addAll(list);
+							}
 
 							world.setBlockToAir(x, y, z);
 
-							if (world.rand.nextInt(8) == 0)
-                            {
-                                PacketHandler.sendToAllAround(new ParticlePKT("largesmoke", x, y, z), new TargetPoint(world.provider.dimensionId, x, y + 1, z, 32));
-                            }
+							// 限制发包数量，防止大范围挖掘导致的瞬间网络卡顿
+							if (particleCount < 10 && world.rand.nextInt(8) == 0)
+							{
+								PacketHandler.sendToAllAround(new ParticlePKT("largesmoke", x, y, z), new TargetPoint(world.provider.dimensionId, x, y + 1, z, 32));
+								particleCount++;
+							}
 						}
 					}
 

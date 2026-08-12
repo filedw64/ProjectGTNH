@@ -3,6 +3,7 @@ package moze_intel.projecte.playerData;
 import com.google.common.collect.Lists;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -12,14 +13,19 @@ import net.minecraftforge.common.util.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class TransmutationProps implements IExtendedEntityProperties
 {
 	private final EntityPlayer player;
 
 	private double transmutationEmc;
-	private final List<ItemStack> knowledge = Lists.newArrayList();
+	private List<ItemStack> knowledge = Lists.newArrayList();
+	// 快速索引拦截
+	private Set<Item> knowledgeItemIndex = new HashSet<>();
 	private ItemStack[] inputLocks = new ItemStack[9];
 	public static final String PROP_NAME = "ProjectETransmutation";
 
@@ -60,8 +66,27 @@ public class TransmutationProps implements IExtendedEntityProperties
 
 	protected List<ItemStack> getKnowledge()
 	{
-		pruneStaleKnowledge();
+		// 直接返回缓存列表
 		return knowledge;
+	}
+
+	// 提供接口
+	public boolean hasItemType(Item item)
+	{
+		return knowledgeItemIndex.contains(item);
+	}
+
+	// 快速索引
+	public void rebuildIndex()
+	{
+		knowledgeItemIndex.clear();
+		for (ItemStack s : knowledge)
+		{
+			if (s != null && s.getItem() != null)
+			{
+				knowledgeItemIndex.add(s.getItem());
+			}
+		}
 	}
 
 	private void pruneDuplicateKnowledge()
@@ -78,7 +103,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 
 	private void pruneStaleKnowledge()
 	{
-        knowledge.removeIf(itemStack -> !EMCHelper.doesItemHaveEmc(itemStack));
+		knowledge.removeIf(itemStack -> !EMCHelper.doesItemHaveEmc(itemStack));
 	}
 
 	protected NBTTagCompound saveForPacket()
@@ -87,6 +112,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 		compound.setDouble("transmutationEmc", transmutationEmc);
 
 		pruneStaleKnowledge();
+		rebuildIndex(); // 确保数据修剪后索引一致
 		NBTTagList knowledgeWrite = new NBTTagList();
 		for (ItemStack i : knowledge)
 		{
@@ -114,6 +140,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 				knowledge.add(item);
 			}
 		}
+		rebuildIndex(); // 重建索引
 
 		NBTTagList list2 = compound.getTagList("inputlocks", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(list2, new ItemStack[9]);
@@ -126,6 +153,7 @@ public class TransmutationProps implements IExtendedEntityProperties
 		properties.setDouble("transmutationEmc", transmutationEmc);
 
 		pruneStaleKnowledge();
+		rebuildIndex(); // 同步索引
 		NBTTagList knowledgeWrite = new NBTTagList();
 		for (ItemStack i : knowledge)
 		{
@@ -156,6 +184,9 @@ public class TransmutationProps implements IExtendedEntityProperties
 			}
 		}
 		pruneDuplicateKnowledge();
+		pruneStaleKnowledge(); // 转移逻辑
+		rebuildIndex(); // 重建索引
+
 		NBTTagList list2 = properties.getTagList("inputlock", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(list2, new ItemStack[9]);
 	}

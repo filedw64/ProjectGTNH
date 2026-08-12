@@ -1,5 +1,6 @@
 package moze_intel.projecte.network;
 
+import com.google.common.collect.Maps;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -7,13 +8,12 @@ import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import cpw.mods.fml.relauncher.Side;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FluidSimpleStack;
-import moze_intel.projecte.emc.NBTSimpleStack;
 import moze_intel.projecte.emc.SimpleStack;
+import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import moze_intel.projecte.network.packets.CheckUpdatePKT;
 import moze_intel.projecte.network.packets.CollectorSyncPKT;
 import moze_intel.projecte.network.packets.CondenserSyncPKT;
 import moze_intel.projecte.network.packets.KeyPressPKT;
-import moze_intel.projecte.network.packets.KnowledgeChangePKT;
 import moze_intel.projecte.network.packets.KnowledgeClearPKT;
 import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
 import moze_intel.projecte.network.packets.OrientationSyncPKT;
@@ -33,7 +33,6 @@ import net.minecraft.network.Packet;
 import net.minecraftforge.common.util.FakePlayer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class PacketHandler
@@ -60,7 +59,6 @@ public final class PacketHandler
 		HANDLER.registerMessage(OrientationSyncPKT.Handler.class, OrientationSyncPKT.class, 15, Side.CLIENT);
 		HANDLER.registerMessage(UpdateGemModePKT.Handler.class, UpdateGemModePKT.class, 16, Side.SERVER);
 		HANDLER.registerMessage(SyncPedestalPKT.Handler.class, SyncPedestalPKT.class, 17, Side.CLIENT);
-		HANDLER.registerMessage(KnowledgeChangePKT.Handler.class, KnowledgeChangePKT.class, 18, Side.CLIENT);
 	}
 
 	public static Packet getMCPacket(IMessage message)
@@ -73,21 +71,30 @@ public final class PacketHandler
 		ArrayList<Object[]> list = new ArrayList<>();
 		int counter = 0;
 
-		// Copy constructor to prevent race condition CME in SP
-		for (Map.Entry<SimpleStack, Double> entry : new HashMap<>(EMCMapper.emc).entrySet()) {
+		for (Map.Entry<SimpleStack, Double> entry : Maps.newHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
+		{
 			SimpleStack stack = entry.getKey();
 
 			if (stack == null)
+			{
 				continue;
+			}
 
-            Object[] data;
-            if (stack instanceof NBTSimpleStack nbtss)
-                data = new Object[] {stack.id, stack.damage, entry.getValue(), nbtss.nbt};
-			else if (stack instanceof FluidSimpleStack)
-				data = new Object[] {stack.id, entry.getValue()};
-            else data = new Object[] {stack.id, stack.damage, entry.getValue()};
+			Object[] data;
+			if (stack instanceof GTSimpleStack gts) {
+				data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), gts.primary, gts.secondary};
+			} else if (stack instanceof FluidSimpleStack) {
+				data = new Object[] {stack.id, stack.qnty, entry.getValue()};
+			} else {
+				// 新增：如果 stack.nbt 不为空，构造长度为 5 的数组，塞入 NBT
+				if (stack.nbt != null) {
+					data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), stack.nbt};
+				} else {
+					data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+				}
+			}
 
-            list.add(data);
+			list.add(data);
 
 			if (list.size() >= MAX_PKT_SIZE)
 			{
@@ -97,9 +104,9 @@ public final class PacketHandler
 			}
 		}
 
-        PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
-        list.clear();
-        counter++;
+		PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
+		list.clear();
+		counter++;
 
 		PELogger.logInfo("Sent EMC data packets to: " + player.getCommandSenderName());
 		PELogger.logDebug("Total packets: " + counter);
@@ -110,19 +117,28 @@ public final class PacketHandler
 		ArrayList<Object[]> list = new ArrayList<>();
 		int counter = 0;
 
-		// Copy constructor to prevent race condition CME in SP
-		for (Map.Entry<SimpleStack, Double> entry : new HashMap<>(EMCMapper.emc).entrySet()) {
+		for (Map.Entry<SimpleStack, Double> entry : Maps.newLinkedHashMap(EMCMapper.emc).entrySet()) // Copy constructor to prevent race condition CME in SP
+		{
 			SimpleStack stack = entry.getKey();
 
 			if (stack == null)
+			{
 				continue;
+			}
 
-            Object[] data;
-			if (stack instanceof NBTSimpleStack nbtss)
-				data = new Object[] {stack.id, stack.damage, entry.getValue(), nbtss.nbt};
-			else if (stack instanceof FluidSimpleStack)
-				data = new Object[] {stack.id, entry.getValue()};
-            else data = new Object[] {stack.id, stack.damage, entry.getValue()};
+			Object[] data;
+			if (stack instanceof GTSimpleStack gts) {
+				data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), gts.primary, gts.secondary};
+			} else if (stack instanceof FluidSimpleStack) {
+				data = new Object[] {stack.id, stack.qnty, entry.getValue()};
+			} else {
+				// 如果 stack.nbt 不为空，构造长度为 5 的数组，塞入 NBT
+				if (stack.nbt != null) {
+					data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue(), stack.nbt};
+				} else {
+					data = new Object[] {stack.id, stack.qnty, stack.damage, entry.getValue()};
+				}
+			}
 
 			list.add(data);
 
@@ -134,9 +150,9 @@ public final class PacketHandler
 			}
 		}
 
-        PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
-        list.clear();
-        counter++;
+		PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
+		list.clear();
+		counter++;
 
 		PELogger.logInfo("Sent EMC data packets to all players.");
 		PELogger.logDebug("Total packets per player: " + counter);
@@ -146,7 +162,8 @@ public final class PacketHandler
 	 * Sends a packet to the server.<br>
 	 * Must be called Client side.
 	 */
-	public static void sendToServer(IMessage msg) {
+	public static void sendToServer(IMessage msg)
+	{
 		HANDLER.sendToServer(msg);
 	}
 
@@ -154,7 +171,8 @@ public final class PacketHandler
 	 * Sends a packet to all the clients.<br>
 	 * Must be called Server side.
 	 */
-	public static void sendToAll(IMessage msg) {
+	public static void sendToAll(IMessage msg)
+	{
 		HANDLER.sendToAll(msg);
 	}
 
@@ -162,7 +180,8 @@ public final class PacketHandler
 	 * Send a packet to all players around a specific point.<br>
 	 * Must be called Server side.
 	 */
-	public static void sendToAllAround(IMessage msg, TargetPoint point) {
+	public static void sendToAllAround(IMessage msg, TargetPoint point)
+	{
 		HANDLER.sendToAllAround(msg, point);
 	}
 
@@ -170,16 +189,20 @@ public final class PacketHandler
 	 * Send a packet to a specific player.<br>
 	 * Must be called Server side.
 	 */
-	public static void sendTo(IMessage msg, EntityPlayerMP player) {
+	public static void sendTo(IMessage msg, EntityPlayerMP player)
+	{
 		if (!(player instanceof FakePlayer))
+		{
 			HANDLER.sendTo(msg, player);
+		}
 	}
 
 	/**
 	 * Send a packet to all the players in the specified dimension.<br>
 	 * Must be called Server side.
 	 */
-	public static void sendToDimension(IMessage msg, int dimension) {
+	public static void sendToDimension(IMessage msg, int dimension)
+	{
 		HANDLER.sendToDimension(msg, dimension);
 	}
 }

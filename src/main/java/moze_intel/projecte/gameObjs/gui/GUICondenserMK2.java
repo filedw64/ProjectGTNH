@@ -12,7 +12,7 @@ import moze_intel.projecte.gameObjs.tiles.CondenserMK2Tile;
 public class GUICondenserMK2 extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/condenser_mk2.png");
-	private final CondenserMK2Tile tile;
+	private CondenserMK2Tile tile;
 
 	public GUICondenserMK2(InventoryPlayer invPlayer, CondenserMK2Tile tile)
 	{

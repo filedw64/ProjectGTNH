@@ -14,7 +14,7 @@ import moze_intel.projecte.gameObjs.entity.EntityNovaCataclysmPrimed;
 @SideOnly(Side.CLIENT)
 public class NovaCataclysmRenderer extends Render
 {
-	private final RenderBlocks blockRenderer = new RenderBlocks();
+	private RenderBlocks blockRenderer = new RenderBlocks();
 
 	public NovaCataclysmRenderer()
 	{

@@ -55,11 +55,12 @@ public class EntityMobRandomizer extends PEProjectile
 			return;
 		}
 
-		if (!(mop.entityHit instanceof EntityLiving ent))
+		if (!(mop.entityHit instanceof EntityLiving))
 		{
 			return;
 		}
 
+		EntityLiving ent = ((EntityLiving) mop.entityHit);
 		Entity randomized = WorldHelper.getRandomEntity(this.worldObj, ent);
 
 		if (randomized != null && EMCHelper.consumePlayerFuel(((EntityPlayer) getThrower()), 384) != -1)
