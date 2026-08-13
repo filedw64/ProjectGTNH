@@ -273,10 +273,13 @@ public class GTMapper extends AbstractIntegrationMapper {
 		}
 	}
 
+	// 替换掉直接访问已经移除的 mChances 变量，改用官方 API 方法获取概率
 	private boolean doGTRecipeNeedMultiply(GTRecipe gtre) {
-		if (gtre.mChances != null)
-			for (int ch : gtre.mChances)
-				if (ch != 10000) return true;
+		if (gtre.mOutputs != null) {
+			for (int i = 0; i < gtre.mOutputs.length; i++) {
+				if (gtre.getOutputChance(i) != 10000) return true;
+			}
+		}
 		return false;
 	}
 
