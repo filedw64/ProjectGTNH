@@ -56,12 +56,18 @@ public class DMFurnaceTile extends RMFurnaceTile implements IInventory, ISidedIn
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
+		// 同样缓存数组，解决物流网导致的卡顿
+		if (accessibleSlots0 == null)
+		{
+			accessibleSlots0 = new int[]{11, 12, 13, 14, 15, 16, 17, 18};
+			accessibleSlots1 = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18};
+			accessibleSlotsSide = new int[]{0, 11, 12, 13, 14, 15, 16, 17, 18};
+		}
+
 		return switch (side) {
-			case 0 -> new int[]{11, 12, 13, 14, 15, 16, 17, 18}; // Outputs accessible from bottom
-			case 1 -> new int[]{2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18}; // Inputs accessible from top
-			// Fall through
-			case 2, 3, 4, 5 ->
-				new int[]{0, 11, 12, 13, 14, 15, 16, 17, 18}; // Fuel and output accessible from all sides
+			case 0 -> accessibleSlots0;
+			case 1 -> accessibleSlots1;
+			case 2, 3, 4, 5 -> accessibleSlotsSide;
 			default -> new int[]{};
 		};
 	}

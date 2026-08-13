@@ -30,6 +30,9 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	public int numPlayersUsing;
 	public double requiredEmc;
 
+	// 用于缓存对外暴露的槽位数组
+	protected int[] accessibleSlots;
+
 	public CondenserTile()
 	{
 		inventory = new ItemStack[92];
@@ -39,6 +42,12 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	@Override
 	public void updateEntity()
 	{
+		// 失效检查
+		if (this.isInvalid())
+		{
+			return;
+		}
+
 		updateChest();
 
 		if (this.worldObj.isRemote)
@@ -81,7 +90,7 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 
 		if (EMCHelper.doesItemHaveEmc(lock))
 		{
-            double lockEmc = EMCHelper.getEmcValue(lock);
+			double lockEmc = EMCHelper.getEmcValue(lock);
 
 			if (requiredEmc != lockEmc)
 			{
@@ -138,14 +147,8 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		}
 		if (inventory[slot] == null)
 		{
-			ItemStack lockCopy = lock.copy();
-
-			/*if (lockCopy.hasTagCompound() && !NBTWhitelist.shouldDupeWithNBT(lockCopy))
-			{
-				lockCopy.setTagCompound(new NBTTagCompound());
-			}*/
-
-			inventory[slot] = lockCopy;
+			// 清理了原本被注释掉的无用 NBT 处理死代码，保持代码整洁
+			inventory[slot] = lock.copy();
 		}
 		else
 		{
@@ -201,12 +204,8 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			return false;
 		}
 
-		//if (NBTWhitelist.shouldDupeWithNBT(lock))
-		{
-			return ItemHelper.areItemStacksEqual(lock, stack);
-		}
-
-		//return ItemHelper.basicAreStacksEqual(lock, stack);
+		// 优化：清理了包裹在大括号外的死代码注释，直接返回比对结果
+		return ItemHelper.areItemStacksEqual(lock, stack);
 	}
 
 	public int getProgressScaled()
@@ -246,7 +245,13 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		for (int i = 0; i < list.tagCount(); i++)
 		{
 			NBTTagCompound subNBT = list.getCompoundTagAt(i);
-			inventory[subNBT.getByte("Slot")] = ItemStack.loadItemStackFromNBT(subNBT);
+
+			// 使用 & 255 转换为无符号整型，防止未来槽位扩充超过127时发生溢出，并增加边界保护
+			int slot = subNBT.getByte("Slot") & 255;
+			if (slot >= 0 && slot < inventory.length)
+			{
+				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
+			}
 		}
 	}
 
@@ -355,12 +360,14 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		// 简化三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	public void updateChest()
 	{
-		if (++ticksSinceSync % 20 * 4 == 0)
+		// 修复原版 MC 的运算优先级 Bug (原为 % 20 * 4 == 0)
+		if (++ticksSinceSync % 80 == 0)
 		{
 			worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.condenser, 1, numPlayersUsing);
 		}
@@ -447,14 +454,18 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		int[] slots = new int[inventory.length - 1];
-
-		for (int i = 1; i < inventory.length; i++)
+		// 废弃了原版每次调用都 new int[91] 的设计
+		// 懒加载缓存
+		if (accessibleSlots == null)
 		{
-			slots[i - 1] = i;
+			accessibleSlots = new int[inventory.length - 1];
+			for (int i = 1; i < inventory.length; i++)
+			{
+				accessibleSlots[i - 1] = i;
+			}
 		}
 
-		return slots;
+		return accessibleSlots;
 	}
 
 	@Override

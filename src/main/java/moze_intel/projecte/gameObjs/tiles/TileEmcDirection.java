@@ -14,6 +14,14 @@ public abstract class TileEmcDirection extends TileEmc
 {
 	private ForgeDirection orientation;
 
+	// 静态方向映射表
+	private static final int[] FACING_MAP = {
+		ForgeDirection.NORTH.ordinal(),
+		ForgeDirection.EAST.ordinal(),
+		ForgeDirection.SOUTH.ordinal(),
+		ForgeDirection.WEST.ordinal()
+	};
+
 	public TileEmcDirection()
 	{
 		this.orientation = ForgeDirection.SOUTH;
@@ -36,25 +44,10 @@ public abstract class TileEmcDirection extends TileEmc
 
 	public void setRelativeOrientation(EntityLivingBase ent, boolean sendPacket)
 	{
-		int direction = 0;
 		int facing = MathHelper.floor_double(ent.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
 
-		if (facing == 0)
-		{
-			direction = ForgeDirection.NORTH.ordinal();
-		}
-		else if (facing == 1)
-		{
-			direction = ForgeDirection.EAST.ordinal();
-		}
-		else if (facing == 2)
-		{
-			direction = ForgeDirection.SOUTH.ordinal();
-		}
-		else if (facing == 3)
-		{
-			direction = ForgeDirection.WEST.ordinal();
-		}
+		// 通过数组映射获取朝向
+		int direction = FACING_MAP[facing];
 
 		setOrientation(direction);
 
@@ -71,7 +64,8 @@ public abstract class TileEmcDirection extends TileEmc
 
 		if (nbtTagCompound.hasKey("Direction"))
 		{
-			this.orientation = ForgeDirection.getOrientation(nbtTagCompound.getByte("Direction"));
+			// 使用 & 255 转换为无符号整型
+			this.orientation = ForgeDirection.getOrientation(nbtTagCompound.getByte("Direction") & 255);
 		}
 	}
 

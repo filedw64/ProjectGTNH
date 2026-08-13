@@ -30,7 +30,8 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 		for (int i = 0; i < list.tagCount(); i++)
 		{
 			NBTTagCompound subNBT = list.getCompoundTagAt(i);
-			byte slot = subNBT.getByte("Slot");
+			// 使用 & 255 转换为无符号整型，防止未来槽位扩充超过127时发生溢出变为负数的问题
+			int slot = subNBT.getByte("Slot") & 255;
 
 			if (slot >= 0 && slot < 104)
 			{
@@ -143,7 +144,8 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		// 简化了三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
@@ -151,7 +153,14 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 	{
 		super.updateEntity();
 
-		if (++ticksSinceSync % 20 * 4 == 0)
+		// 失效检查
+		if (this.isInvalid())
+		{
+			return;
+		}
+
+		// 修复了原版 MC 的运算优先级 Bug
+		if (++ticksSinceSync % 80 == 0)
 		{
 			worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.alchChest, 1, numPlayersUsing);
 		}
@@ -198,17 +207,7 @@ public class AlchChestTile extends TileEmcDirection implements IInventory
 			}
 		}
 
-		if (worldObj.isRemote)
-		{
-			if (worldObj.getChunkFromBlockCoords(xCoord, zCoord).isEmpty())
-			{
-				// Handle condition where this method is called even after the clientside chunk has unloaded.
-				// This will make IAlchChestItems below crash with an NPE since the TE they get back is null
-				// Don't you love vanilla???
-				return;
-			}
-		}
-
+		// 在前面进行了 isInvalid() 检查，此处不再需要多余的 isRemote 和耗时的 getChunkFromBlockCoords 判断
 		for (ItemStack stack : inventory)
 		{
 			if (stack != null && stack.getItem() instanceof IAlchChestItem)

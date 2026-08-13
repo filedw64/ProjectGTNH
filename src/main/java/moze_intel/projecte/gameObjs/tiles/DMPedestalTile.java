@@ -29,16 +29,12 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	@Override
 	public void updateEntity()
 	{
-		if (worldObj.isRemote)
+		// 失效检查
+		if (this.isInvalid())
 		{
-			if (worldObj.getChunkFromBlockCoords(xCoord, zCoord).isEmpty())
-			{
-				// Handle condition where this method is called even after the clientside chunk has unloaded.
-				// This will make IPedestalItems below crash with an NPE since the TE they get back is null
-				// Don't you love vanilla???
-				return;
-			}
+			return;
 		}
+
 		centeredX = xCoord + 0.5;
 		centeredY = yCoord + 0.5;
 		centeredZ = zCoord + 0.5;
@@ -46,7 +42,7 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		if (effectBounds == null)
 		{
 			effectBounds = AxisAlignedBB.getBoundingBox(centeredX - 4.5, centeredY - 4.5, centeredZ - 4.5,
-					centeredX + 4.5, centeredY + 4.5, centeredZ + 4.5);
+				centeredX + 4.5, centeredY + 4.5, centeredZ + 4.5);
 		}
 
 		if (getActive())
@@ -58,46 +54,52 @@ public class DMPedestalTile extends TileEmc implements IInventory
 				{
 					((IPedestalItem) item).updateInPedestal(worldObj, xCoord, yCoord, zCoord);
 				}
-				if (particleCooldown <= 0)
+
+				// 粒子只在客户端生成，防止服务端空转
+				if (worldObj.isRemote)
 				{
-					spawnParticles();
-					particleCooldown = 10;
-				}
-				else
-				{
-					particleCooldown--;
+					if (particleCooldown <= 0)
+					{
+						spawnParticles();
+						particleCooldown = 10;
+					}
+					else
+					{
+						particleCooldown--;
+					}
 				}
 			}
 			else
 			{
-				setActive(false);
+				if (!worldObj.isRemote)
+				{
+					setActive(false);
+				}
 			}
 		}
 	}
 
 	private void spawnParticles()
 	{
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.5, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.5, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.5, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.5, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		for (int l = 0; l < 3; ++l) // Ripped from vanilla enderchest
+		// 降低火焰粒子数量，原来是固定的8个，现在改为随机1~2个，位置随机选取
+		int flameCount = worldObj.rand.nextInt(2) + 1;
+		for (int i = 0; i < flameCount; i++)
 		{
-			double d1 = (double)((float)yCoord + worldObj.rand.nextFloat());
-			double d3, d4, d5;
-			int i1 = worldObj.rand.nextInt(2) * 2 - 1;
-			int j1 = worldObj.rand.nextInt(2) * 2 - 1;
-			d4 = ((double)worldObj.rand.nextFloat() - 0.5D) * 0.125D;
-			double d2 = (double)zCoord + 0.5D + 0.25D * (double)j1;
-			d5 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)j1);
-			double d0 = (double)xCoord + 0.5D + 0.25D * (double)i1;
-			d3 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)i1);
-			worldObj.spawnParticle("portal", d0, d1, d2, d3, d4, d5);
+			double xOff = (worldObj.rand.nextInt(3) * 0.3) + 0.2; // 0.2, 0.5, 或 0.8
+			double zOff = (worldObj.rand.nextInt(3) * 0.3) + 0.2;
+			worldObj.spawnParticle("flame", xCoord + xOff, yCoord + 0.3, zCoord + zOff, 0, 0, 0);
 		}
+
+		// 将原本的3个传送门粒子减少为1个
+		double d1 = (double)((float)yCoord + worldObj.rand.nextFloat());
+		int i1 = worldObj.rand.nextInt(2) * 2 - 1;
+		int j1 = worldObj.rand.nextInt(2) * 2 - 1;
+		double d4 = ((double)worldObj.rand.nextFloat() - 0.5D) * 0.125D;
+		double d2 = (double)zCoord + 0.5D + 0.25D * (double)j1;
+		double d5 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)j1);
+		double d0 = (double)xCoord + 0.5D + 0.25D * (double)i1;
+		double d3 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)i1);
+		worldObj.spawnParticle("portal", d0, d1, d2, d3, d4, d5);
 	}
 
 	public int getActivityCooldown()
@@ -140,7 +142,8 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		for (int i = 0; i < tagList.tagCount(); ++i)
 		{
 			NBTTagCompound compound = tagList.getCompoundTagAt(i);
-			byte slot = compound.getByte("Slot");
+			// NBT槽位安全读取
+			int slot = compound.getByte("Slot") & 255;
 			if (slot >= 0 && slot < inventory.length)
 			{
 				inventory[slot] = ItemStack.loadItemStackFromNBT(compound);
@@ -247,7 +250,8 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		// 简化三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
@@ -283,23 +287,25 @@ public class DMPedestalTile extends TileEmc implements IInventory
 			if (newState)
 			{
 				worldObj.playSoundEffect(centeredX, centeredY, centeredZ, "projecte:item.pecharge", 1.0F, 1.0F);
-				for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+				// 将魔法粒子数量减半 (从10~44减少为 5~14)
+				for (int i = 0; i < worldObj.rand.nextInt(10) + 5; ++i)
 				{
 					this.worldObj.spawnParticle("witchMagic", centeredX + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							0.0D, 0.0D, 0.0D);
+						yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+						centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+						0.0D, 0.0D, 0.0D);
 				}
 			}
 			else
 			{
 				worldObj.playSoundEffect(centeredX, centeredY, centeredZ, "projecte:item.peuncharge", 1.0F, 1.0F);
-				for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+				// 将烟雾粒子数量减半 (从10~44减少为 5~14)
+				for (int i = 0; i < worldObj.rand.nextInt(10) + 5; ++i)
 				{
 					this.worldObj.spawnParticle("smoke", centeredX + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
-							0.0D, 0.0D, 0.0D);
+						yCoord + 1 + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+						centeredZ + worldObj.rand.nextGaussian() * 0.12999999523162842D,
+						0.0D, 0.0D, 0.0D);
 				}
 			}
 		}

@@ -28,6 +28,9 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public double displayRawEmc;
 	private int numUsing;
 
+	// 缓存对外暴露的槽位数组
+	protected int[] accessibleSlots;
+
 	public RelayMK1Tile()
 	{
 		super(Constants.RELAY_MK1_MAX);
@@ -47,7 +50,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public void updateEntity()
 	{
-		if (worldObj.isRemote)
+		// 失效检查
+		if (worldObj.isRemote || this.isInvalid())
 		{
 			return;
 		}
@@ -76,7 +80,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			}
 			else
 			{
-                double emcVal = EMCHelper.getEmcValue(stack);
+				double emcVal = EMCHelper.getEmcValue(stack);
 
 				if (emcVal > 0 && (this.getStoredEmc() + emcVal) <= this.getMaximumEmc())
 				{
@@ -100,7 +104,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		if (numUsing > 0)
 		{
 			PacketHandler.sendToAllAround(new RelaySyncPKT(displayEmc, displayChargingEmc, displayRawEmc, this.xCoord, this.yCoord, this.zCoord),
-					new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
+				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
 		}
 	}
 
@@ -163,12 +167,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-        if (!((starEmc + toSend) <= maxStarEmc)) {
-            toSend = maxStarEmc - starEmc;
-        }
-        itemEmc.addEmc(chargeable, toSend);
-        this.removeEMC(toSend);
-    }
+		if (!((starEmc + toSend) <= maxStarEmc)) {
+			toSend = maxStarEmc - starEmc;
+		}
+		itemEmc.addEmc(chargeable, toSend);
+		this.removeEMC(toSend);
+	}
 
 	public int getEmcScaled(int i)
 	{
@@ -224,7 +228,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			return (int) Math.round(displayRawEmc * i / ((IItemEmc) inventory[0].getItem()).getMaximumEmc(inventory[0]));
 		}
 
-        double emc = EMCHelper.getEmcValue(inventory[0]);
+		double emc = EMCHelper.getEmcValue(inventory[0]);
+		if (emc <= 0) return 0; // 防范除零或异常
 
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
 	}
@@ -239,7 +244,9 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		for (int i = 0; i < list.tagCount(); i++)
 		{
 			NBTTagCompound subNBT = list.getCompoundTagAt(i);
-			byte slot = subNBT.getByte("Slot");
+
+			// 使用 & 255 转换为无符号整型，防止越界异常
+			int slot = subNBT.getByte("Slot") & 255;
 			if (slot >= 0 && slot < getSizeInventory())
 				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
 		}
@@ -334,7 +341,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		// 优化：简化三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
@@ -358,16 +366,20 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		int[] indexes = new int[inventory.length - 2];
-		byte counter = 0;
-
-		for (int i = 1; i < inventory.length - 1; i++)
+		// 缓存计算结果
+		if (accessibleSlots == null)
 		{
-			indexes[counter] = i;
-			counter++;
+			accessibleSlots = new int[inventory.length - 2];
+			byte counter = 0;
+
+			for (int i = 1; i < inventory.length - 1; i++)
+			{
+				accessibleSlots[counter] = i;
+				counter++;
+			}
 		}
 
-		return indexes;
+		return accessibleSlots;
 	}
 
 	@Override
