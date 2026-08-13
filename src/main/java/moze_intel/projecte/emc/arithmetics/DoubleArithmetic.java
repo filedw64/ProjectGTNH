@@ -11,13 +11,12 @@ public class DoubleArithmetic implements IValueArithmetic<Double> {
 
 	@Override
 	public boolean isZero(Double value) {
-		return value != null && value.doubleValue() == 0.0;
+		return value != null && value.equals(ZERO);
 	}
 
 	@Override
 	public Double getZero() {
-		// 返回缓存的常量
-		return ZERO;
+		return ZERO; // 返回缓存的常量
 	}
 
 	@Override
@@ -26,6 +25,7 @@ public class DoubleArithmetic implements IValueArithmetic<Double> {
 		if (isFree(b)) return a;
 		if (isZero(a)) return b;
 		if (isZero(b)) return a;
+		// TODO: 真的需要判断吗?
 		return a + b;
 	}
 
@@ -47,12 +47,11 @@ public class DoubleArithmetic implements IValueArithmetic<Double> {
 
 	@Override
 	public Double getFree() {
-		// 返回缓存的常量
-		return FREE;
+		return FREE; // 返回缓存的常量
 	}
 
 	@Override
 	public boolean isFree(Double value) {
-		return value != null && value.doubleValue() == -Double.MAX_VALUE;
+		return value != null && value.equals(FREE);
 	}
 }
