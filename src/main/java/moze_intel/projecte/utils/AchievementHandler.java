@@ -6,10 +6,8 @@ import net.minecraft.stats.Achievement;
 import net.minecraftforge.common.AchievementPage;
 import moze_intel.projecte.gameObjs.ObjHandler;
 
-
 public final class AchievementHandler
 {
-
 	public final static Achievement PHIL_STONE = new Achievement("phil_stone", "phil_stone", 0, 2, ObjHandler.philosStone, null).initIndependentStat().registerStat();
 	public final static Achievement ALCH_CHEST = new Achievement("alch_chest", "alch_chest", 0, -2, ObjHandler.alchChest, null).initIndependentStat().registerStat();
 	public final static Achievement ALCH_BAG = new Achievement("alch_bag", "alch_bag", 0, -4, ObjHandler.alchBag, ALCH_CHEST).registerStat();
@@ -29,20 +27,21 @@ public final class AchievementHandler
 	public final static Achievement KLEIN_BASIC = new Achievement("klein", "klein", 0, 4, new ItemStack(ObjHandler.kleinStars, 1, 0), PHIL_STONE).registerStat();
 	public final static Achievement KLEIN_MASTER = new Achievement("klein_big", "klein_big", -2, 4, new ItemStack(ObjHandler.kleinStars, 1, 5), KLEIN_BASIC).setSpecial().registerStat();
 
-	public static ImmutableList<Achievement> list = ImmutableList.of(
-			PHIL_STONE, ALCH_CHEST, ALCH_BAG, TRANSMUTATION, CONDENSER,
-			COLLECTOR, RELAY, PORTABLE_TRANSMUTATION, DARK_MATTER, RED_MATTER, DM_BLOCK,
-			RM_BLOCK, DM_FURNACE, RM_FURNACE, DM_PICK, RM_PICK, KLEIN_BASIC, KLEIN_MASTER
+	public static final ImmutableList<Achievement> list = ImmutableList.of(
+		PHIL_STONE, ALCH_CHEST, ALCH_BAG, TRANSMUTATION, CONDENSER,
+		COLLECTOR, RELAY, PORTABLE_TRANSMUTATION, DARK_MATTER, RED_MATTER, DM_BLOCK,
+		RM_BLOCK, DM_FURNACE, RM_FURNACE, DM_PICK, RM_PICK, KLEIN_BASIC, KLEIN_MASTER
 	);
 
 	public static void init()
 	{
-		AchievementPage.registerAchievementPage(new AchievementPage("ProjectE", list.toArray(new Achievement[list.size()])));
+		AchievementPage.registerAchievementPage(new AchievementPage("ProjectE", list.toArray(new Achievement[0])));
 	}
 
 	public static Achievement getAchievementForItem(ItemStack stack)
 	{
-		if (stack == null)
+		// 补充 stack.getItem() == null 的校验，防止在获取伤害值或比较时抛出空指针异常
+		if (stack == null || stack.getItem() == null)
 		{
 			return null;
 		}
@@ -51,12 +50,17 @@ public final class AchievementHandler
 		{
 			ItemStack s = ach.theItemStack;
 
-			if (s.getItem() == stack.getItem() && s.getItemDamage() == stack.getItemDamage())
+			// 补充 s != null 和 s.getItem() != null 的校验
+			if (s != null && s.getItem() != null)
 			{
-				return ach;
+				if (s.getItem() == stack.getItem() && s.getItemDamage() == stack.getItemDamage())
+				{
+					return ach;
+				}
 			}
 		}
 
 		return null;
 	}
 }
+//这里好像没什么好优化的

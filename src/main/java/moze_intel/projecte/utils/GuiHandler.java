@@ -65,7 +65,9 @@ public class GuiHandler implements IGuiHandler {
 					return new AlchChestContainer(player.inventory, (AlchChestTile) tile);
 				break;
 			case Constants.ALCH_BAG_GUI:
-				return new AlchBagContainer(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
+				if (player.getHeldItem() != null) // 安全校验
+					return new AlchBagContainer(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
+				break;
 			case Constants.CONDENSER_GUI:
 				if (tile instanceof CondenserTile)
 					return new CondenserContainer(player.inventory, (CondenserTile) tile);
@@ -103,17 +105,27 @@ public class GuiHandler implements IGuiHandler {
 					return new RelayMK3Container(player.inventory, (RelayMK3Tile) tile);
 				break;
 			case Constants.MERCURIAL_GUI:
-				return new MercurialEyeContainer(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
+				if (player.getHeldItem() != null)
+					return new MercurialEyeContainer(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
+				break;
 			case Constants.PHILOS_STONE_GUI:
 				return new PhilosStoneContainer(player.inventory);
 			case Constants.TRANSMUTATION_GUI:
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), false);
 			case Constants.ETERNAL_DENSITY_GUI:
-				return new EternalDensityContainer(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
+				if (player.getHeldItem() != null)
+					return new EternalDensityContainer(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
+				break;
 			case Constants.CONDENSER_MK2_GUI:
-				return new CondenserMK2Container(player.inventory, (CondenserMK2Tile) tile);
+				// 补充强制类型转换前的 instanceof 检查
+				if (tile instanceof CondenserMK2Tile)
+					return new CondenserMK2Container(player.inventory, (CondenserMK2Tile) tile);
+				break;
 			case Constants.PEDESTAL_GUI:
-				return new PedestalContainer(player.inventory, ((DMPedestalTile) tile));
+				// 补充强制类型转换前的 instanceof 检查
+				if (tile instanceof DMPedestalTile)
+					return new PedestalContainer(player.inventory, ((DMPedestalTile) tile));
+				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
 		}
@@ -131,7 +143,9 @@ public class GuiHandler implements IGuiHandler {
 					return new GUIAlchChest(player.inventory, (AlchChestTile) tile);
 				break;
 			case Constants.ALCH_BAG_GUI:
-				return new GUIAlchChest(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
+				if (player.getHeldItem() != null)
+					return new GUIAlchChest(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
+				break;
 			case Constants.CONDENSER_GUI:
 				if (tile instanceof CondenserTile)
 					return new GUICondenser(player.inventory, (CondenserTile) tile);
@@ -169,18 +183,27 @@ public class GuiHandler implements IGuiHandler {
 					return new GUIRelayMK3(player.inventory, (RelayMK3Tile) tile);
 				break;
 			case Constants.MERCURIAL_GUI:
-				return new GUIMercurialEye(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
+				if (player.getHeldItem() != null)
+					return new GUIMercurialEye(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
+				break;
 			case Constants.PHILOS_STONE_GUI:
 				return new GUIPhilosStone(player.inventory);
 			case Constants.TRANSMUTATION_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), false);
 			case Constants.ETERNAL_DENSITY_GUI:
-				//player.getHeldItem(); // 这里哪来的这行鬼代码？？
-				return new GUIEternalDensity(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
+				if (player.getHeldItem() != null)
+					return new GUIEternalDensity(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
+				break;
 			case Constants.CONDENSER_MK2_GUI:
-				return new GUICondenserMK2(player.inventory, (CondenserMK2Tile) tile);
+				// 补充强制类型转换前的 instanceof 检查
+				if (tile instanceof CondenserMK2Tile)
+					return new GUICondenserMK2(player.inventory, (CondenserMK2Tile) tile);
+				break;
 			case Constants.PEDESTAL_GUI:
-				return new GUIPedestal(player.inventory, ((DMPedestalTile) tile));
+				// 补充强制类型转换前的 instanceof 检查
+				if (tile instanceof DMPedestalTile)
+					return new GUIPedestal(player.inventory, ((DMPedestalTile) tile));
+				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
 		}

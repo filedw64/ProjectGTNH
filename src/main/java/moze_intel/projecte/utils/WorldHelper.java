@@ -44,7 +44,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
@@ -69,16 +68,16 @@ import java.util.Set;
 public final class WorldHelper
 {
 	public static final ImmutableList<Class<? extends EntityLiving>> peacefuls = ImmutableList.of(
-			EntitySheep.class, EntityPig.class, EntityCow.class,
-			EntityMooshroom.class, EntityChicken.class, EntityBat.class,
-			EntityVillager.class, EntitySquid.class, EntityOcelot.class,
-			EntityWolf.class, EntityHorse.class
+		EntitySheep.class, EntityPig.class, EntityCow.class,
+		EntityMooshroom.class, EntityChicken.class, EntityBat.class,
+		EntityVillager.class, EntitySquid.class, EntityOcelot.class,
+		EntityWolf.class, EntityHorse.class
 	);
 	public static final ImmutableList<Class<? extends EntityLiving>> mobs = ImmutableList.of(
-			EntityZombie.class, EntitySkeleton.class, EntityCreeper.class,
-			EntitySpider.class, EntityEnderman.class, EntitySilverfish.class,
-			EntityPigZombie.class, EntityGhast.class, EntityBlaze.class,
-			EntitySlime.class, EntityWitch.class
+		EntityZombie.class, EntitySkeleton.class, EntityCreeper.class,
+		EntitySpider.class, EntityEnderman.class, EntitySilverfish.class,
+		EntityPigZombie.class, EntityGhast.class, EntityBlaze.class,
+		EntitySlime.class, EntityWitch.class
 	);
 
 	public static Set<Class<? extends Entity>> interdictionBlacklist = Sets.newHashSet();
@@ -97,9 +96,10 @@ public final class WorldHelper
 
 	public static boolean blacklistSwrg(Class<? extends Entity> clazz)
 	{
-		if (!interdictionBlacklist.contains(clazz))
+		// 原版这里错误地判断和添加到了 interdictionBlacklist
+		if (!swrgBlacklist.contains(clazz))
 		{
-			interdictionBlacklist.add(clazz);
+			swrgBlacklist.add(clazz);
 			return true;
 		}
 		return false;
@@ -142,9 +142,16 @@ public final class WorldHelper
 
 	public static void extinguishNearby(World world, EntityPlayer player)
 	{
-		for (int x = (int) (player.posX - 1); x <= player.posX + 1; x++)
-			for (int y = (int) (player.posY - 1); y <= player.posY + 1; y++)
-				for (int z = (int) (player.posZ - 1); z <= player.posZ + 1; z++)
+		int minX = (int) (player.posX - 1);
+		int maxX = (int) (player.posX + 1);
+		int minY = (int) (player.posY - 1);
+		int maxY = (int) (player.posY + 1);
+		int minZ = (int) (player.posZ - 1);
+		int maxZ = (int) (player.posZ + 1);
+
+		for (int x = minX; x <= maxX; x++)
+			for (int y = minY; y <= maxY; y++)
+				for (int z = minZ; z <= maxZ; z++)
 					if (world.getBlock(x, y, z) == Blocks.fire && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
 					{
 						world.setBlockToAir(x, y, z);
@@ -153,11 +160,18 @@ public final class WorldHelper
 
 	public static void freezeInBoundingBox(World world, AxisAlignedBB box, EntityPlayer player, boolean random)
 	{
-		for (int x = (int) box.minX; x <= box.maxX; x++)
+		int minX = (int) box.minX;
+		int maxX = (int) box.maxX;
+		int minY = (int) box.minY;
+		int maxY = (int) box.maxY;
+		int minZ = (int) box.minZ;
+		int maxZ = (int) box.maxZ;
+
+		for (int x = minX; x <= maxX; x++)
 		{
-			for (int y = (int) box.minY; y <= box.maxY; y++)
+			for (int y = minY; y <= maxY; y++)
 			{
-				for (int z = (int) box.minZ; z <= box.maxZ; z++)
+				for (int z = minZ; z <= maxZ; z++)
 				{
 					Block b = world.getBlock(x, y, z);
 
@@ -343,14 +357,6 @@ public final class WorldHelper
 		{
 			return getNewEntityInstance(CollectionHelper.getRandomListEntry(mobs, entClass), world);
 		}
-		/*else if (world.rand.nextInt(2) == 0)
-		{
-			return new EntitySlime(world);
-		}
-		else
-		{
-			return new EntitySheep(world);
-		}*/
 		return null;
 	}
 
@@ -358,9 +364,16 @@ public final class WorldHelper
 	{
 		List<TileEntity> list = Lists.newArrayList();
 
-		for (int i = (int) bBox.minX; i <= bBox.maxX; i++)
-			for (int j = (int) bBox.minY; j <= bBox.maxY; j++)
-				for (int k = (int) bBox.minZ; k <= bBox.maxZ; k++)
+		int minX = (int) bBox.minX;
+		int maxX = (int) bBox.maxX;
+		int minY = (int) bBox.minY;
+		int maxY = (int) bBox.maxY;
+		int minZ = (int) bBox.minZ;
+		int maxZ = (int) bBox.maxZ;
+
+		for (int i = minX; i <= maxX; i++)
+			for (int j = minY; j <= maxY; j++)
+				for (int k = minZ; k <= maxZ; k++)
 				{
 					TileEntity tile = world.getTileEntity(i, j, k);
 					if (tile != null)
@@ -397,10 +410,17 @@ public final class WorldHelper
 	public static void growNearbyRandomly(boolean harvest, World world, double xCoord, double yCoord, double zCoord, EntityPlayer player)
 	{
 		int chance = harvest ? 16 : 32;
+		// 提前计算整型边界，避免在三层循环内做重复的浮点转整型计算
+		int minX = (int) (xCoord - 5);
+		int maxX = (int) (xCoord + 5);
+		int minY = (int) (yCoord - 3);
+		int maxY = (int) (yCoord + 3);
+		int minZ = (int) (zCoord - 5);
+		int maxZ = (int) (zCoord + 5);
 
-		for (int x = (int) (xCoord - 5); x <= xCoord + 5; x++)
-			for (int y = (int) (yCoord - 3); y <= yCoord + 3; y++)
-				for (int z = (int) (zCoord - 5); z <= zCoord + 5; z++)
+		for (int x = minX; x <= maxX; x++)
+			for (int y = minY; y <= maxY; y++)
+				for (int z = minZ; z <= maxZ; z++)
 				{
 					Block crop = world.getBlock(x, y, z);
 
@@ -521,10 +541,16 @@ public final class WorldHelper
 		}
 
 		AxisAlignedBB b = AxisAlignedBB.getBoundingBox(coords.x - 1, coords.y - 1, coords.z - 1, coords.x + 1, coords.y + 1, coords.z + 1);
+		int minX = (int) b.minX;
+		int maxX = (int) b.maxX;
+		int minY = (int) b.minY;
+		int maxY = (int) b.maxY;
+		int minZ = (int) b.minZ;
+		int maxZ = (int) b.maxZ;
 
-		for (int x = (int) b.minX; x <= b.maxX; x++)
-			for (int y = (int) b.minY; y <= b.maxY; y++)
-				for (int z = (int) b.minZ; z <= b.maxZ; z++)
+		for (int x = minX; x <= maxX; x++)
+			for (int y = minY; y <= maxY; y++)
+				for (int z = minZ; z <= maxZ; z++)
 				{
 					Block block = world.getBlock(x, y, z);
 
@@ -543,9 +569,16 @@ public final class WorldHelper
 
 	public static void igniteNearby(World world, EntityPlayer player)
 	{
-		for (int x = (int) (player.posX - 8); x <= player.posX + 8; x++)
-			for (int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
-				for (int z = (int) (player.posZ - 8); z <= player.posZ + 8; z++)
+		int minX = (int) (player.posX - 8);
+		int maxX = (int) (player.posX + 8);
+		int minY = (int) (player.posY - 5);
+		int maxY = (int) (player.posY + 5);
+		int minZ = (int) (player.posZ - 8);
+		int maxZ = (int) (player.posZ + 8);
+
+		for (int x = minX; x <= maxX; x++)
+			for (int y = minY; y <= maxY; y++)
+				for (int z = minZ; z <= maxZ; z++)
 					if (world.rand.nextInt(128) == 0 && world.isAirBlock(x, y, z))
 					{
 						PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
@@ -567,7 +600,7 @@ public final class WorldHelper
 		for (Entity ent : list)
 		{
 			if ((isSWRG && !swrgBlacklist.contains(ent.getClass()))
-					|| (!isSWRG && !interdictionBlacklist.contains(ent.getClass()))) {
+				|| (!isSWRG && !interdictionBlacklist.contains(ent.getClass()))) {
 				if ((ent instanceof EntityLiving) || (ent instanceof IProjectile))
 				{
 					if (!isSWRG && ProjectEConfig.interdictionMode && !(ent instanceof IMob || ent instanceof IProjectile))
@@ -580,15 +613,16 @@ public final class WorldHelper
 						{
 							continue;
 						}
-						Vec3 p = Vec3.createVectorHelper(x, y, z);
-						Vec3 t = Vec3.createVectorHelper(ent.posX, ent.posY, ent.posZ);
-						double distance = p.distanceTo(t) + 0.1D;
 
-						Vec3 r = Vec3.createVectorHelper(t.xCoord - p.xCoord, t.yCoord - p.yCoord, t.zCoord - p.zCoord);
+						// 废弃 Vec3 对象分配，禁止火把和SWRG每Tick都会执行这个操作，避免大量创建 Vec3 对象
+						double dX = ent.posX - x;
+						double dY = ent.posY - y;
+						double dZ = ent.posZ - z;
+						double distance = Math.sqrt(dX * dX + dY * dY + dZ * dZ) + 0.1D;
 
-						ent.motionX += r.xCoord / 1.5D / distance;
-						ent.motionY += r.yCoord / 1.5D / distance;
-						ent.motionZ += r.zCoord / 1.5D / distance;
+						ent.motionX += dX / 1.5D / distance;
+						ent.motionY += dY / 1.5D / distance;
+						ent.motionZ += dZ / 1.5D / distance;
 					}
 				}
 			}
@@ -599,17 +633,17 @@ public final class WorldHelper
 	{
 		float f = world.rand.nextFloat() * 0.8F + 0.1F;
 		float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
-		EntityItem entityitem;
 
-		for (float f2 = world.rand.nextFloat() * 0.8F + 0.1F; stack.stackSize > 0; world.spawnEntityInWorld(entityitem))
+		while (stack.stackSize > 0)
 		{
+			float f2 = world.rand.nextFloat() * 0.8F + 0.1F;
 			int j1 = world.rand.nextInt(21) + 10;
 
 			if (j1 > stack.stackSize)
 				j1 = stack.stackSize;
 
 			stack.stackSize -= j1;
-			entityitem = new EntityItem(world, x + f, y + f1, z + f2, new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
+			EntityItem entityitem = new EntityItem(world, x + f, y + f1, z + f2, new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
 			float f3 = 0.05F;
 			entityitem.motionX = world.rand.nextGaussian() * f3;
 			entityitem.motionY = world.rand.nextGaussian() * f3 + 0.2F;
@@ -619,7 +653,7 @@ public final class WorldHelper
 			{
 				entityitem.getEntityItem().setTagCompound((NBTTagCompound)stack.getTagCompound().copy());
 			}
+			world.spawnEntityInWorld(entityitem);
 		}
-
 	}
 }

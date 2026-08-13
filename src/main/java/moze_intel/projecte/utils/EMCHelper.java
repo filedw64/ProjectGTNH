@@ -1,6 +1,5 @@
 package moze_intel.projecte.utils;
 
-import com.google.common.collect.Maps;
 import moze_intel.projecte.api.item.IItemEmc;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FuelMapper;
@@ -16,7 +15,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,11 +35,13 @@ public final class EMCHelper
 		}
 
 		IInventory inv = player.inventory;
-		LinkedHashMap<Integer, Integer> map = Maps.newLinkedHashMap();
+		int invSize = inv.getSizeInventory();
+		// 使用基本类型数组代替 LinkedHashMap，消除每 tick 调用的对象分配和装箱开销
+		int[] removeCounts = new int[invSize];
 		boolean metRequirement = false;
-        double emcConsumed = 0;
+		double emcConsumed = 0;
 
-		for (int i = 0; i < inv.getSizeInventory(); i++)
+		for (int i = 0; i < invSize; i++)
 		{
 			ItemStack stack = inv.getStackInSlot(i);
 
@@ -49,48 +49,48 @@ public final class EMCHelper
 			{
 				continue;
 			}
+
 			if (stack.getItem() instanceof IItemEmc itemEmc)
 			{
-                if (itemEmc.getStoredEmc(stack) >= minFuel)
+				if (itemEmc.getStoredEmc(stack) >= minFuel)
 				{
 					itemEmc.extractEmc(stack, minFuel);
 					player.inventoryContainer.detectAndSendChanges();
 					return minFuel;
 				}
 			}
-			else if (!metRequirement)
+			else if (!metRequirement && FuelMapper.isStackFuel(stack))
 			{
-				if (FuelMapper.isStackFuel(stack))
-				{
-                    double emc = getEmcValue(stack);
-					int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / emc));
+				double emc = getEmcValue(stack);
+				int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / emc));
 
-					if (stack.stackSize >= toRemove)
+				if (stack.stackSize >= toRemove)
+				{
+					removeCounts[i] = toRemove;
+					emcConsumed += emc * toRemove;
+					metRequirement = true;
+				}
+				else
+				{
+					removeCounts[i] = stack.stackSize;
+					emcConsumed += emc * stack.stackSize;
+
+					if (emcConsumed >= minFuel)
 					{
-						map.put(i, toRemove);
-						emcConsumed += emc * toRemove;
 						metRequirement = true;
 					}
-					else
-					{
-						map.put(i, stack.stackSize);
-						emcConsumed += emc * stack.stackSize;
-
-						if (emcConsumed >= minFuel)
-						{
-							metRequirement = true;
-						}
-					}
-
 				}
 			}
 		}
 
 		if (metRequirement)
 		{
-			for (Map.Entry<Integer, Integer> entry : map.entrySet())
+			for (int i = 0; i < invSize; i++)
 			{
-				inv.decrStackSize(entry.getKey(), entry.getValue());
+				if (removeCounts[i] > 0)
+				{
+					inv.decrStackSize(i, removeCounts[i]);
+				}
 			}
 
 			player.inventoryContainer.detectAndSendChanges();
@@ -112,7 +112,7 @@ public final class EMCHelper
 		if (stack == null || stack.getItem() == null)
 			return false;
 
-        SimpleStack ss = SimpleStack.getFor(stack);
+		SimpleStack ss = SimpleStack.getFor(stack);
 
 		if (!ss.isValid())
 			return false;
@@ -123,9 +123,11 @@ public final class EMCHelper
 		return EMCMapper.mapContains(ss);
 	}
 
-	public static Double getEmcValue(Block Block)
+	// 返回 double 避免拆装箱
+	public static double getEmcValue(Block block)
 	{
-		SimpleStack stack = new SimpleStack(new ItemStack(Block));
+		if (block == null) return 0.0;
+		SimpleStack stack = new SimpleStack(new ItemStack(block));
 
 		if (stack.isValid() && EMCMapper.mapContains(stack))
 			return EMCMapper.getEmcValue(stack);
@@ -133,8 +135,10 @@ public final class EMCHelper
 		return 0.0;
 	}
 
-	public static Double getEmcValue(Item item)
+	// 返回 double 避免拆装箱
+	public static double getEmcValue(Item item)
 	{
+		if (item == null) return 0.0;
 		SimpleStack stack = new SimpleStack(new ItemStack(item));
 
 		if (stack.isValid() && EMCMapper.mapContains(stack))
@@ -150,14 +154,14 @@ public final class EMCHelper
 	{
 		if (stack == null || stack.getItem() == null) return 0.0;
 
-        if (EFRHelper.isShulkerBox(stack))
-            return EFRHelper.ShulkerBoxEMC(stack);
+		if (EFRHelper.isShulkerBox(stack))
+			return EFRHelper.ShulkerBoxEMC(stack);
 
 		if (ForestryHelper.isForestryBag(stack))
 			return ForestryHelper.ForestryBagEMC(stack);
 
-        if (GTItemHelper.isGTtool(stack))
-            return GTItemHelper.GTtoolEMC(stack);
+		if (GTItemHelper.isGTtool(stack))
+			return GTItemHelper.GTtoolEMC(stack);
 
 		SimpleStack ss = SimpleStack.getFor(stack);
 
@@ -171,48 +175,48 @@ public final class EMCHelper
 		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0)
 		{
 			//We don't have an emc value for id:metadata, so lets check if we have a value for id:0 and apply a damage multiplier based on that emc value.
-            ss.damage = 0;
-            if (EMCMapper.mapContains(ss)) {
-                Double emc = EMCMapper.getEmcValue(ss);
+			ss.damage = 0;
+			if (EMCMapper.mapContains(ss)) {
+				double emc = EMCMapper.getEmcValue(ss); // Double 换为 double……额……这算优化吗？
 
-                int rest = (stack.getMaxDamage() - stack.getItemDamage());
+				int rest = (stack.getMaxDamage() - stack.getItemDamage());
 
-                if (rest <= 0)
-                {
-                    //Not Impossible. Don't use durability or enchants for emc calculation if this happens.
-                    return emc;
-                }
+				if (rest <= 0)
+				{
+					//Not Impossible. Don't use durability or enchants for emc calculation if this happens.
+					return emc;
+				}
 
-                double result = emc / stack.getMaxDamage() * rest;
+				double result = emc / stack.getMaxDamage() * rest;
 
-                result += getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
+				result += getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
 
-                return result;
-            }
+				return result;
+			}
 		}
 		return 0.0;
 	}
 
-	public static Double getEnchantEmcBonus(ItemStack stack)
+	public static double getEnchantEmcBonus(ItemStack stack)
 	{
-        if (EnchantmentBlacklist.contains(stack)) return 0.0;
+		// 绝大多数物品没有附魔，拦截 NBT 校验可避免底层 EnchantmentHelper 创建昂贵的 HashMap
+		if (stack.stackTagCompound == null) return 0.0;
+		if (!stack.stackTagCompound.hasKey("ench") && !stack.stackTagCompound.hasKey("StoredEnchantments")) return 0.0;
+		if (EnchantmentBlacklist.contains(stack)) return 0.0;
 
-        double result = 0;
 		Map<Integer, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
-
 		if (enchants.isEmpty()) return 0.0;
 
-        for (Map.Entry<Integer, Integer> entry : enchants.entrySet())
-        {
-            Enchantment ench = Enchantment.enchantmentsList[entry.getKey()];
+		double result = 0;
+		for (Map.Entry<Integer, Integer> entry : enchants.entrySet())
+		{
+			Enchantment ench = Enchantment.enchantmentsList[entry.getKey()];
 
-            if (ench.getWeight() == 0)
-            {
-                continue;
-            }
-
-            result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
-        }
+			if (ench != null && ench.getWeight() > 0) // 补充 null 校验，防止越界或模组冲突
+			{
+				result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
+			}
+		}
 
 		return result;
 	}
