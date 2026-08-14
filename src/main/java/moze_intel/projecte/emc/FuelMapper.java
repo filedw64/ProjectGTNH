@@ -80,12 +80,10 @@ public final class FuelMapper
 	{
 		if (stack.isValid())
 		{
-			SimpleStack copy = stack.copy();
-			copy.qnty = 1;
-
-			if (!FUEL_MAP.contains(copy))
+			// 不再需要 .copy() 和强制修改 qnty
+			if (!FUEL_MAP.contains(stack))
 			{
-				FUEL_MAP.add(copy);
+				FUEL_MAP.add(stack);
 			}
 		}
 	}
@@ -97,17 +95,13 @@ public final class FuelMapper
 			return false;
 		}
 
-		SimpleStack copy = stack.copy();
-		copy.qnty = 1;
-
-		return FUEL_MAP.contains(copy);
+		// 不再需要 .copy() 和强制修改 qnty
+		return FUEL_MAP.contains(stack);
 	}
 
 	private static int indexInMap(SimpleStack stack)
 	{
-		SimpleStack copy = stack.copy();
-		copy.qnty = 1;
-
-		return FUEL_MAP.indexOf(copy);
+		// 不再需要 .copy() 和强制修改 qnty
+		return FUEL_MAP.indexOf(stack);
 	}
 }

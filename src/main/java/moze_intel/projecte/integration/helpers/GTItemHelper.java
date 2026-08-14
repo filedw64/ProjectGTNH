@@ -68,7 +68,7 @@ public class GTItemHelper {
 		NBTTagCompound nbt = is.getTagCompound();
 		long amount = nbt.getLong("mFluidDisplayAmount");
 		if (amount <= 0) return 0.0;
-		FluidSimpleStack ss = new FluidSimpleStack(is.getItemDamage(), 1);
+		FluidSimpleStack ss = new FluidSimpleStack(is.getItemDamage());
 		if (!EMCMapper.mapContains(ss)) return 0.0;
 		return EMCMapper.getEmcValue(ss) * amount;
 	}

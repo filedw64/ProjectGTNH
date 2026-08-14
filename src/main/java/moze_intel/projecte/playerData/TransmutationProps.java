@@ -1,6 +1,5 @@
 package moze_intel.projecte.playerData;
 
-import moze_intel.projecte.emc.SimpleStack;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.entity.Entity;
@@ -13,9 +12,7 @@ import net.minecraftforge.common.IExtendedEntityProperties;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class TransmutationProps implements IExtendedEntityProperties {
 	private final EntityPlayer player;
@@ -58,21 +55,16 @@ public class TransmutationProps implements IExtendedEntityProperties {
 		return knowledge;
 	}
 
-	private static final Set<SimpleStack> unique = new HashSet<>();
-
 	private void pruneDuplicateKnowledge() {
 		ItemHelper.compactItemListIgnoreStacksize(knowledge);
 		for (ItemStack s : knowledge) {
 			if (s.stackSize > 1)
 				s.stackSize = 1;
 		}
-//		knowledge.clear();
-//		for (SimpleStack ss : unique)
-//			knowledge.add(ss.toItemStack());
 	}
 
 	private void pruneStaleKnowledge() {
-        knowledge.removeIf(itemStack -> !EMCHelper.doesItemHaveEmc(itemStack));
+		knowledge.removeIf(itemStack -> !EMCHelper.doesItemHaveEmc(itemStack));
 	}
 
 	protected NBTTagCompound saveForPacket() {
@@ -102,12 +94,8 @@ public class TransmutationProps implements IExtendedEntityProperties {
 			if (is == null) continue;
 
 			knowledge.add(is);
-//			SimpleStack ss = SimpleStack.getFor(is);
-//			ss.qnty = 1;
-//			unique.add(ss);
 		}
 		pruneDuplicateKnowledge();
-//		pruneStaleKnowledge();
 
 		NBTTagList inputLockList = nbt.getTagList("inputlocks", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(inputLockList, new ItemStack[9]);
@@ -142,12 +130,8 @@ public class TransmutationProps implements IExtendedEntityProperties {
 			if (is == null) continue;
 
 			knowledge.add(is);
-//			SimpleStack ss = SimpleStack.getFor(is);
-//			ss.qnty = 1;
-//			unique.add(ss);
 		}
 		pruneDuplicateKnowledge();
-//		pruneStaleKnowledge();
 
 		NBTTagList inputLockList = data.getTagList("inputlock", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(inputLockList, new ItemStack[9]);

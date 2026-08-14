@@ -103,14 +103,18 @@ public final class EMCMapper
 					return;
 				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
-					emc.put(new NBTSimpleStack(id, 1, nbtnssItem.damage, nbtnssItem.nbt), val);
-				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
+					// 移除了代表 qnty 的 1 参数
+					emc.put(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
+				else
+					// 移除了代表 qnty 的 1 参数
+					emc.put(new SimpleStack(id, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
 				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
 				// 流体非空检查
 				if (fluid != null)
-					emc.put(new FluidSimpleStack(fluid.getID(), 1), val);
+					// 移除了代表 qnty 的 1 参数
+					emc.put(new FluidSimpleStack(fluid.getID()), val);
 				else PELogger.logWarn("Fluid not found in registry for NSSFluid: %s. Skipping...", nssFluid.name);
 			}
 		});
@@ -138,15 +142,13 @@ public final class EMCMapper
 	}
 
 	public static boolean mapContains(SimpleStack key) {
-		SimpleStack copy = key.copy();
-		copy.qnty = 1;
+		// 不再需要复制对象强改 qnty=1，直接查询即可
 		return emc.containsKey(key);
 	}
 
 	public static Double getEmcValue(SimpleStack stack) {
-		SimpleStack copy = stack.copy();
-		copy.qnty = 1;
-		return emc.get(copy);
+		// 不再需要复制对象强改 qnty=1，直接查询即可
+		return emc.get(stack);
 	}
 
 	public static void clearMaps() {

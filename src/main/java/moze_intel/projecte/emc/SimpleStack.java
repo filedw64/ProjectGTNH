@@ -8,11 +8,9 @@ import net.minecraft.nbt.NBTTagCompound;
 public class SimpleStack {
 	public int id;
 	public int damage;
-	public int qnty;
 
-	public SimpleStack(int id, int qnty, int damage) {
+	public SimpleStack(int id, int damage) {
 		this.id = id;
-		this.qnty = qnty;
 		this.damage = damage;
 	}
 
@@ -21,7 +19,6 @@ public class SimpleStack {
 		else {
 			id = Item.itemRegistry.getIDForObject(stack.getItem());
 			damage = stack.getItemDamage();
-			qnty = stack.stackSize;
 		}
 	}
 
@@ -35,13 +32,14 @@ public class SimpleStack {
 
 		Item item = Item.getItemById(id);
 		if (item != null)
-			return new ItemStack(item, qnty, damage);
+			// 因为不再记录原始数量，转换为 ItemStack 时默认数量设为 1 即可
+			return new ItemStack(item, 1, damage);
 
 		return null;
 	}
 
 	public SimpleStack copy() {
-		return new SimpleStack(id, qnty, damage);
+		return new SimpleStack(id, damage);
 	}
 
 	@Override
@@ -52,7 +50,7 @@ public class SimpleStack {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof SimpleStack other)
-			return this.id == other.id && this.qnty == other.qnty && this.damage == other.damage;
+			return this.id == other.id && this.damage == other.damage;
 		return false;
 	}
 
@@ -61,16 +59,16 @@ public class SimpleStack {
 		Object obj = Item.itemRegistry.getObjectById(id);
 
 		if (obj != null)
-			return Item.itemRegistry.getNameForObject(obj) + " " + qnty + " " + damage;
+			return Item.itemRegistry.getNameForObject(obj) + " " + damage;
 
-		return "id:" + id + " damage:" + damage + " qnty:" + qnty;
+		return "id:" + id + " damage:" + damage;
 	}
 
-    public static SimpleStack getFor(ItemStack is) {
+	public static SimpleStack getFor(ItemStack is) {
 		if (is == null || is.getItem() == null) return null;
 		NBTTagCompound nbt = ItemHelper.filterNBT(is);
 		if (nbt != null)
 			return new NBTSimpleStack(is, nbt);
-        return new SimpleStack(is);
-    }
+		return new SimpleStack(is);
+	}
 }
