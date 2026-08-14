@@ -1,7 +1,6 @@
 package moze_intel.projecte.emc.arithmetics;
 
 public class DoubleArithmetic implements IValueArithmetic<Double> {
-
 	// 提供单例实例
 	public static final DoubleArithmetic INSTANCE = new DoubleArithmetic();
 
@@ -11,21 +10,18 @@ public class DoubleArithmetic implements IValueArithmetic<Double> {
 
 	@Override
 	public boolean isZero(Double value) {
-		return value != null && value.doubleValue() == 0.0;
+		return value != null && value == 0.0;
 	}
 
 	@Override
 	public Double getZero() {
-		// 返回缓存的常量
-		return ZERO;
+		return ZERO; // 返回缓存的常量
 	}
 
 	@Override
 	public Double add(Double a, Double b) {
-		if (isFree(a)) return b;
-		if (isFree(b)) return a;
-		if (isZero(a)) return b;
-		if (isZero(b)) return a;
+		if (isZero(a) || isFree(a)) return b;
+		if (isZero(b) || isFree(b)) return a;
 		return a + b;
 	}
 
@@ -38,21 +34,18 @@ public class DoubleArithmetic implements IValueArithmetic<Double> {
 
 	@Override
 	public Double div(Double a, int b) {
-		if (isZero(a)) return ZERO;
-		if (isFree(a)) return FREE;
-		// 防止除以 0 导致返回 Infinity
-		if (b == 0) return ZERO;
+		if (isZero(a) || isFree(a)) return a;
+		if (b == 0) return ZERO; // 防止除以 0 导致返回 Infinity
 		return a / b;
 	}
 
 	@Override
 	public Double getFree() {
-		// 返回缓存的常量
-		return FREE;
+		return FREE; // 返回缓存的常量
 	}
 
 	@Override
 	public boolean isFree(Double value) {
-		return value != null && value.doubleValue() == -Double.MAX_VALUE;
+		return value != null && value == -Double.MAX_VALUE;
 	}
 }
