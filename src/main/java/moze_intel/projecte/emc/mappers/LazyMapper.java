@@ -45,13 +45,11 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(Items.clay_ball, 16);
 		addMapping(Blocks.waterlily, 16);
 
-		for (int i = 0; i <= 8; i++) {
+		for (int i = 0; i <= 8; i++)
 			addMapping(Blocks.red_flower, i, 16);
-		}
 
-		for (int i = 0; i <= 5; i++) {
+		for (int i = 0; i <= 5; i++)
 			addMapping(Blocks.double_plant, i, (i == 2 || i == 3) ? 1 : 32);
-		}
 
 		addMapping(Blocks.yellow_flower, 16);
 		addMapping(Items.wheat, 24);
@@ -63,9 +61,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(Blocks.soul_sand, 49);
 		addMapping(Blocks.obsidian, 64);
 
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < 16; i++)
 			addMapping(Blocks.stained_hardened_clay, i, 64);
-		}
 
 		addMapping(Blocks.sponge, 128);
 		addMapping(Items.apple, 128);
@@ -77,7 +74,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(Blocks.mossy_cobblestone, 2);
 
 		// Mossy Stone Bricks
-		mapper.addConversion(1, NormalizedSimpleStack.forItem(Blocks.stonebrick, 1), ImmutableMap.of(NormalizedSimpleStack.forItem(Blocks.stonebrick), 2));
+		mapper.addConversion(1, NormalizedSimpleStack.forItem(Blocks.stonebrick, 1),
+			ImmutableMap.of(NormalizedSimpleStack.forItem(Blocks.stonebrick), 2));
 		addMapping(Blocks.stonebrick, 2, 1);
 		addMapping(Blocks.stonebrick, 3, 1);
 
@@ -97,7 +95,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(Items.string, 12);
 
 		for (int i = 1; i < 16; i++) {
-			mapper.setValueFromConversion(1, NormalizedSimpleStack.forItem(Blocks.wool, i), Collections.singletonList(NormalizedSimpleStack.forItem(Blocks.wool)));
+			mapper.setValueFromConversion(1, NormalizedSimpleStack.forItem(Blocks.wool, i),
+				Collections.singletonList(NormalizedSimpleStack.forItem(Blocks.wool)));
 		}
 
 		addMapping(Items.rotten_flesh, 32);
@@ -115,9 +114,8 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping(Items.beef, 64);
 		addMapping(Items.chicken, 64);
 
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++)
 			addMapping(Items.fish, i, 64);
-		}
 
 		addMapping(Items.carrot, 64);
 		addMapping(Items.potato, 64);
@@ -175,11 +173,10 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	protected void addMapping(String unlocalName, int meta, double value) {
 		Object obj = Item.itemRegistry.getObject(unlocalName);
-		if (obj instanceof Item item) {
+		if (obj instanceof Item item)
 			addMapping(item, meta, value);
-		} else if (obj instanceof Block block) {
+		else if (obj instanceof Block block)
 			addMapping(block, meta, value);
-		}
 	}
 
 	@Override

@@ -37,9 +37,8 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		mapper.addConversion(1, NormalizedSimpleStack.forItem(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.forItem(Items.bucket), fakeMilkFluid));
 
 		Fluid milkFluid = FluidRegistry.getFluid("milk");
-		if (milkFluid != null) {
+		if (milkFluid != null)
 			mapper.addConversion(1000, NormalizedSimpleStack.forFluid(milkFluid), Collections.singletonList(fakeMilkFluid));
-		}
 
 		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
 			Fluid fluid = data.fluid.getFluid();
@@ -97,13 +96,9 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 	public void addMelting(NormalizedSimpleStack stack, String fluidName, int amount) {
 		Fluid fluid = FluidRegistry.getFluid(fluidName);
-		if (fluid != null) {
+		if (fluid != null)
 			mapper.addConversion(amount, NormalizedSimpleStack.forFluid(fluid), Collections.singletonList(stack));
-		}
-		else {
-			// WARN 降级为 DEBUG
-			PELogger.logDebug("Can not get Fluid '%s', skipping melting recipe.", fluidName);
-		}
+		else PELogger.logDebug("Can not get Fluid '%s', skipping melting recipe.", fluidName); // WARN 降级为 DEBUG
 	}
 
 	@Override

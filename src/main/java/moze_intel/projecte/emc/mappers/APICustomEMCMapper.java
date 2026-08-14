@@ -45,8 +45,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		ModContainer activeMod = Loader.instance().activeModContainer();
 		String modId = activeMod == null ? null : activeMod.getModId();
 
-		customNonItemEMCforMod.computeIfAbsent(modId, k -> new HashMap<>())
-			.put(stack, emcValue);
+		customNonItemEMCforMod.computeIfAbsent(modId, k -> new HashMap<>()).put(stack, emcValue);
 	}
 
 	@Override
@@ -71,25 +70,32 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		modIdSet.addAll(customEMCforMod.keySet());
 		modIdSet.addAll(customNonItemEMCforMod.keySet());
 
+		Map<?,?> tmp;
 		for (String modId: modIdSet) {
 			if (modId == null) continue;
-			int valueCount = customEMCforMod.getOrDefault(modId, new HashMap<>()).size()
-				+ customNonItemEMCforMod.getOrDefault(modId, new HashMap<>()).size();
+			tmp = customEMCforMod.get(modId);
+			int valueCount = tmp == null ? 0 : tmp.size();
+			tmp = customNonItemEMCforMod.get(modId);
+			valueCount += tmp == null ? 0 : tmp.size(); // 为了不用 contains 就 new 一个 map 这种操作还是太雷霆了点吧！
 
-			priorityMap.put(modId, config.getInt(modId + "priority", "customEMCPriorities", PRIORITY_DEFAULT_VALUE, PRIORITY_MIN_VALUE, PRIORITY_MAX_VALUE, "Priority for Mod with ModId = " + modId + ". Values: " + valueCount));
+			priorityMap.put(modId, config.getInt(modId + "priority", "customEMCPriorities", PRIORITY_DEFAULT_VALUE,
+				PRIORITY_MIN_VALUE, PRIORITY_MAX_VALUE, "Priority for Mod with ModId = " + modId + ". Values: " + valueCount));
 		}
 
 		if (modIdSet.contains(null)) {
-			int valueCount = customEMCforMod.getOrDefault(null, new HashMap<>()).size()
-				+ customNonItemEMCforMod.getOrDefault(null, new HashMap<>()).size();
-			priorityMap.put(null, config.getInt("modlessCustomEMCPriority", "", PRIORITY_DEFAULT_VALUE, PRIORITY_MIN_VALUE, PRIORITY_MAX_VALUE, "Priority for custom EMC values for which the ModId could not be determined. 0 to disable. Values: " + valueCount));
+			tmp = customEMCforMod.get(null);
+			int valueCount = tmp == null ? 0 : tmp.size();
+			tmp = customNonItemEMCforMod.get(null);
+			valueCount += tmp == null ? 0 : tmp.size();
+
+			priorityMap.put(null, config.getInt("modlessCustomEMCPriority", "", PRIORITY_DEFAULT_VALUE, PRIORITY_MIN_VALUE,
+				PRIORITY_MAX_VALUE, "Priority for custom EMC values for which the ModId could not be determined. 0 to disable. Values: " + valueCount));
 		}
 
 		List<String> modIds = new ArrayList<>(modIdSet);
-		// Integer.compare 替代减法
-		modIds.sort((a, b) -> Integer.compare(priorityMap.get(b), priorityMap.get(a)));
+		modIds.sort((a, b) -> Integer.compare(priorityMap.get(b), priorityMap.get(a))); // Integer.compare 替代减法
 
-		for(String modId : modIds) {
+		for (String modId : modIds) {
 			String modIdOrUnknown = modId == null ? "unknown mod" : modId;
 
 			// 两个 Map 的处理逻辑合并
@@ -98,48 +104,44 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		}
 	}
 
-	private void processMap(Map<NormalizedSimpleStack, Double> map, String modId, String modIdOrUnknown, IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	private void processMap(Map<NormalizedSimpleStack, Double> map, String modId, String modIdOrUnknown,
+							IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
+	{
 		if (map == null) return;
 		for (Map.Entry<NormalizedSimpleStack, Double> entry : map.entrySet()) {
 			NormalizedSimpleStack normStack = entry.getKey();
 			Double value = entry.getValue();
-			if (isAllowedToSet(modId, normStack, value, config)) {
-				mapper.setValueBefore(normStack, value);
-				PELogger.logInfo(String.format("%s setting value for %s to %s", modIdOrUnknown, normStack, value));
-			} else {
+			if (!isAllowedToSet(modId, normStack, value, config)) {
 				PELogger.logInfo(String.format("Disallowed %s to set the value for %s to %s", modIdOrUnknown, normStack, value));
+				continue;
 			}
+			mapper.setValueBefore(normStack, value);
+			PELogger.logInfo(String.format("%s setting value for %s to %s", modIdOrUnknown, normStack, value));
 		}
 	}
 
 	protected boolean isAllowedToSet(String modId, NormalizedSimpleStack stack, Double value, Configuration config) {
 		String itemName;
-		if (stack instanceof NormalizedSimpleStack.NSSItem item) {
+		if (stack instanceof NormalizedSimpleStack.NSSItem item)
 			itemName = item.itemName;
-		} else {
-			itemName = "IntermediateFakeItemsUsedInRecipes:";
-		}
+		else itemName = "IntermediateFakeItemsUsedInRecipes:";
 
 		String modForItem;
 		// 增加冒号检查
 		int colonIndex = itemName.indexOf(':');
-		if (colonIndex != -1) {
+		if (colonIndex != -1)
 			modForItem = itemName.substring(0, colonIndex);
-		} else {
-			modForItem = itemName; // 针对没有 ModID 前缀的虚拟物品或流体标签作为降级处理
-		}
+		else modForItem = itemName; // 针对没有 ModID 前缀的虚拟物品或流体标签作为降级处理
 
 		String permission = config.getString(modForItem, "permissions." + modId, "both",
 			String.format("Allow '%s' to set and or remove values for '%s'. Options: [both, set, remove, none]", modId, modForItem),
 			new String[]{"both", "set", "remove", "none"});
 
-		if (permission.equals("both")) {
+		if (permission.equals("both"))
 			return true;
-		}
-		if (value == 0) {
+
+		if (value == 0)
 			return permission.equals("remove");
-		} else {
-			return permission.equals("set");
-		}
+		return permission.equals("set");
 	}
 }
