@@ -20,8 +20,6 @@ import moze_intel.projecte.utils.PrefixConfiguration;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.File;
@@ -107,11 +105,7 @@ public final class EMCMapper
 				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
-				// 流体非空检查
-				if (fluid != null)
-					emc.put(new FluidSimpleStack(fluid.getID(), 1), val);
-				else PELogger.logWarn("Fluid not found in registry for NSSFluid: %s. Skipping...", nssFluid.name);
+				emc.put(new FluidSimpleStack(nssFluid.fluid.getID(), 1), val);
 			}
 		});
 
