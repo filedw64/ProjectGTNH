@@ -14,22 +14,17 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class NormalizedSimpleStack {
 
 	public static <V extends Comparable<V>> void addMappings(IMappingCollector<NormalizedSimpleStack, V> mapper) {
-		idWithUsedMeta.forEach((id, metaSet) -> {
-			metaSet.remove(OreDictionary.WILDCARD_VALUE);
-			metaSet.add(0);
-			NormalizedSimpleStack stackWildcard = new NSSItem(id, OreDictionary.WILDCARD_VALUE);
-			for (int metadata : metaSet) {
-				mapper.addConversion(1, stackWildcard, Collections.singletonList(new NSSItem(id, metadata)));
+		for (NSSItem item : itemMap.values()) {
+			if (item.damage != OreDictionary.WILDCARD_VALUE) {
+				mapper.addConversion(1, new NSSItem(item.itemName, OreDictionary.WILDCARD_VALUE), Collections.singletonList(item));
 			}
-		});
+		}
 
 		oreDictMap.forEach((odName, nssOre) -> {
 			List<ItemStack> list = ItemHelper.getODItems(odName);
@@ -41,7 +36,7 @@ public abstract class NormalizedSimpleStack {
 	}
 
 	public static void clearMap() {
-		idWithUsedMeta.clear();
+		itemMap.clear();
 		fakeMap.clear();
 		fluidMap.clear();
 		oreDictMap.clear();
@@ -58,7 +53,7 @@ public abstract class NormalizedSimpleStack {
 
 	public abstract String json();
 
-	private static final Map<String, Set<Integer>> idWithUsedMeta = new HashMap<>();
+	private static final Map<NSSItem, NSSItem> itemMap = new HashMap<>();
 
 	public static NSSItem forItem(String itemName, int damage) {
 		if (Item.itemRegistry.getObject(itemName) == null) {
@@ -66,15 +61,10 @@ public abstract class NormalizedSimpleStack {
 			return null;
 		}
 		NSSItem nss = new NSSItem(itemName, damage);
-		Set<Integer> usedMeta;
-		if (!idWithUsedMeta.containsKey(itemName)) {
-			usedMeta = new HashSet<>();
-			idWithUsedMeta.put(itemName, usedMeta);
+		if (itemMap.containsKey(nss)) {
+			return itemMap.get(nss);
 		}
-		else {
-			usedMeta = idWithUsedMeta.get(itemName);
-		}
-		usedMeta.add(damage);
+		itemMap.put(nss, nss);
 		return nss;
 	}
 
@@ -103,8 +93,13 @@ public abstract class NormalizedSimpleStack {
 //		if (GTItemHelper.isGTtool(stack))
 //			return new GTNSSItem(stack);
 		NBTTagCompound nbt = ItemHelper.filterNBT(stack);
-		if (nbt != null)
-			return new NBTNSSItem(stack, nbt);
+		if (nbt != null) {
+			NSSItem nss = new NBTNSSItem(stack, nbt);
+			if (itemMap.containsKey(nss))
+				return itemMap.get(nss);
+			itemMap.put(nss, nss);
+			return nss;
+		}
 		return forItem(stack.getItem(), stack.getItemDamage());
 	}
 
