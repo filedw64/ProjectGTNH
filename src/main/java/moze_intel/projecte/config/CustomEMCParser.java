@@ -31,12 +31,9 @@ public final class CustomEMCParser
 		CONFIG_PATH = CONFIG.toPath();
 		loaded = false;
 
-		try
-		{
-			if (!CONFIG.exists())
-			{
-				if (CONFIG.createNewFile())
-				{
+		try {
+			if (!CONFIG.exists()) {
+				if (CONFIG.createNewFile()) {
 					writeDefaultFile();
 					loaded = true;
 				}
@@ -45,17 +42,15 @@ public final class CustomEMCParser
 			{
 				// 使用 NIO Files 一次性读取
 				List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
-				if (lines.isEmpty() || !lines.get(0).equals(VERSION))
-				{
-					PELogger.logFatal("Found old custom EMC file: resetting.");
+				if (lines.isEmpty() || !lines.get(0).equals(VERSION)) {
+					PELogger.logWarn("Found old custom EMC file: resetting.");
 					writeDefaultFile();
 				}
 				loaded = true;
 			}
 		}
-		catch (IOException e)
-		{
-			PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
+		catch (IOException e) {
+			PELogger.logError("Exception in file I/O: couldn't create custom configuration files.");
 			e.printStackTrace();
 		}
 	}
