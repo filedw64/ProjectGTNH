@@ -22,15 +22,24 @@ import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 
 @SideOnly(Side.CLIENT)
 public class ToolTipEvent
 {
 	// 预编译
 	private static final DecimalFormat NORMAL_FORMAT = new DecimalFormat("#.##");
-	private static final DecimalFormat SCI_FORMAT = new DecimalFormat("0.000e0");
+	private static final DecimalFormat SCI_FORMAT;
 	private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###");
+
+	static {
+		DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
+		// 使用 config 中的自定义字符串作为科学计数法的分隔符，如果由于类加载顺序问题为空则默认给 "e"
+		symbols.setExponentSeparator(ProjectEConfig.sciFormat != null ? ProjectEConfig.sciFormat : "e");
+		SCI_FORMAT = new DecimalFormat("0.000E0", symbols);
+	}
 
 	// 快速格式化
 	private static String formatEMC(double value) {

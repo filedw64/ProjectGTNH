@@ -46,7 +46,12 @@ public final class ProjectEConfig {
 	public static float katarDeathAura;
 	public static int projectileCooldown;
 	public static boolean disableAllRadiusMining;
-    public static int gemChestCooldown;
+	public static int gemChestCooldown;
+
+	// GTNH Integration Config
+	public static String questMode;
+
+	public static String sciFormat;
 
 	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
@@ -62,6 +67,10 @@ public final class ProjectEConfig {
 		try {
 			config.load();
 
+			// Load GTNH Integration config
+			questMode = config.getString("QuestAndRecipeMode", "integration", "vanilla",
+				"Mode for GTNH integration. Valid values: 'vanilla' (default PE recipes but adds quests), 'true' (hardcore GTNH recipes and quests), 'false' (disable quests and integration).");
+
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
 			showEMCTooltip = config.getBoolean("emcToolTips", "misc", true, "Show the EMC value as a tooltip on items and blocks");
@@ -73,6 +82,7 @@ public final class ProjectEConfig {
 			unsafeKeyBinds = config.getBoolean("unsafeKeyBinds", "misc", false, "False requires your hand be empty for Gem Armor Offensive Abilities to be readied or triggered");
 			projectileCooldown = config.getInt("projectileCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for firing projectiles");
 			gemChestCooldown = config.getInt("gemChestCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for Gem Chestplate explosion");
+			sciFormat = config.getString("sciFormat", "misc", "e", "The string used as a separator for scientific notation in tooltips");
 
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
 
@@ -83,7 +93,7 @@ public final class ProjectEConfig {
 			katarDeathAura = config.getFloat("katarDeathAura", "difficulty", 1000F, 0, Integer.MAX_VALUE, "Amount of damage Katar 'C' key deals");
 
 			config.getCategory("pedestalcooldown").setComment("Cooldown for various items within the pedestal. A cooldown of -1 will disable the functionality.\n" +
-					"A cooldown of 0 will cause the actions to happen every tick. Use caution as a very low value could cause TPS issues.");
+				"A cooldown of 0 will cause the actions to happen every tick. Use caution as a very low value could cause TPS issues.");
 
 			archangelPedCooldown = config.getInt("archangelPedCooldown", "pedestalcooldown", 40, -1, Integer.MAX_VALUE, "Delay between Archangel Smite shooting arrows while in the pedestal.");
 
