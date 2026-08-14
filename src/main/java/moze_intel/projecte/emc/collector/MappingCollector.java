@@ -6,7 +6,6 @@ import moze_intel.projecte.utils.PELogger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public abstract class MappingCollector<T, V extends Comparable<V>> extends AbstractMappingCollector<T,V> {
@@ -26,9 +25,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		if (something == null) return;
 		// 直接利用 put 返回的旧值，减少 containsKey 和 get 造成的多次哈希寻址
 		V old = valueBefore.put(something, value);
-		if (old != null && old.compareTo(value) != 0) {
+		if (old != null && old.compareTo(value) != 0)
 			PELogger.logWarn("Overwriting setValueBefore for %s: %s to %s", something, old, value);
-		}
 		valueAfter.remove(something);
 	}
 
@@ -36,9 +34,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 	public void setValueAfter(T something, V value) {
 		if (something == null) return;
 		V old = valueAfter.put(something, value);
-		if (old != null && old.compareTo(value) != 0) {
+		if (old != null && old.compareTo(value) != 0)
 			PELogger.logWarn("Overwriting setValueAfter for %s: %s to %s", something, old, value);
-		}
 	}
 
 	public static <T, V> Set<V> getOrCreateSet(Map<T, Set<V>> map, T key) {
@@ -68,9 +65,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		//Add the Conversions to the conversionsFor and usedIn Maps:
 		Conversion conv = new Conversion(output, outnum, ingredientCounts);
 		Set<Conversion> convForOut = getConversionsFor(output);
-		// 这里的 contains 依赖于正确的 equals 和 hashCode
-		if (convForOut.contains(conv))
-			return;
+		if (convForOut.contains(conv)) return; // 这里的 contains 依赖于正确的 equals 和 hashCode
 		convForOut.add(conv);
 		addIngredientUsage(conv);
 	}
@@ -86,9 +81,8 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		Conversion oldConv = overwriteConversion.put(output, conv);
 		if (oldConv != null) {
 			PELogger.logWarn("Overwriting setValueFromConversion %s with %s", oldConv, conv);
-			for (T ingredient: oldConv.ingredientCounts.keySet()) {
+			for (T ingredient: oldConv.ingredientCounts.keySet())
 				getUsesFor(ingredient).remove(oldConv);
-			}
 		}
 		addIngredientUsage(conv);
 	}
@@ -98,19 +92,22 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		public final int outputCount;
 		public final Map<T, Integer> ingredientCounts;
 		public final V value;
+		private final int cachedHash;
 
 		protected Conversion(T output, int outputCount, Map<T, Integer> ingredientCounts) {
 			this.output = output;
 			this.outputCount = outputCount;
 			this.ingredientCounts = ingredientCounts;
 			this.value = arithmetic.getZero();
+			cachedHash = generateHash();
 		}
 
 		protected Conversion(T output, int outputCount, Map<T, Integer> ingredientCounts, V value) {
 			this.output = output;
 			this.outputCount = outputCount;
 			this.ingredientCounts = ingredientCounts;
-			this.value = value;
+			this.value = value == null ? arithmetic.getZero() : value;
+			cachedHash = generateHash();
 		}
 
 		@Override
@@ -134,28 +131,24 @@ public abstract class MappingCollector<T, V extends Comparable<V>> extends Abstr
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
-			if (!(obj instanceof MappingCollector<?,?>.Conversion other))
-				return false;
+			if (!(obj instanceof MappingCollector<?,?>.Conversion other)) return false;
+
 			if (output.equals(other.output) && value.equals(other.value)) {
-				if (ingredientCounts == null || ingredientCounts.isEmpty()) {
+				if (ingredientCounts == null || ingredientCounts.isEmpty())
 					return other.ingredientCounts == null || other.ingredientCounts.isEmpty();
-				}
-				else {
-					return ingredientCounts.equals(other.ingredientCounts);
-				}
+				return ingredientCounts.equals(other.ingredientCounts);
 			}
 			return false;
 		}
 
-		// 补充缺失的 hashCode() 方法，确保 HashSet 的查重机制正常工作
+		private int generateHash() {
+			int result = output.hashCode() * 31 + value.hashCode();
+			return result * 31 + ingredientCounts.hashCode();
+		}
+
 		@Override
 		public int hashCode() {
-			int result = output != null ? output.hashCode() : 0;
-			result = 31 * result + (value != null ? value.hashCode() : 0);
-			if (ingredientCounts != null && !ingredientCounts.isEmpty()) {
-				result = 31 * result + ingredientCounts.hashCode();
-			}
-			return result;
+			return cachedHash; // 补充缺失的 hashCode() 方法，确保 HashSet 的查重机制正常工作
 		}
 	}
 }

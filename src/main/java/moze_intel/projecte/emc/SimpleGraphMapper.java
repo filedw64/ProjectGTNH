@@ -15,7 +15,7 @@ import java.util.Set;
 public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollector<T, V> implements IValueGenerator<T, V>
 {
 	private static final boolean OVERWRITE_FIXED_VALUES = false;
-	protected V ZERO;
+	private final V ZERO;
 
 	public SimpleGraphMapper(IValueArithmetic<V> arithmetic) {
 		super(arithmetic);
@@ -27,26 +27,23 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 		return current != null && current.compareTo(value) <= 0;
 	}
 
-	protected static<K,V extends Comparable<V>> boolean hasSmaller(Map<K,V> m, K key, V value) {
+	protected static <K,V extends Comparable<V>> boolean hasSmaller(Map<K,V> m, K key, V value) {
 		V current = m.get(key);
 		return current != null && current.compareTo(value) < 0;
 	}
 
-	protected static<K, V extends Comparable<V>> boolean updateMapWithMinimum(Map<K,V> m, K key, V value) {
-		if (!hasSmaller(m, key, value)) {
-			//No Value or a value that is smaller than this
-			m.put(key, value);
-			return true;
-		}
-		return false;
+	protected static <K, V extends Comparable<V>> boolean updateMapWithMinimum(Map<K,V> m, K key, V value) {
+		if (hasSmaller(m, key, value)) return false;
+		//No Value or a value that is smaller than this
+		m.put(key, value);
+		return true;
 	}
 
 	protected boolean canOverride(T something, V value) {
 		if (OVERWRITE_FIXED_VALUES) return true;
-		V beforeVal = valueBefore.get(something);
-		if (beforeVal != null) {
-			return beforeVal.compareTo(value) == 0;
-		}
+		V oldVal = valueBefore.get(something);
+		if (oldVal != null)
+			return oldVal.compareTo(value) == 0;
 		return true;
 	}
 
@@ -83,7 +80,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 				for (Conversion conversion : entry.getValue()) {
 					V conversionValue = valueForConversion(values, conversion);
 					V conversionValueSingle = arithmetic.div(conversionValue, conversion.outputCount);
-					V resultValueSingle = values.containsKey(entry.getKey()) ? values.get(entry.getKey()) : ZERO;
+					V resultValueSingle = values.getOrDefault(entry.getKey(), ZERO);
 
 					if (conversionValueSingle.compareTo(ZERO) > 0 || arithmetic.isFree(conversionValueSingle)) {
 						if (minConversionValue == null || minConversionValue.compareTo(conversionValueSingle) > 0) {
@@ -137,20 +134,18 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 					continue;
 
 				V convVal = arithmetic.div(valueForConversion(values, conv), conv.outputCount);
+				if (convVal.compareTo(ZERO) <= 0 && !arithmetic.isFree(convVal))
+					continue;
 
-				if (convVal.compareTo(ZERO) > 0 || arithmetic.isFree(convVal)) {
-					// 减少底层哈希寻址开销
-					V currentVal = values.get(conv.output);
-					if (currentVal == null || currentVal.compareTo(convVal) > 0) {
-						values.put(conv.output, convVal);
+				V currentVal = values.get(conv.output); // 减少底层哈希寻址开销
+				if (currentVal != null && currentVal.compareTo(convVal) <= 0)
+					continue;
 
-						// 拦截重复入队
-						if (!inQueue.contains(conv.output)) {
-							workQueue.add(conv.output);
-							inQueue.add(conv.output);
-						}
-					}
-				}
+				values.put(conv.output, convVal);
+				if (inQueue.contains(conv.output)) // 拦截重复入队
+					continue;
+				workQueue.add(conv.output);
+				inQueue.add(conv.output);
 			}
 		}
 
@@ -170,7 +165,8 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 	{
 		try {
 			return valueForConversionUnsafe(values, conversion);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			PELogger.logWarn(String.format("Could not calculate value for %s: %s", conversion.toString(), e));
 			e.printStackTrace();
 			return ZERO;
@@ -185,35 +181,29 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 
 		for (Map.Entry<T, Integer> entry : conversion.ingredientCounts.entrySet()) {
 			if (entry.getValue() == 0)
-			{
-				//Ingredients with an amount of 'zero' do not need to be handled.
-				continue;
-			}
+				continue; //Ingredients with an amount of 'zero' do not need to be handled.
 
 			// 合并 containsKey 和 get
 			V ingredientCost = values.get(entry.getKey());
-			if (ingredientCost != null) {
-				//The ingredient has a value
-				//value = value + amount * ingredientcost
-				V ingredientValue = arithmetic.mul(entry.getValue(), ingredientCost);
-				if (ingredientValue.compareTo(ZERO) == 0) {
-					//There is an ingredient with value = 0 => we cannot calculate the combined ingredient cost.
-					return ZERO;
-				}
-				if (!arithmetic.isFree(ingredientValue)) {
-					value = arithmetic.add(value, ingredientValue);
-					if (ingredientValue.compareTo(ZERO) > 0 && entry.getValue() > 0) hasPositiveIngredientValues = true;
-					allIngredientsAreFree = false;
-				}
-			}
-			else {
+			if (ingredientCost == null || ingredientCost.compareTo(ZERO) == 0) {
 				//There is an ingredient that does not have a value => we cannot calculate the combined ingredient cost.
+				//OR there is an ingredient with value = 0 => we cannot calculate the combined ingredient cost.
 				return ZERO;
 			}
+			if (arithmetic.isFree(ingredientCost)) continue;
+
+			//The ingredient has a valid value
+			//value = value + amount * ingredientcost
+			V ingredientValue = arithmetic.mul(entry.getValue(), ingredientCost);
+			value = arithmetic.add(value, ingredientValue);
+			if (ingredientValue.compareTo(ZERO) > 0 && entry.getValue() > 0)
+				hasPositiveIngredientValues = true;
+			allIngredientsAreFree = false;
 		}
 
 		//When all the ingredients are free or ingredients with negative amount made the Conversion have a value <= 0, this item should be free
-		if (allIngredientsAreFree || (hasPositiveIngredientValues && value.compareTo(ZERO) <= 0)) return arithmetic.getFree();
+		if (allIngredientsAreFree || (hasPositiveIngredientValues && value.compareTo(ZERO) <= 0))
+			return arithmetic.getFree();
 		return value;
 	}
 }

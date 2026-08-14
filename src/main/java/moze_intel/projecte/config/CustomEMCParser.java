@@ -19,7 +19,6 @@ import java.util.Map;
 public final class CustomEMCParser
 {
 	private static final String VERSION = "#0.2";
-	private static File CONFIG;
 	private static Path CONFIG_PATH;
 	private static boolean loaded;
 
@@ -27,7 +26,7 @@ public final class CustomEMCParser
 
 	public static void init()
 	{
-		CONFIG = new File(PECore.CONFIG_DIR, "custom_emc.cfg");
+		File CONFIG = new File(PECore.CONFIG_DIR, "custom_emc.cfg");
 		CONFIG_PATH = CONFIG.toPath();
 		loaded = false;
 
