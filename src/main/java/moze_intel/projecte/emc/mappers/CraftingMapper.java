@@ -125,8 +125,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 				PELogger.logWarn("Can not map Crafting Recipes with Type: %s", clazz.getName());
 			}
 			else {
-				// 减少装箱和二次哈希寻址
-				recipeCount.merge(clazz, 1, Integer::sum);
+				recipeCount.merge(clazz, 1, Integer::sum); // 减少装箱和二次哈希寻址
 			}
 		}
 

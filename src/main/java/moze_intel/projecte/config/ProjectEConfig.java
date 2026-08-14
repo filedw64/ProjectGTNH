@@ -1,11 +1,5 @@
 package moze_intel.projecte.config;
 
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.config.Configuration;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraftforge.common.config.Configuration;
 
