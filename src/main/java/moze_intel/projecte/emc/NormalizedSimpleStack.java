@@ -18,31 +18,29 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class NormalizedSimpleStack {
 
 	public static <V extends Comparable<V>> void addMappings(IMappingCollector<NormalizedSimpleStack, V> mapper) {
-		idWithUsedMeta.forEach((id, metaSet) -> {
-			metaSet.remove(OreDictionary.WILDCARD_VALUE);
-			metaSet.add(0);
-			NormalizedSimpleStack stackWildcard = new NSSItem(id, OreDictionary.WILDCARD_VALUE);
-			for (int metadata : metaSet) {
-				mapper.addConversion(1, stackWildcard, Collections.singletonList(new NSSItem(id, metadata)));
-			}
-		});
+		Map<String, NSSItem> idToWildcard = new HashMap<>();
+		for (NSSItem item : itemMap.values()) {
+			if (item.damage == OreDictionary.WILDCARD_VALUE) continue;
+			NSSItem wildcard = idToWildcard.computeIfAbsent(item.itemName, id -> new NSSItem(id, OreDictionary.WILDCARD_VALUE));
+			mapper.addConversion(1, wildcard, Collections.singletonList(item));
+		}
 
 		oreDictMap.forEach((odName, nssOre) -> {
 			List<ItemStack> list = ItemHelper.getODItems(odName);
 			for (ItemStack is: list) {
-				mapper.addConversion(1, nssOre, Collections.singletonList(NormalizedSimpleStack.forItem(is)));
-				mapper.addConversion(1, NormalizedSimpleStack.forItem(is), Collections.singletonList(nssOre));
+				NormalizedSimpleStack nssItem = NormalizedSimpleStack.forItem(is);
+				if (nssItem == null) continue;
+				mapper.addConversion(1, nssOre, Collections.singletonList(nssItem));
+				mapper.addConversion(1, nssItem, Collections.singletonList(nssOre));
 			}
 		});
 	}
 
 	public static void clearMap() {
-		idWithUsedMeta.clear();
 		itemMap.clear(); // 清理新增的 item 缓存
 		fakeMap.clear();
 		fluidMap.clear();
@@ -59,8 +57,6 @@ public abstract class NormalizedSimpleStack {
 	public abstract int hashCode();
 
 	public abstract String json();
-
-	private static final Map<String, Set<Integer>> idWithUsedMeta = new HashMap<>();
 
 	private static final Map<NSSItem, NSSItem> itemMap = new HashMap<>(); // 引入全局缓存
 
@@ -80,6 +76,7 @@ public abstract class NormalizedSimpleStack {
 			PELogger.logError("Could not create NSSItem: %s", itemName);
 			return null;
 		}
+
 		NSSItem temp = new NSSItem(itemName, damage);
 		return itemMap.computeIfAbsent(temp, k -> k); // 复用已存在的相同 NSSItem
 	}
@@ -129,7 +126,7 @@ public abstract class NormalizedSimpleStack {
 		public boolean equals(Object obj) {
 			if (this == obj) return true; // 快速引用比对
 			if (obj instanceof NBTNSSItem other)
-				return this.itemName.equals(other.itemName) && this.damage == other.damage && this.nbt.equals(other.nbt);
+				return this.damage == other.damage && this.itemName.equals(other.itemName) && this.nbt.equals(other.nbt);
 			return false;
 		}
 
