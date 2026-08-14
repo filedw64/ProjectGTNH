@@ -11,7 +11,7 @@ import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
 
 public class GUIPedestal extends GuiContainer
 {
-	private final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/pedestal.png");
+	private ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/pedestal.png");
 
 	public GUIPedestal(InventoryPlayer inventory, DMPedestalTile tile)
 	{
