@@ -3,7 +3,14 @@ package moze_intel.projecte.events;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.gui.GUIPedestal;
 import moze_intel.projecte.integration.helpers.GTItemHelper;
+import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
@@ -13,13 +20,6 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.gameObjs.gui.GUIPedestal;
-import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.EMCHelper;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -43,11 +43,9 @@ public class ToolTipEvent
 
 	// 快速格式化
 	private static String formatEMC(double value) {
-		if (value < 1e5) {
+		if (value < 1e5)
 			return NORMAL_FORMAT.format(value);
-		} else {
-			return SCI_FORMAT.format(value);
-		}
+		return SCI_FORMAT.format(value);
 	}
 
 	@SubscribeEvent
