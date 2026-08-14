@@ -3,7 +3,14 @@ package moze_intel.projecte.events;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.gui.GUIPedestal;
 import moze_intel.projecte.integration.helpers.GTItemHelper;
+import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
@@ -13,32 +20,31 @@ import net.minecraft.util.StatCollector;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.gameObjs.gui.GUIPedestal;
-import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.EMCHelper;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.List;
+import java.util.Locale;
 
 @SideOnly(Side.CLIENT)
 public class ToolTipEvent
 {
 	// 预编译
 	private static final DecimalFormat NORMAL_FORMAT = new DecimalFormat("#.##");
-	private static final DecimalFormat SCI_FORMAT = new DecimalFormat("0.000e0");
+	private static final DecimalFormat SCI_FORMAT;
 	private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###");
+
+	static {
+		DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
+		symbols.setExponentSeparator("e");
+		SCI_FORMAT = new DecimalFormat("0.000E0", symbols);
+	}
 
 	// 快速格式化
 	private static String formatEMC(double value) {
-		if (value < 1e5) {
+		if (value < 1e5)
 			return NORMAL_FORMAT.format(value);
-		} else {
-			return SCI_FORMAT.format(value);
-		}
+		return SCI_FORMAT.format(value);
 	}
 
 	@SubscribeEvent

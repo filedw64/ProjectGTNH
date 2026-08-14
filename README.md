@@ -24,7 +24,9 @@ filedw64 - Developer of this program - GTNH Support:
 
 * Github: https://github.com/filedw64
 
-WindyBye - Brilliant idea inventor and developer - Mods Integrator
+Windy-Bye - Brilliant idea inventor and developer - Mods Integrator
+
+* Github: https://github.com/Windy-Bye
 
 #### \# Thanks To
 
