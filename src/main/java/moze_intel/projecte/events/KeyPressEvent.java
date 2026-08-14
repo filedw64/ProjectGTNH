@@ -16,15 +16,11 @@ import java.util.Map;
 public class KeyPressEvent
 {
 	@SubscribeEvent
-	public void keyPress(KeyInputEvent event)
-	{
+	public void keyPress(KeyInputEvent event) {
 		// 避免高频事件下的重复哈希查找开销
-		for (Map.Entry<KeyBinding, PEKeybind> entry : ClientKeyHelper.mcToPe.entrySet())
-		{
+		for (Map.Entry<KeyBinding, PEKeybind> entry : ClientKeyHelper.mcToPe.entrySet()) {
 			if (entry.getKey().isPressed())
-			{
 				PacketHandler.sendToServer(new KeyPressPKT(entry.getValue()));
-			}
 		}
 	}
 }

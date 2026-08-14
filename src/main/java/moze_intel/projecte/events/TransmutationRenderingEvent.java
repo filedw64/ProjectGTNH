@@ -37,19 +37,15 @@ public class TransmutationRenderingEvent
 		void set(int x, int y, int z) { this.x = x; this.y = y; this.z = z; }
 	}
 
-	private final List<RenderPos> renderList = Lists.newArrayList();
+	private final List<RenderPos> renderList = new ArrayList<>();
 	private int renderCount = 0; // 记录当前帧需要渲染的数量
 
-	private double playerX;
-	private double playerY;
-	private double playerZ;
+	private double playerX, playerY, playerZ;
 	private MetaBlock transmutationResult;
 
 	@SubscribeEvent
-	public void preDrawHud(RenderGameOverlayEvent.Pre event)
-	{
-		if (event.type == ElementType.CROSSHAIRS && transmutationResult != null)
-		{
+	public void preDrawHud(RenderGameOverlayEvent.Pre event) {
+		if (event.type == ElementType.CROSSHAIRS && transmutationResult != null) {
 			Minecraft mc = Minecraft.getMinecraft();
 			RenderItem.getInstance().renderItemIntoGUI(mc.fontRenderer, mc.getTextureManager(), transmutationResult.toItemStack(), 0, 0);
 		}
@@ -61,8 +57,7 @@ public class TransmutationRenderingEvent
 		World world = player.worldObj;
 		ItemStack stack = player.getHeldItem();
 
-		if (stack == null || stack.getItem() != ObjHandler.philosStone)
-		{
+		if (stack == null || stack.getItem() != ObjHandler.philosStone) {
 			transmutationResult = null;
 			return;
 		}
@@ -93,59 +88,24 @@ public class TransmutationRenderingEvent
 		{
 			case 0: // Cube
 			{
-				byte charge = ((ItemMode) stack.getItem()).getCharge(stack);
-				renderCount = 0; // 重置渲染计数器
-
-				switch (((ItemMode) stack.getItem()).getMode(stack))
-				{
-					case 0: // Cube
-					{
-						for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
-							for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
-								for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
-									addBlockToRenderList(world, current, x, y, z);
-						break;
-					}
-					case 1: // Panel
-					{
-						int side = orientation.offsetY != 0 ? 0 : orientation.offsetX != 0 ? 1 : 2;
-						if (side == 0)
-						{
-							for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
-								for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
-									addBlockToRenderList(world, current, x, mop.blockY, z);
-						}
-						else if (side == 1)
-						{
-							for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
-								for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
-									addBlockToRenderList(world, current, mop.blockX, y, z);
-						}
-						else
-						{
-							for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
-								for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
-									addBlockToRenderList(world, current, x, y, mop.blockZ);
-						}
-						break;
-					}
-					case 2: // Line
-					{
-						String dir = Direction.directions[MathHelper.floor_double((double)((player.rotationYaw * 4F) / 360F) + 0.5D) & 3];
-						int side = orientation.offsetX != 0 ? 0 : orientation.offsetZ != 0 ? 1 : dir.equals("NORTH") || dir.equals("SOUTH") ? 0 : 1;
-
-						if (side == 0)
-						{
-							for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
-								addBlockToRenderList(world, current, mop.blockX, mop.blockY, z);
-						}
-						else
-						{
-							for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
-								addBlockToRenderList(world, current, x, mop.blockY, mop.blockZ);
-						}
-						break;
-					}
+				for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
+					for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
+						for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
+							addBlockToRenderList(world, current, x, y, z);
+				break;
+			}
+			case 1: // Panel
+			{
+				int side = orientation.offsetY != 0 ? 0 : orientation.offsetX != 0 ? 1 : 2;
+				if (side == 0) {
+					for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
+						for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
+							addBlockToRenderList(world, current, x, mop.blockY, z);
+				}
+				else if (side == 1) {
+					for (int y = mop.blockY - charge; y <= mop.blockY + charge; y++)
+						for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
+							addBlockToRenderList(world, current, mop.blockX, y, z);
 				}
 				else {
 					for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
@@ -159,16 +119,20 @@ public class TransmutationRenderingEvent
 				String dir = Direction.directions[MathHelper.floor_double((double)((player.rotationYaw * 4F) / 360F) + 0.5D) & 3];
 				int side = orientation.offsetX != 0 ? 0 : orientation.offsetZ != 0 ? 1 : dir.equals("NORTH") || dir.equals("SOUTH") ? 0 : 1;
 
-				if (renderCount > 0)
-				{
-					drawAll();
+				if (side == 0) {
+					for (int z = mop.blockZ - charge; z <= mop.blockZ + charge; z++)
+						addBlockToRenderList(world, current, mop.blockX, mop.blockY, z);
 				}
+				else {
+					for (int x = mop.blockX - charge; x <= mop.blockX + charge; x++)
+						addBlockToRenderList(world, current, x, mop.blockY, mop.blockZ);
+				}
+				break;
 			}
 		}
-		else
-		{
-			transmutationResult = null;
-		}
+
+		if (renderCount > 0)
+			drawAll();
 	}
 
 	private void drawAll() {
@@ -188,15 +152,10 @@ public class TransmutationRenderingEvent
 		// 使用平移功能代替每个方块的运算
 		tessellator.setTranslation(-playerX, -playerY, -playerZ);
 
-		for (int i = 0; i < renderCount; i++)
-		{
+		for (int i = 0; i < renderCount; i++) {
 			RenderPos pos = renderList.get(i);
-			double minX = pos.x - 0.02D;
-			double minY = pos.y - 0.02D;
-			double minZ = pos.z - 0.02D;
-			double maxX = pos.x + 1.02D;
-			double maxY = pos.y + 1.02D;
-			double maxZ = pos.z + 1.02D;
+			final double minX = pos.x - 0.02D, minY = pos.y - 0.02D, minZ = pos.z - 0.02D;
+			final double maxX = pos.x + 1.02D, maxY = pos.y + 1.02D, maxZ = pos.z + 1.02D;
 
 			// Top
 			tessellator.addVertex(minX, maxY, minZ);
@@ -240,18 +199,15 @@ public class TransmutationRenderingEvent
 		GL11.glDisable(GL11.GL_BLEND);
 	}
 
-	private void addBlockToRenderList(World world, MetaBlock current, int x, int y, int z)
-	{
-		if (new MetaBlock(world, x, y, z).equals(current))
-		{
-			// 对象池复用
-			if (renderCount >= renderList.size()) {
-				renderList.add(new RenderPos(x, y, z));
-			} else {
-				renderList.get(renderCount).set(x, y, z);
-			}
-			renderCount++;
-		}
+	private void addBlockToRenderList(World world, MetaBlock current, int x, int y, int z) {
+		if (!(new MetaBlock(world, x, y, z).equals(current)))
+			return;
+
+		// 对象池复用
+		if (renderCount >= renderList.size())
+			renderList.add(new RenderPos(x, y, z));
+		else renderList.get(renderCount).set(x, y, z);
+		renderCount++;
 	}
 
 	private float getPulseProportion() {
