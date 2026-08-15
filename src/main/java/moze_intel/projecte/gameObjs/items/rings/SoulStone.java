@@ -2,8 +2,12 @@ package moze_intel.projecte.gameObjs.items.rings;
 
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
-import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
+import moze_intel.projecte.handlers.PlayerTimers;
+import moze_intel.projecte.utils.MathUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,85 +17,59 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
-import moze_intel.projecte.handlers.PlayerTimers;
-import moze_intel.projecte.utils.MathUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
 public class SoulStone extends RingToggle implements IBauble, IPedestalItem
 {
-	public SoulStone()
-	{
+	public SoulStone() {
 		super("soul_stone");
 	}
 
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer))
-		{
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
 			return;
-		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
 
-		EntityPlayer player = (EntityPlayer) entity;
+		if (stack.getItemDamage() == 0) return;
 
-		if (stack.getItemDamage() != 0)
+		if (getEmc(stack) < 64 && !consumeFuel(player, stack, 64, false))
+			stack.setItemDamage(0);
+		else
 		{
-			if (getEmc(stack) < 64 && !consumeFuel(player, stack, 64, false))
-			{
-				stack.setItemDamage(0);
-			}
-			else
-			{
-				PlayerTimers.activateHeal(player);
-
-				if (player.getHealth() < player.getMaxHealth() && PlayerTimers.canHeal(player))
-				{
-					world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
-					player.heal(2.0F);
-					removeEmc(stack, 64);
-				}
-			}
+			PlayerTimers.activateHeal(player);
+			if (!(player.getHealth() < player.getMaxHealth()) || !PlayerTimers.canHeal(player))
+				return;
+			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
+			player.heal(2.0F);
+			removeEmc(stack, 64);
 		}
 	}
 
 	@Override
-	public void changeMode(EntityPlayer player, ItemStack stack)
-	{
-		if (stack.getItemDamage() == 0)
-		{
+	public void changeMode(EntityPlayer player, ItemStack stack) {
+		if (stack.getItemDamage() == 0) {
 			if (getEmc(stack) < 64 && !consumeFuel(player, stack, 64, false))
-			{
-				//NOOP (used to be sounds)
-			}
-			else
-			{
-				stack.setItemDamage(1);
-			}
+				return; //NOOP (used to be sounds)
+			stack.setItemDamage(1);
 		}
-		else
-		{
-			stack.setItemDamage(0);
-		}
+		else stack.setItemDamage(0);
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public baubles.api.BaubleType getBaubleType(ItemStack itemstack)
-	{
+	public baubles.api.BaubleType getBaubleType(ItemStack itemstack) {
 		return BaubleType.AMULET;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public void onWornTick(ItemStack stack, EntityLivingBase player)
-	{
+	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		this.onUpdate(stack, player.worldObj, player, 0, false);
 	}
 
@@ -105,59 +83,48 @@ public class SoulStone extends RingToggle implements IBauble, IPedestalItem
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canEquip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canEquip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
-	public void updateInPedestal(World world, int x, int y, int z)
-	{
-		if (!world.isRemote && ProjectEConfig.soulPedCooldown != -1)
-		{
-			DMPedestalTile tile = ((DMPedestalTile) world.getTileEntity(x, y, z));
-			if (tile.getActivityCooldown() == 0)
-			{
-				// 优化区块遍历
-				AxisAlignedBB bounds = tile.getEffectBounds();
-				for (Object obj : world.playerEntities)
-				{
-					if (obj instanceof EntityPlayerMP)
-					{
-						EntityPlayerMP player = (EntityPlayerMP) obj;
-						if (player.boundingBox.intersectsWith(bounds) && player.getHealth() < player.getMaxHealth())
-						{
-							world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
-							player.heal(1.0F); // 1/2 heart
-						}
-					}
-				}
+	public void updateInPedestal(World world, int x, int y, int z) {
+		if (world.isRemote || ProjectEConfig.soulPedCooldown == -1) return;
 
-				tile.setActivityCooldown(ProjectEConfig.soulPedCooldown);
-			}
-			else
-			{
-				tile.decrementActivityCooldown();
-			}
+		DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
+		if (tile.getActivityCooldown() != 0) {
+			tile.decrementActivityCooldown();
+			return;
 		}
+
+		// 优化区块遍历
+		AxisAlignedBB bounds = tile.getEffectBounds();
+		for (Object obj : world.playerEntities)
+		{
+			if (!(obj instanceof EntityPlayerMP player)) continue;
+			if (!player.boundingBox.intersectsWith(bounds) || !(player.getHealth() < player.getMaxHealth())) continue;
+
+			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
+			player.heal(1.0F); // 1/2 heart
+		}
+
+		tile.setActivityCooldown(ProjectEConfig.soulPedCooldown);
 	}
 
 	@Override
-	public List<String> getPedestalDescription()
-	{
-		List<String> list = Lists.newArrayList();
+	public List<String> getPedestalDescription() {
+		List<String> list = new ArrayList<>();
 		if (ProjectEConfig.soulPedCooldown != -1)
 		{
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.soul.pedestal1"));
-			list.add(EnumChatFormatting.BLUE + String.format(
-				StatCollector.translateToLocal("pe.soul.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.soulPedCooldown)));
+			list.add(EnumChatFormatting.BLUE + String.format(StatCollector.translateToLocal("pe.soul.pedestal2"),
+				MathUtils.tickToSecFormatted(ProjectEConfig.soulPedCooldown)));
 		}
 		return list;
 	}
