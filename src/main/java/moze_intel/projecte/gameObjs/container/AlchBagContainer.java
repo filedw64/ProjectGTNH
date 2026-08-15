@@ -15,7 +15,7 @@ public class AlchBagContainer extends Container
 
 	public AlchBagContainer(InventoryPlayer invPlayer, AlchBagInventory invBag)
 	{
-		this.inventory = invBag;
+		inventory = invBag;
 
 		//Bag Inventory
 		for (int i = 0; i < 8; i++)
@@ -44,9 +44,7 @@ public class AlchBagContainer extends Container
 		Slot slot = this.getSlot(slotIndex);
 
 		if (slot == null || !slot.getHasStack())
-		{
 			return null;
-		}
 
 		ItemStack stack = slot.getStack();
 		ItemStack newStack = stack.copy();
@@ -58,18 +56,11 @@ public class AlchBagContainer extends Container
 			slot.onSlotChanged();
 		}
 		else if (!this.mergeItemStack(stack, 0, 104, false))
-		{
 			return null;
-		}
 
 		if (stack.stackSize == 0)
-		{
-			slot.putStack((ItemStack) null);
-		}
-		else
-		{
-			slot.onSlotChanged();
-		}
+			slot.putStack(null);
+		else slot.onSlotChanged();
 
 		slot.onPickupFromSlot(player, newStack);
 		return newStack;
@@ -78,11 +69,9 @@ public class AlchBagContainer extends Container
 	@Override
 	public ItemStack slotClick(int slot, int button, int flag, EntityPlayer player)
 	{
-		// 防止玩家套娃
+		// 防止玩家移动打开的炼金术之袋
 		if (slot >= 0 && getSlot(slot) != null && getSlot(slot).getStack() == player.getHeldItem())
-		{
 			return null;
-		}
 
 		return super.slotClick(slot, button, flag, player);
 	}

@@ -42,7 +42,7 @@ public class AlchBagProps implements IExtendedEntityProperties
 		if (bagData.get(color) == null)
 		{
 			bagData.put(color, new ItemStack[104]);
-			PELogger.logInfo("Created new inventory array for virtual color ID " + color + " and player " + player.getCommandSenderName());
+			PELogger.logInfo("Created new inventory array for color " + color + " and player " + player.getCommandSenderName());
 		}
 		ItemStack[] inv = bagData.get(color);
 		return Arrays.copyOf(inv, inv.length);
@@ -57,8 +57,7 @@ public class AlchBagProps implements IExtendedEntityProperties
 	{
 		NBTTagCompound compound = new NBTTagCompound();
 		NBTTagList listOfInventories = new NBTTagList();
-		// 上限扩展到 160，支持最多 10 页 (16 * 10)
-		for (int i = 0; i < 160; i++)
+		for (int i = 0; i < 16; i++)
 		{
 			if (bagData.get(i) == null)
 			{
@@ -72,7 +71,9 @@ public class AlchBagProps implements IExtendedEntityProperties
 		compound.setTag("data", listOfInventories);
 		return compound;
 	}
-
+	/**
+	 * Only write one bag's data. Used for partial sync packets
+	 */
 	protected NBTTagCompound saveForPartialPacket(int color)
 	{
 		NBTTagCompound compound = new NBTTagCompound();
@@ -105,7 +106,7 @@ public class AlchBagProps implements IExtendedEntityProperties
 		NBTTagCompound properties = new NBTTagCompound();
 
 		NBTTagList listOfInventories = new NBTTagList();
-		for (int i = 0; i < 160; i++)
+		for (int i = 0; i < 16; i++)
 		{
 			if (bagData.get(i) == null)
 			{
