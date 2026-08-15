@@ -4,142 +4,145 @@ import baubles.api.BaubleType;
 import baubles.api.BaublesApi;
 import baubles.api.IBauble;
 import com.cricketcraft.chisel.api.IChiselItem;
-import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IAlchBagItem;
+import moze_intel.projecte.api.item.IAlchChestItem;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.api.item.IModeChanger;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.tiles.AlchChestTile;
+import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
+import moze_intel.projecte.handlers.PlayerTimers;
+import moze_intel.projecte.utils.MathUtils;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.api.item.IAlchBagItem;
-import moze_intel.projecte.api.item.IAlchChestItem;
-import moze_intel.projecte.api.item.IModeChanger;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.items.rings.RingToggle;
-import moze_intel.projecte.gameObjs.tiles.AlchChestTile;
-import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
-import moze_intel.projecte.handlers.PlayerTimers;
-import moze_intel.projecte.utils.MathUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
 public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestItem, IBauble, IPedestalItem
 {
-	public RepairTalisman()
-	{
+	public RepairTalisman() {
 		this.setUnlocalizedName("repair_talisman");
 		this.setMaxStackSize(1);
 	}
 
 	@Override
-	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
-	{
+	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) {
 		if (!stack.hasTagCompound())
-		{
 			stack.stackTagCompound = new NBTTagCompound();
-		}
 
 		if (world.isRemote || !(entity instanceof EntityPlayer player))
-		{
 			return;
-		}
 
 		PlayerTimers.activateRepair(player);
 
 		if (PlayerTimers.canRepair(player))
-		{
 			repairAllItems(player);
-		}
 	}
 
-	public void repairAllItems(EntityPlayer player)
-	{
+	public void repairAllItems(EntityPlayer player) {
 		IInventory inv = player.inventory;
-
-		for (int i = 0; i < inv.getSizeInventory(); i++)
-		{
+		for (int i = 0; i < inv.getSizeInventory(); i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
-
-			if (invStack == null || invStack.getItem() instanceof IModeChanger || !invStack.getItem().isRepairable())
-			{
+			if (invStack == null || (invStack.equals(player.getCurrentEquippedItem()) && player.isSwingInProgress))
 				continue;
-			}
+			tryRepair(invStack, 1);
+		}
 
-			if (Loader.isModLoaded("chisel"))
-			{
-				if (chiselCheck(invStack)) continue;
-			}
+		if (Loader.isModLoaded("Baubles"))
+			baubleRepair(player);
+	}
 
-			if (invStack.equals(player.getCurrentEquippedItem()) && player.isSwingInProgress)
-			{
-				//Don't repair item that is currently used by the player.
-				continue;
-			}
+	/**
+	 * @param stack the ItemStack need to be repaired.
+	 * @return True when repair the item successfully, otherwise false.
+	 */
+	private boolean tryRepair(ItemStack stack, int amount) {
+		if (stack == null || amount <= 0) return false;
+		Item item = stack.getItem();
+		if (item == null || item instanceof IModeChanger || item instanceof IItemEmc) return false;
+		if (Loader.isModLoaded("chisel") && chiselCheck(item)) return false;
+		NBTTagCompound nbt = stack.stackTagCompound;
+		if (nbt != null) {
+			// 匠魂工具
+			if (nbt.hasKey("InfiTool")) {
+				NBTTagCompound infi = nbt.getCompoundTag("InfiTool");
+				if (infi.getBoolean("Broken"))
+					infi.setBoolean("Broken", false);
 
-			if (!invStack.getHasSubtypes() && invStack.getMaxDamage() != 0 && invStack.getItemDamage() > 0)
-			{
-				invStack.setItemDamage(invStack.getItemDamage() - 1);
+				final int damage = infi.getInteger("Damage");
+				if (damage > amount)
+					infi.setInteger("Damage", damage - amount);
+				else infi.setInteger("Damage", 0);
+				return true;
+			}
+			// gt工具
+			if (nbt.hasKey("GT.ToolStats")) {
+				NBTTagCompound gt = nbt.getCompoundTag("GT.ToolStats");
+				final long damage = gt.getLong("Damage");
+				final long toRepair = amount * 100L;
+				if (damage > toRepair)
+					gt.setLong("Damage", damage - toRepair);
+				else gt.setLong("Damage", 0);
+				return true;
 			}
 		}
 
-		if (Loader.isModLoaded("Baubles")) baubleRepair(player);
+		if (item.getMaxDamage(stack) > 0 && !item.getHasSubtypes()) {
+			final int damage = item.getDamage(stack);
+			if (damage > amount)
+				item.setDamage(stack, damage - amount);
+			else item.setDamage(stack, 0);
+			return true;
+		}
+		return false;
 	}
 
 	@Optional.Method(modid = "chisel")
-	public boolean chiselCheck(ItemStack is)
-	{
-		return is.getItem() instanceof IChiselItem;
+	public boolean chiselCheck(Item item) {
+		return item instanceof IChiselItem;
 	}
 
 	@Optional.Method(modid = "Baubles")
-	public void baubleRepair(EntityPlayer player)
-	{
+	public void baubleRepair(EntityPlayer player) {
 		IInventory bInv = BaublesApi.getBaubles(player);
-
-		for (int i = 0; i < bInv.getSizeInventory(); i++)
-		{
+		for (int i = 0; i < bInv.getSizeInventory(); i++) {
 			ItemStack bInvStack = bInv.getStackInSlot(i);
-			if (bInvStack == null || bInvStack.getItem() instanceof IModeChanger || !bInvStack.getItem().isRepairable())
-			{
-				continue;
-			}
-
-			if (!bInvStack.getHasSubtypes() && bInvStack.getMaxDamage() != 0 && bInvStack.getItemDamage() > 0)
-			{
-				bInvStack.setItemDamage(bInvStack.getItemDamage() - 1);
-			}
+			tryRepair(bInvStack, 1);
 		}
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister register)
-	{
+	public void registerIcons(IIconRegister register) {
 		this.itemIcon = register.registerIcon(this.getTexture("repair_talisman"));
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public baubles.api.BaubleType getBaubleType(ItemStack itemstack)
-	{
+	public baubles.api.BaubleType getBaubleType(ItemStack itemstack) {
 		return BaubleType.BELT;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public void onWornTick(ItemStack stack, EntityLivingBase player)
-	{
+	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		this.onUpdate(stack, player.worldObj, player, 0, false);
 	}
 
@@ -153,49 +156,41 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canEquip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canEquip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
-	public void updateInPedestal(World world, int x, int y, int z)
-	{
-		if (!world.isRemote && ProjectEConfig.repairPedCooldown != -1)
-		{
-			DMPedestalTile tile = ((DMPedestalTile) world.getTileEntity(x, y, z));
-			if (tile.getActivityCooldown() == 0)
-			{
-				List<EntityPlayerMP> list = world.getEntitiesWithinAABB(EntityPlayerMP.class, tile.getEffectBounds());
-				for (EntityPlayerMP player : list)
-				{
-					repairAllItems(player);
-				}
-				tile.setActivityCooldown(ProjectEConfig.repairPedCooldown);
-			}
-			else
-			{
-				tile.decrementActivityCooldown();
-			}
+	public void updateInPedestal(World world, int x, int y, int z) {
+		if (world.isRemote || ProjectEConfig.repairPedCooldown == -1) return;
+
+		DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
+		if (tile.getActivityCooldown() != 0) {
+			tile.decrementActivityCooldown();
+			return;
 		}
+
+		List<EntityPlayerMP> list = world.getEntitiesWithinAABB(EntityPlayerMP.class, tile.getEffectBounds());
+		for (EntityPlayerMP player : list)
+			repairAllItems(player);
+		tile.setActivityCooldown(ProjectEConfig.repairPedCooldown);
 	}
 
 	@Override
 	public List<String> getPedestalDescription()
 	{
-		List<String> list = Lists.newArrayList();
+		List<String> list = new ArrayList<>();
 		if (ProjectEConfig.repairPedCooldown != -1)
 		{
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.repairtalisman.pedestal1"));
-			list.add(EnumChatFormatting.BLUE +
-					String.format(StatCollector.translateToLocal("pe.repairtalisman.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.repairPedCooldown)));
+			list.add(EnumChatFormatting.BLUE + String.format(StatCollector.translateToLocal("pe.repairtalisman.pedestal2"),
+				MathUtils.tickToSecFormatted(ProjectEConfig.repairPedCooldown)));
 		}
 		return list;
 	}
@@ -203,105 +198,58 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 	@Override
 	public void updateInAlchChest(World world, int x, int y, int z, ItemStack stack)
 	{
-		if (world.isRemote)
-		{
+		if (world.isRemote) return;
+
+		if (!stack.hasTagCompound())
+			stack.setTagCompound(new NBTTagCompound());
+
+		AlchChestTile tile = (AlchChestTile) world.getTileEntity(x, y, z);
+		final byte coolDown = stack.stackTagCompound.getByte("Cooldown");
+
+		if (coolDown > 0) {
+			stack.stackTagCompound.setByte("Cooldown", (byte) (coolDown - 1));
 			return;
 		}
 
-		if (!stack.hasTagCompound())
-		{
-			stack.setTagCompound(new NBTTagCompound());
+		boolean hasAction = false;
+
+		for (int i = 0; i < tile.getSizeInventory(); i++) {
+			ItemStack invStack = tile.getStackInSlot(i);
+			if (tryRepair(invStack, 1)) {
+				tile.setInventorySlotContents(i, invStack);
+				hasAction = true;
+			}
 		}
 
-		AlchChestTile tile = ((AlchChestTile) world.getTileEntity(x, y, z));
-
-		byte coolDown = stack.stackTagCompound.getByte("Cooldown");
-
-		if (coolDown > 0)
-		{
-			stack.stackTagCompound.setByte("Cooldown", (byte) (coolDown - 1));
-		}
-		else
-		{
-			boolean hasAction = false;
-
-			for (int i = 0; i < tile.getSizeInventory(); i++)
-			{
-				ItemStack invStack = tile.getStackInSlot(i);
-
-				if (invStack == null || invStack.getItem() instanceof RingToggle || !invStack.getItem().isRepairable())
-				{
-					continue;
-				}
-
-				if (!invStack.getHasSubtypes() && invStack.getMaxDamage() != 0 && invStack.getItemDamage() > 0)
-				{
-					invStack.setItemDamage(invStack.getItemDamage() - 1);
-					tile.setInventorySlotContents(i, invStack);
-
-					if (!hasAction)
-					{
-						hasAction = true;
-					}
-				}
-			}
-
-			if (hasAction)
-			{
-				stack.stackTagCompound.setByte("Cooldown", (byte) 19);
-				tile.markDirty();
-			}
+		if (hasAction) {
+			stack.stackTagCompound.setByte("Cooldown", (byte) 19);
+			tile.markDirty();
 		}
 	}
 
 	@Override
 	public boolean updateInAlchBag(ItemStack[] inv, EntityPlayer player, ItemStack stack)
 	{
-		if (player.worldObj.isRemote)
-		{
+		if (player.worldObj.isRemote) return false;
+
+		if (!stack.hasTagCompound())
+			stack.setTagCompound(new NBTTagCompound());
+
+		final byte coolDown = stack.stackTagCompound.getByte("Cooldown");
+
+		if (coolDown > 0) {
+			stack.stackTagCompound.setByte("Cooldown", (byte) (coolDown - 1));
 			return false;
 		}
 
-		if (!stack.hasTagCompound())
-		{
-			stack.setTagCompound(new NBTTagCompound());
-		}
+		boolean hasAction = false;
+		for (ItemStack invStack : inv)
+			if (tryRepair(invStack, 1))
+				hasAction = true;
 
-		byte coolDown = stack.stackTagCompound.getByte("Cooldown");
-
-		if (coolDown > 0)
-		{
-			stack.stackTagCompound.setByte("Cooldown", (byte) (coolDown - 1));
-		}
-		else
-		{
-			boolean hasAction = false;
-
-			for (int i = 0; i < inv.length; i++)
-			{
-				ItemStack invStack = inv[i];
-
-				if (invStack == null || invStack.getItem() instanceof RingToggle || !invStack.getItem().isRepairable())
-				{
-					continue;
-				}
-
-				if (!invStack.getHasSubtypes() && invStack.getMaxDamage() != 0 && invStack.getItemDamage() > 0)
-				{
-					invStack.setItemDamage(invStack.getItemDamage() - 1);
-
-					if (!hasAction)
-					{
-						hasAction = true;
-					}
-				}
-			}
-
-			if (hasAction)
-			{
-				stack.stackTagCompound.setByte("Cooldown", (byte) 19);
-				return true;
-			}
+		if (hasAction) {
+			stack.stackTagCompound.setByte("Cooldown", (byte) 19);
+			return true;
 		}
 		return false;
 	}
