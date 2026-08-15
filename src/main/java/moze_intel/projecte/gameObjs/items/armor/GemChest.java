@@ -21,17 +21,17 @@ import java.util.List;
 
 public class GemChest extends GemArmorBase implements IFireProtector, IFlightProvider
 {
-	public GemChest()
-	{
+	public GemChest() {
 		super(EnumArmorType.CHEST);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
-	{
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused) {
 		tooltips.add(StatCollector.translateToLocal("pe.gem.chest.lorename"));
 	}
+
+	private final static double SPEEDBOOST = 0.18;
 
 	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack chest)
@@ -57,46 +57,33 @@ public class GemChest extends GemArmorBase implements IFireProtector, IFlightPro
 			}
 
 			// 修复与强化：基于玩家朝向（Yaw）的三角函数推力，彻底解决按W倒退的问题
-			if (player.capabilities.isFlying && player.moveForward > 0)
-			{
-				float yaw = player.rotationYaw * (float)Math.PI / 180.0F;
-				double speedBoost = 0.18; // 推进力倍率
-				if (player.motionX * player.motionX + player.motionZ * player.motionZ < 3.0)
-				{
-					player.motionX -= MathHelper.sin(yaw) * speedBoost;
-					player.motionZ += MathHelper.cos(yaw) * speedBoost;
+			if (player.capabilities.isFlying && player.moveForward > 0) {
+				final float yaw = (float) (player.rotationYaw * Math.PI / 180.0D);
+				if (player.motionX * player.motionX + player.motionZ * player.motionZ < 3.0) {
+					player.motionX -= MathHelper.sin(yaw) * SPEEDBOOST;
+					player.motionZ += MathHelper.cos(yaw) * SPEEDBOOST;
 				}
 			}
 		}
-		else
-		{
-			EntityPlayerMP playerMP = ((EntityPlayerMP) player);
+		else if (player instanceof EntityPlayerMP playerMP) {
 			PlayerTimers.activateFeed(playerMP);
-
 			if (player.getFoodStats().needFood() && PlayerTimers.canFeed(playerMP))
-			{
 				player.getFoodStats().addStats(2, 10);
-			}
 		}
 	}
 
-	public void doExplode(EntityPlayer player)
-	{
+	public void doExplode(EntityPlayer player) {
 		if (ProjectEConfig.offensiveAbilities)
-		{
 			WorldHelper.createNovaExplosion(player.worldObj, player, player.posX, player.posY, player.posZ, 9.0F);
-		}
 	}
 
 	@Override
-	public boolean canProtectAgainstFire(ItemStack stack, EntityPlayerMP player)
-	{
+	public boolean canProtectAgainstFire(ItemStack stack, EntityPlayerMP player) {
 		return player.getCurrentArmor(2) == stack;
 	}
 
 	@Override
-	public boolean canProvideFlight(ItemStack stack, EntityPlayerMP player)
-	{
+	public boolean canProvideFlight(ItemStack stack, EntityPlayerMP player) {
 		return player.getCurrentArmor(2) == stack;
 	}
 }
