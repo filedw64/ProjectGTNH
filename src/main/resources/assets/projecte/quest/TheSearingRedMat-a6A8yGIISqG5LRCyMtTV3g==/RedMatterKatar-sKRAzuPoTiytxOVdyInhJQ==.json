@@ -1,0 +1,86 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -5579080956736552194,
+      "questIDLow:4": -5432151066491058306
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "This is not merely a weapon; it is the conceptual manifestation of \"Sharpness\" and \"Slaughter\" condensed into a physical form. The Red Matter Katar is so unfathomably sharp that it doesn\u0027t just sever physical matter—it effortlessly slices through the underlying fabric of reality itself. This is the absolute physical zenith of your alchemical journey. You now wield a blade humming with enough destructive force to tear the very gods of this universe asunder.\n\nFunctionally, the Katar is the ultimate omni-tool for organic matter. It acts as a Sword, an Axe, a Hoe, and Shears all simultaneously. Its base damage is apocalyptic, and when fully charged, its Area-of-Effect (AoE) attacks will instantly obliterate hordes of enemies, strip entire forests of their wood and leaves, and harvest massive crop fields in a single click.",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_rm_katar",
+        "tag:10": {
+          "Charge:1": 4
+        }
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Red Matter Katar",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -5718374369522594260,
+  "questIDLow:4": -5925359018753531611,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_rm_katar",
+          "tag:10": {
+            "Charge:1": 0
+          }
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

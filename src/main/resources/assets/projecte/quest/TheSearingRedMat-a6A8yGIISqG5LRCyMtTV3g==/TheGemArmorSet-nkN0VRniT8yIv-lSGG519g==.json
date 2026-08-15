@@ -1,0 +1,98 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 7210552392414415754,
+      "questIDLow:4": -8519682214445146549
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "By violently fusing the raw, primordial power of Red Matter with the concentrated elemental concepts of your alchemical rings and amulets, you have transcended mortal engineering. The Gem Armor does not just protect your physical body; it fundamentally alters your relationship with physics, magic, and gravity.\n\nFunctionally, this armor set retains the infinite durability and absolute invulnerability of Red Matter, but it is now packed with an absurd array of integrated abilities. Be sure to check your keybinds to toggle these god-like powers!\r\n\r\nAbyss Helmet:\r\nMastery over the mind and the deep. It grants you infinite water breathing and a hyper-accelerated health regeneration matrix that makes you practically immortal.\r\nThaumcraft Integration: Best of all, it features integrated Goggles of Revealing and a staggering 90% Vis Discount! You can now stroll into your Thaumatorium and perform the darkest, most expensive warp-inducing rituals with absolute impunity, laughing at the Thaumaturges who spent years crafting their flimsy cloth robes.\r\n\r\nInfernal Armor:\r\nMastery over fire and kinetic thrust. It grants absolute fire immunity and an aggressive, active flight acceleration system that propels you through the air at terrifying speeds.\r\nIC2/GraviSuite Integration: By perfectly mimicking the NBT data of a Quantum/GraviChestPlate, it features an integrated, flawless Hover Mode. Building massive GT assembly lines in mid-air has never been this easy!\r\n\r\nGravity Greaves:\r\nMastery over localized mass. These greaves allow you to manipulate your own gravitational pull. Pressing Shift lets you perform a Fast Descent, dropping out of the sky like a meteor without taking a single point of fall damage. Furthermore, they grant you the ability of Void Walking—solidifying the very air beneath your feet so you can casually stroll across bottomless chasms.\r\n\r\nHurricane Boots:\r\nMastery over the winds. These boots permanently grant you the power of creative Flight and a smooth Gliding ability when descending. Even when you are bound to the earth, they drastically increase your base movement speed, allowing you to sprint across your sprawling mega-base in a fraction of the time.",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_gem_armor_1"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "The Gem Armor Set",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -7042657483422019636,
+  "questIDLow:4": -8592893025193134602,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_0"
+        },
+        "1:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_1"
+        },
+        "2:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_2"
+        },
+        "3:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_3"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

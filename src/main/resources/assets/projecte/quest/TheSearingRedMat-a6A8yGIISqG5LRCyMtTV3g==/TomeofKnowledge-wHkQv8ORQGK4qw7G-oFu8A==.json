@@ -1,0 +1,174 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -3913095524481677138,
+      "questIDLow:4": -6193608156820947764
+    },
+    "1:10": {
+      "questIDHigh:4": -5634476637816076345,
+      "questIDLow:4": -6967122690720094448
+    },
+    "2:10": {
+      "questIDHigh:4": 7047363170115144702,
+      "questIDLow:4": -5362899112074889446
+    },
+    "3:10": {
+      "questIDHigh:4": -2693950300217457499,
+      "questIDLow:4": -4943071836903604741
+    },
+    "4:10": {
+      "questIDHigh:4": -4573548887612175598,
+      "questIDLow:4": -4946844494061054622
+    },
+    "5:10": {
+      "questIDHigh:4": -7509653136621220977,
+      "questIDLow:4": -6228773553746982605
+    },
+    "6:10": {
+      "questIDHigh:4": -1801994089365615811,
+      "questIDLow:4": -4993030614649145823
+    },
+    "7:10": {
+      "questIDHigh:4": -5718374369522594260,
+      "questIDLow:4": -5925359018753531611
+    },
+    "8:10": {
+      "questIDHigh:4": -8110432714243619743,
+      "questIDLow:4": -8687501178839704536
+    },
+    "9:10": {
+      "questIDHigh:4": 3755051206650579832,
+      "questIDLow:4": -5683957859068769937
+    },
+    "10:10": {
+      "questIDHigh:4": -7042657483422019636,
+      "questIDLow:4": -8592893025193134602
+    },
+    "11:10": {
+      "questIDHigh:4": 5154930929488840380,
+      "questIDLow:4": -4964451088743472216
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "Oh... of course. You knew this existed, didn\u0027t you?\r\n\r\nThis ancient, impossibly heavy manuscript contains the fundamental molecular blueprints of absolutely everything in existence. By feeding this single book into a Transmutation Table, it will instantly learn the structure of every single item in the universe. With this, you can bypass the tedious process of teaching the table item by item; you will be granted the divine right to exchange raw EMC for anything. It is omniscience bound in leather and dark magic.\r\n\r\nBut did you really think I would just hand this ultimate power over to you immediately? You are merely a Chief Engineer. To hold the blueprint of the cosmos, you must first prove that you have conquered it.\n\n\u003c\u003c INCOMING SECURE TRANSMISSION... \u003e\u003e\r\n\u003c\u003c SENDER: Pan-Galactic GregTech Corporation \u003e\u003e\r\n\r\n\"Chief Engineer, we acknowledge your request for the Tome of Knowledge. However, such classified, reality-breaking information is kept strictly under Corporate lockdown. If you want us to authorize the transfer of this artifact to your inventory, you must provide something of equal, universe-shattering value in exchange.\r\n\r\nBring us a Stargate.\r\n\r\nYes, you heard that correctly. Hand over a fully functional, endgame Stargate, and we will grant you the Tome.\r\n\r\nAlternatively, if you believe you are smart enough to synthesize this absolute miracle of alchemy yourself, you are more than welcome to fumble around in the dark and figure it out. Just a friendly warning: The Corporation has strictly redacted its crafting recipe from your NEI (Not Enough Items) database. You will not find any hints, no holograms, and no schematics.\r\n\r\nProve your worth, Engineer. The secrets of the universe await.\"",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_tome"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Tome of Knowledge",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "HIDDEN"
+    }
+  },
+  "questIDHigh:4": -4577609130439524254,
+  "questIDLow:4": -5139998301944189200,
+  "rewards:9": {
+    "0:10": {
+      "ignoreDisabled:1": 0,
+      "index:3": 0,
+      "rewardID:8": "bq_standard:item",
+      "rewards:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_tome"
+        }
+      }
+    }
+  },
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 1,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 8,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:stargateRing"
+        },
+        "1:10": {
+          "Count:3": 7,
+          "Damage:2": 1,
+          "OreDict:8": "",
+          "id:8": "SGCraft:stargateRing"
+        },
+        "2:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:stargateBase"
+        },
+        "3:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:rfPowerUnit"
+        },
+        "4:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:stargateController"
+        },
+        "5:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:sgChevronUpgrade"
+        },
+        "6:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "SGCraft:sgIrisUpgrade"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

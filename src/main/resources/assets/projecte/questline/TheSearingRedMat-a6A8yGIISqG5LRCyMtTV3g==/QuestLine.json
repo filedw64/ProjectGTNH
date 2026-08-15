@@ -1,0 +1,19 @@
+{
+  "properties:10": {
+    "betterquesting:10": {
+      "bg_image:8": "",
+      "bg_size:3": 256,
+      "desc:8": "You began this journey by burning pieces of alchemical coal in a rudimentary furnace. You progressed, bending the crushing, localized gravity of Dark Matter to your will. But even that was just a stepping stone. You have now crossed the final threshold of physics, magic, and thermodynamics. You have reached the absolute summit.\r\n\r\nWelcome to the era of Red Matter.\r\n\r\nHere, in this final epoch, you are no longer playing by the rules of the universe; you are the one writing them. You hold the primordial, searing heat of the Big Bang in the palm of your hands. The artifacts you forge in this stage do not just manipulate reality—they shatter it. You will wield a Katar that cuts through the fabric of dimensions, swing a Morning Star that effortlessly dismantles high-voltage mega-structures, and don the legendary Gem Armor to become an immortal, flying, unkillable god of industry.\r\n\r\nThe elements themselves will bow to you. Hunger, death, and time are now obsolete concepts, replaced by automated, self-sustaining alchemical miracles. With a wave of the Mercurial Eye, you will construct sprawling factory halls out of pure energy, limited only by your imagination and your EMC network.\r\n\r\nBut even at the peak of omnipotence, the Pan-Galactic GregTech Corporation has one final, impossible test waiting for you. To claim the Tome of Knowledge—the ultimate manuscript of omniscience—you must prove your absolute dominion over space and time by synthesizing a Stargate, or blindly piece together the universe\u0027s greatest secret without a single blueprint.\r\n\r\nLook back at your sprawling, chaotic, glorious mega-base, Chief Engineer. You have conquered GregTech. You have mastered Equivalent Exchange. The Magnum Opus is complete, and the universe is entirely yours to shape.",
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 1,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_matter"
+      },
+      "name:8": "The Searing Red Matter",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questLineIDHigh:4": 7755265389667830433,
+  "questLineIDLow:4": -5103404445197871650
+}
