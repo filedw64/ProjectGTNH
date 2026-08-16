@@ -175,9 +175,7 @@ public class ToolTipEvent
 				if (current.stackTagCompound.hasKey("StoredEMC"))
 					value = current.stackTagCompound.getDouble("StoredEMC");
 				else value = ((IItemEmc) current.getItem()).getStoredEmc(current);
-
-				// 这个地方我感觉不用管，我不知道能不能优化了
-				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + Constants.EMC_FORMATTER.format(value));
+				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + formatEMC(value));
 			}
 
 			if (current.stackTagCompound.hasKey("StoredXP")) {
