@@ -20,17 +20,16 @@ public class Matter extends ItemPE
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
 
-	public Matter()
-	{
+	public Matter() {
 		this.setUnlocalizedName("matter");
 		this.setHasSubtypes(true);
 		this.setMaxDamage(0);
 	}
 
 	@Override
-	public String getUnlocalizedName(ItemStack stack)
-	{
-		return super.getUnlocalizedName() + "_" + names[MathHelper.clamp_int(stack.getItemDamage(), 0, 1)]; // 顺手防一手越界
+	public String getUnlocalizedName(ItemStack stack) {
+		// 顺手防一手越界
+		return super.getUnlocalizedName() + "_" + names[MathHelper.clamp_int(stack.getItemDamage(), 0, 1)];
 	}
 
 	@Override
@@ -38,44 +37,31 @@ public class Matter extends ItemPE
 	{
 		super.onCreated(stack, world, player);
 
-		if (!world.isRemote)
-		{
-			if (stack.getItemDamage() == 0)
-			{
-				player.addStat(AchievementHandler.DARK_MATTER, 1);
-			}
-			else if (stack.getItemDamage() == 1)
-			{
-				player.addStat(AchievementHandler.RED_MATTER, 1);
-			}
-		}
+		if (world.isRemote) return;
+
+		if (stack.getItemDamage() == 0)
+			player.addStat(AchievementHandler.DARK_MATTER, 1);
+		else if (stack.getItemDamage() == 1)
+			player.addStat(AchievementHandler.RED_MATTER, 1);
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list)
-	{
+	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list) {
 		for (int i = 0; i < 2; i++)
-		{
 			list.add(new ItemStack(item, 1, i));
-		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	public IIcon getIconFromDamage(int par1)
-	{
+	public IIcon getIconFromDamage(int par1) {
 		// 这里原本有个bug，修了，防止数组越界导致客户端崩溃
 		return icons[MathHelper.clamp_int(par1, 0, 1)];
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister register)
-	{
+	public void registerIcons(IIconRegister register) {
 		icons = new IIcon[2];
-
 		for (int i = 0; i < 2; i++)
-		{
 			icons[i] = register.registerIcon(this.getTexture("matter", names[i]));
-		}
 	}
 }

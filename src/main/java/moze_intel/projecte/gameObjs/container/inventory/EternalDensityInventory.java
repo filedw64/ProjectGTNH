@@ -11,8 +11,8 @@ import moze_intel.projecte.network.packets.UpdateGemModePKT;
 
 public class EternalDensityInventory implements IInventory
 {
-	private ItemStack inventory[];
-	private EntityPlayer player;
+	private final ItemStack[] inventory;
+	private final EntityPlayer player;
 	private boolean isInWhitelist;
 
 	public EternalDensityInventory(ItemStack stack, EntityPlayer player)
