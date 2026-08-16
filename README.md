@@ -14,13 +14,19 @@ Bugs can be reported at: https://github.com/filedw64/ProjectGTNH/issues
 
 Please try the latest release build before reporting, be sure to also include any logs or steps to reproduce you may have, as well as your Forge version, and whether or not you are using a third party loader such as Cauldron. When submitting logs please use a service such as Pastebin, do not paste the log directly into the issue.
 
+#### \# Downloads
+
+https://github.com/filedw64/ProjectGTNH/realeses/latest
+
 #### \# Current Team Members (Actually, there's no "team")
 
 filedw64 - Developer of this program - GTNH Support:
 
 * Github: https://github.com/filedw64
 
-WindyBye - Brilliant idea inventor and developer - Mods Integrator
+Windy-Bye - Brilliant idea inventor and developer - Mods Integrator
+
+* Github: https://github.com/Windy-Bye
 
 #### \# Thanks To
 

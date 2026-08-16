@@ -3,10 +3,6 @@ package moze_intel.projecte.emc;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.event.EMCRemapEvent;
 import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
-import moze_intel.projecte.emc.collector.DoubleCollector;
-import moze_intel.projecte.emc.collector.IMappingCollector;
-import moze_intel.projecte.emc.generators.DoubleGenerator;
-import moze_intel.projecte.emc.generators.IValueGenerator;
 import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
 import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
 import moze_intel.projecte.emc.mappers.CraftingMapper;
@@ -24,8 +20,6 @@ import moze_intel.projecte.utils.PrefixConfiguration;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.File;
@@ -36,106 +30,114 @@ import java.util.Map;
 
 public final class EMCMapper
 {
-    public static boolean enableNBTprocess = true;
+	public static boolean enableNBTprocess = true;
 	public static Map<SimpleStack, Double> emc = new HashMap<>();
-	public static Map<NormalizedSimpleStack, Double> graphMapperValues;
 
 	public static void map()
 	{
+		// 在开始映射前清空之前的记录
+		clearMaps();
+
 		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
 			new OreDictionaryMapper(),
-            new LazyMapper(),
-            APICustomEMCMapper.instance,
-            new CustomConversionMapper(),
-            new CustomEMCMapper(),
-            new CraftingMapper(),
-            new FluidMapper(),
-            new SmeltingMapper(),
-            new APICustomConversionMapper(),
-            new IntegrationMapper()
+			new LazyMapper(),
+			APICustomEMCMapper.instance,
+			new CustomConversionMapper(),
+			new CustomEMCMapper(),
+			new CraftingMapper(),
+			new FluidMapper(),
+			new SmeltingMapper(),
+			new APICustomConversionMapper(),
+			new IntegrationMapper()
 		);
-        SimpleGraphMapper<NormalizedSimpleStack, Double> mapper = new SimpleGraphMapper<>(new DoubleArithmetic());
-		IValueGenerator<NormalizedSimpleStack, Double> valueGenerator = new DoubleGenerator<>(mapper);
-		IMappingCollector<NormalizedSimpleStack, Double> mappingCollector = new DoubleCollector<>(mapper);
+
+		// 废弃了 DoubleCollector 和 DoubleGenerator，直接使用单一实例！
+		SimpleGraphMapper<NormalizedSimpleStack, Double> mapper = new SimpleGraphMapper<>(DoubleArithmetic.INSTANCE);
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();
 
-        enableNBTprocess = config.getBoolean("enableNBTprocess", "general", true, "Process items that have different NBT tags as different items.");
+		enableNBTprocess = config.getBoolean("enableNBTprocess", "general", true, "Process items that have different NBT tags as different items.");
 
 		PELogger.logInfo("Start to collect Mappings");
 		for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers) {
+			if (!config.getBoolean(emcMapper.getName(), "enabledMappers", emcMapper.isAvailable(), emcMapper.getDescription()) || !emcMapper.isAvailable())
+				continue;
+			long start = System.currentTimeMillis();
 			try {
-				boolean available = emcMapper.isAvailable();
-				if (!available || !config.getBoolean(emcMapper.getName(), "enabledMappers", available, emcMapper.getDescription()))
-					continue;
-
-				long start = System.currentTimeMillis();
-				emcMapper.addMappings(mappingCollector, new PrefixConfiguration(config, "mapperConfigurations." + emcMapper.getName()));
-				PELogger.logInfo("Collected Mappings from %s. (took %.3fs)", emcMapper.getClass().getName(), (System.currentTimeMillis() - start) / 1e3);
+				emcMapper.addMappings(mapper, new PrefixConfiguration(config, "mapperConfigurations." + emcMapper.getName()));
 			}
 			catch (Exception e) {
-				PELogger.logFatal("Exception during Mapping Collection from %s. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!", emcMapper.getClass().getName());
+				PELogger.logFatal("Exception during Mapping Collection from Mapper %s. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!", emcMapper.getClass().getName());
 				e.printStackTrace();
+				continue;
 			}
+			PELogger.logInfo("Collected Mappings from %s. (took %.3fs)", emcMapper.getClass().getName(), (System.currentTimeMillis() - start) / 1e3);
 		}
+
 		long start = System.currentTimeMillis();
-		NormalizedSimpleStack.addMappings(mappingCollector);
+		NormalizedSimpleStack.addMappings(mapper);
 		PELogger.logInfo("Collected Mappings from NormalizedSimpleStack. (took %.3fs)", (System.currentTimeMillis() - start) / 1e3);
 
 		PELogger.logInfo("Mapping Collection finished");
-		mappingCollector.finishCollection();
+		mapper.finishCollection();
 
 		config.save();
 		PELogger.logInfo("Start to generate Values");
 
 		start = System.currentTimeMillis();
-		graphMapperValues = valueGenerator.generateValues();
+		// 将 graphMapperValues 写入 map() 内，生成结束后释放内存
+		Map<NormalizedSimpleStack, Double> graphMapperValues = mapper.generateValues();
+		filterEMCMap(graphMapperValues);
 		PELogger.logInfo("EMC Values Generated! (took %.3fs)", (System.currentTimeMillis() - start) / 1e3);
 
-		filterEMCMap(graphMapperValues);
-		NormalizedSimpleStack.clearMap();
-
 		graphMapperValues.forEach((nss, val) -> {
-            if (nss instanceof NormalizedSimpleStack.NSSItem nssItem) {
-                Object obj = Item.itemRegistry.getObject(nssItem.itemName);
+			if (nss instanceof NormalizedSimpleStack.NSSItem nssItem) {
+				Object obj = Item.itemRegistry.getObject(nssItem.itemName);
 				int id = Item.itemRegistry.getIDForObject(obj);
+				if (id == -1) {
+					// 还是做一下判断，万一呢
+					PELogger.logWarn("Item not found in registry for NSSItem: %s. Skipping...", nssItem.itemName);
+					return;
+				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
 					emc.put(new NBTSimpleStack(id, 1, nbtnssItem.damage, nbtnssItem.nbt), val);
 				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
-				emc.put(new FluidSimpleStack(fluid.getID(), 1), val);
+				emc.put(new FluidSimpleStack(nssFluid.fluid.getID(), 1), val);
 			}
 		});
 
+		NormalizedSimpleStack.clearMap();
 		MinecraftForge.EVENT_BUS.post(new EMCRemapEvent());
 		Transmutation.cacheFullKnowledge();
 		FuelMapper.loadMap();
 	}
 
 	/**
-	 * Remove all entrys from the map, that are not {@link NormalizedSimpleStack.NSSItem}s, have a value <= 0 or WILDCARD_VALUE as metadata.
+	 * Remove all entrys from the map, that are not {@link NormalizedSimpleStack.NSSItem} or {@link NormalizedSimpleStack.NSSFluid},
+	 * have a value <= 0 or WILDCARD_VALUE as metadata.
 	 */
 	static void filterEMCMap(Map<NormalizedSimpleStack, Double> map) {
-		map.keySet().removeIf(nss -> {
-			if (map.get(nss) <= 0) return true;
+		// 使用 entrySet() 代替 keySet()，避免重复寻址查询
+		// 接管之前 DoubleGenerator 负责的 <= 0 过滤，原地剔除，不产生新的 HashMap
+		map.entrySet().removeIf(entry -> {
+			if (entry.getValue() <= 0) return true;
+			NormalizedSimpleStack nss = entry.getKey();
 			if (nss instanceof NormalizedSimpleStack.NSSItem nssItem)
 				return nssItem.damage == OreDictionary.WILDCARD_VALUE;
 			return !(nss instanceof NormalizedSimpleStack.NSSFluid);
 		});
 	}
 
-	public static boolean mapContains(SimpleStack key)
-	{
+	public static boolean mapContains(SimpleStack key) {
 		SimpleStack copy = key.copy();
 		copy.qnty = 1;
-		return emc.containsKey(copy);
+		return emc.containsKey(key);
 	}
 
-	public static Double getEmcValue(SimpleStack stack)
-	{
+	public static Double getEmcValue(SimpleStack stack) {
 		SimpleStack copy = stack.copy();
 		copy.qnty = 1;
 		return emc.get(copy);

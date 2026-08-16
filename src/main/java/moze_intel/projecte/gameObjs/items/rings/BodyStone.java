@@ -2,29 +2,29 @@ package moze_intel.projecte.gameObjs.items.rings;
 
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
-import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.StatCollector;
-import net.minecraft.world.World;
 import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
 import moze_intel.projecte.handlers.PlayerTimers;
 import moze_intel.projecte.utils.MathUtils;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.StatCollector;
+import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
 public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 {
-	public BodyStone()
-	{
+	public BodyStone() {
 		super("body_stone");
 		this.setNoRepair();
 	}
@@ -33,31 +33,24 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
 		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
-		{
 			return;
-		}
 
 		super.onUpdate(stack, world, entity, par4, par5);
 
-		if (stack.getItemDamage() != 0)
-		{
-			double itemEmc = getEmc(stack);
+		if (stack.getItemDamage() == 0) return;
 
-			if (itemEmc < 64 && !consumeFuel(player, stack, 64, false))
-			{
-				stack.setItemDamage(0);
-			}
-			else
-			{
-				PlayerTimers.activateFeed(player);
+		double itemEmc = getEmc(stack);
 
-				if (player.getFoodStats().needFood() && PlayerTimers.canFeed(player))
-				{
-					world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
-					player.getFoodStats().addStats(2, 10);
-					removeEmc(stack, 64);
-				}
-			}
+		if (itemEmc < 64 && !consumeFuel(player, stack, 64, false))
+			stack.setItemDamage(0);
+		else {
+			PlayerTimers.activateFeed(player);
+			if (!player.getFoodStats().needFood() || !PlayerTimers.canFeed(player))
+				return;
+
+			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
+			player.getFoodStats().addStats(2, 10);
+			removeEmc(stack, 64);
 		}
 	}
 
@@ -67,31 +60,21 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 		if (stack.getItemDamage() == 0)
 		{
 			if (getEmc(stack) < 64 && !consumeFuel(player, stack, 64, false))
-			{
-				//NOOP (used to be sounds)
-			}
-			else
-			{
-				stack.setItemDamage(1);
-			}
+				return; //NOOP (used to be sounds)
+			stack.setItemDamage(1);
 		}
-		else
-		{
-			stack.setItemDamage(0);
-		}
+		else stack.setItemDamage(0);
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public baubles.api.BaubleType getBaubleType(ItemStack itemstack)
-	{
+	public baubles.api.BaubleType getBaubleType(ItemStack itemstack) {
 		return BaubleType.AMULET;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public void onWornTick(ItemStack stack, EntityLivingBase player)
-	{
+	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		this.onUpdate(stack, player.worldObj, player, 0, false);
 	}
 
@@ -118,42 +101,37 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 	}
 
 	@Override
-	public void updateInPedestal(World world, int x, int y, int z)
-	{
-		if (!world.isRemote && ProjectEConfig.bodyPedCooldown != -1)
-		{
-			DMPedestalTile tile = ((DMPedestalTile) world.getTileEntity(x, y, z));
-			if (tile.getActivityCooldown() == 0)
-			{
-				List<EntityPlayerMP> players = world.getEntitiesWithinAABB(EntityPlayerMP.class, tile.getEffectBounds());
+	public void updateInPedestal(World world, int x, int y, int z) {
+		if (world.isRemote || ProjectEConfig.bodyPedCooldown == -1) return;
 
-				for (EntityPlayerMP player : players)
-				{
-					if (player.getFoodStats().needFood())
-					{
-						world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
-						player.getFoodStats().addStats(1, 1); // 1/2 shank
-					}
-				}
-
-				tile.setActivityCooldown(ProjectEConfig.bodyPedCooldown);
-			}
-			else
-			{
-				tile.decrementActivityCooldown();
-			}
+		DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
+		if (tile.getActivityCooldown() != 0) {
+			tile.decrementActivityCooldown();
+			return;
 		}
+
+		// 直接遍历维度玩家列表并判定碰撞箱
+		AxisAlignedBB bounds = tile.getEffectBounds();
+		for (Object obj : world.playerEntities) {
+			if (!(obj instanceof EntityPlayerMP player)) continue;
+			if (!player.boundingBox.intersectsWith(bounds) || !player.getFoodStats().needFood()) continue;
+
+			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
+			player.getFoodStats().addStats(1, 1); // 1/2 shank
+		}
+
+		tile.setActivityCooldown(ProjectEConfig.bodyPedCooldown);
 	}
 
 	@Override
 	public List<String> getPedestalDescription()
 	{
-		List<String> list = Lists.newArrayList();
+		List<String> list = new ArrayList<>();
 		if (ProjectEConfig.bodyPedCooldown != -1)
 		{
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.body.pedestal1"));
-			list.add(EnumChatFormatting.BLUE + String.format(
-					StatCollector.translateToLocal("pe.body.pedestal2"), MathUtils.tickToSecFormatted(ProjectEConfig.bodyPedCooldown)));
+			list.add(EnumChatFormatting.BLUE + String.format(StatCollector.translateToLocal("pe.body.pedestal2"),
+				MathUtils.tickToSecFormatted(ProjectEConfig.bodyPedCooldown)));
 		}
 		return list;
 	}

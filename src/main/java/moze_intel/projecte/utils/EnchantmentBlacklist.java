@@ -1,7 +1,7 @@
 package moze_intel.projecte.utils;
 
 import moze_intel.projecte.emc.SimpleStack;
-import moze_intel.projecte.integration.GregTech.GTItemHelper;
+import moze_intel.projecte.integration.helpers.GTItemHelper;
 import moze_intel.projecte.integration.GregTech.GTSimpleStack;
 import net.minecraft.item.ItemStack;
 

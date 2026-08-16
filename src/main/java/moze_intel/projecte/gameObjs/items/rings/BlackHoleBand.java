@@ -59,7 +59,7 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 
 		for (EntityItem item : itemList)
 		{
-			if (ItemHelper.hasSpace(player.inventory.mainInventory, item.getEntityItem()))
+			if (ItemHelper.hasSpaceForSingle(player.inventory.mainInventory, item.getEntityItem()))
 			{
 				WorldHelper.gravitateEntityTowards(item, player.posX, player.posY, player.posZ);
 			}
@@ -168,7 +168,7 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 			double centeredY = tile.yCoord + 0.5;
 			double centeredZ = tile.zCoord + 0.5;
 
-			for (EntityItem e : (List<EntityItem>) tile.getWorldObj().getEntitiesWithinAABB(EntityItem.class, aabb))
+			for (EntityItem e : tile.getWorldObj().getEntitiesWithinAABB(EntityItem.class, aabb))
 			{
 				WorldHelper.gravitateEntityTowards(e, centeredX, centeredY, centeredZ);
 				if (!e.worldObj.isRemote && !e.isDead && e.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
@@ -185,7 +185,7 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 				}
 			}
 
-			for (EntityLootBall e : (List<EntityLootBall>) tile.getWorldObj().getEntitiesWithinAABB(EntityLootBall.class, aabb))
+			for (EntityLootBall e : tile.getWorldObj().getEntitiesWithinAABB(EntityLootBall.class, aabb))
 			{
 				WorldHelper.gravitateEntityTowards(e, centeredX, centeredY, centeredZ);
 				if (!e.worldObj.isRemote && !e.isDead && e.getDistanceSq(centeredX, centeredY, centeredZ) < 1.21)
@@ -202,12 +202,12 @@ public class BlackHoleBand extends RingToggle implements IAlchBagItem, IAlchChes
 		if (stack.getItemDamage() == 1)
 		{
 
-			for (EntityItem e : (List<EntityItem>) player.worldObj.getEntitiesWithinAABB(EntityItem.class, player.boundingBox.expand(5, 5, 5)))
+			for (EntityItem e : player.worldObj.getEntitiesWithinAABB(EntityItem.class, player.boundingBox.expand(5, 5, 5)))
 			{
 				WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
 			}
 
-			for (EntityLootBall e : (List<EntityLootBall>) player.worldObj.getEntitiesWithinAABB(EntityLootBall.class, player.boundingBox.expand(5, 5, 5)))
+			for (EntityLootBall e : player.worldObj.getEntitiesWithinAABB(EntityLootBall.class, player.boundingBox.expand(5, 5, 5)))
 			{
 				WorldHelper.gravitateEntityTowards(e, player.posX, player.posY, player.posZ);
 			}

@@ -19,7 +19,6 @@ import java.util.Map;
 public final class CustomEMCParser
 {
 	private static final String VERSION = "#0.2";
-	private static File CONFIG;
 	private static Path CONFIG_PATH;
 	private static boolean loaded;
 
@@ -27,35 +26,30 @@ public final class CustomEMCParser
 
 	public static void init()
 	{
-		CONFIG = new File(PECore.CONFIG_DIR, "custom_emc.cfg");
+		File CONFIG = new File(PECore.CONFIG_DIR, "custom_emc.cfg");
 		CONFIG_PATH = CONFIG.toPath();
 		loaded = false;
 
-		try
-		{
-			if (!CONFIG.exists())
-			{
-				if (CONFIG.createNewFile())
-				{
+		try {
+			if (!CONFIG.exists()) {
+				if (CONFIG.createNewFile()) {
 					writeDefaultFile();
 					loaded = true;
 				}
 			}
 			else
 			{
-				// 用 NIO Files 一次性读取
+				// 使用 NIO Files 一次性读取
 				List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
-				if (lines.isEmpty() || !lines.get(0).equals(VERSION))
-				{
-					PELogger.logFatal("Found old custom EMC file: resetting.");
+				if (lines.isEmpty() || !lines.get(0).equals(VERSION)) {
+					PELogger.logWarn("Found old custom EMC file: resetting.");
 					writeDefaultFile();
 				}
 				loaded = true;
 			}
 		}
-		catch (IOException e)
-		{
-			PELogger.logFatal("Exception in file I/O: couldn't create custom configuration files.");
+		catch (IOException e) {
+			PELogger.logError("Exception in file I/O: couldn't create custom configuration files.");
 			e.printStackTrace();
 		}
 	}
