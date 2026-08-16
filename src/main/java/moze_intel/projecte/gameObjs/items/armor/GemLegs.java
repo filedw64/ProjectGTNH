@@ -31,14 +31,14 @@ public class GemLegs extends GemArmorBase
 			player.posY = -12.0D; // 将玩家强行托在 y=-12 的高度
 			if (player.motionY < 0.0D)
 				player.motionY = 0.0D; // 消除向下的速度
-			player.fallDistance = 0.0F; // 清空掉落伤害
+			player.fallDistance = 0.0F; // 清空坠落距离
 			player.onGround = true; // 让系统认为玩家踩在方块上
 		}
 
 		if (!player.isSneaking()) return;
 
-		if (world.isRemote && !player.onGround && player.motionY <= 0)// 原版的自然极限下落速度大约是 -3.92
-			player.motionY = Math.max(player.motionY + 0.08D, -7.5D);// 两倍的重力加速度，并限制最大下落速度
+		if (world.isRemote && !player.onGround && player.motionY <= 0) // 原版的自然极限下落速度是 -3.92
+			player.motionY -= 0.40D; // 额外的五倍重力加速度
 
 		// 优化一下：使用 boundingBox 扩张
 		AxisAlignedBB box = player.boundingBox.expand(3.5, 3.5, 3.5);
