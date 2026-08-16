@@ -79,7 +79,7 @@ public class Relay extends BlockDirection
 	{
 		this.blockIcon = register.registerIcon("projecte:relays/other");
 		this.front = register.registerIcon("projecte:relays/front");
-		this.top = register.registerIcon("projecte:relays/top_"+ tier);
+		this.top = register.registerIcon("projecte:relays/top_" + tier);
 	}
 
 	@Override

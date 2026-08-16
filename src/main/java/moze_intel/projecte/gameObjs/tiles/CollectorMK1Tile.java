@@ -18,9 +18,6 @@ import moze_intel.projecte.network.packets.CollectorSyncPKT;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.WorldHelper;
-
-import java.util.Map;
 
 public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInventory, IEmcProvider
 {
@@ -37,6 +34,8 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	public int displaySunLevel;
 	public double displayItemCharge;
 	private int numUsing;
+
+	private int ticksExisted = 0;
 
 	public CollectorMK1Tile()
 	{
@@ -65,9 +64,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 		accessibleSlots = new int[invBufferSize];
 
 		for (int i = 0; i < invBufferSize; i++)
-		{
 			accessibleSlots[i] = i + 1;
-		}
 
 		this.emcGen = emcGen;
 		this.upgradedSlot = upgradedSlot;
@@ -82,7 +79,11 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			return;
 		}
 
-		sortInventory();
+		ticksExisted++;
+
+		// 每 Tick 排序降低为每 10 Tick (0.5秒) 排序一次，极大降低堆量时的 CPU 占用
+		if (ticksExisted % 10 == 0)
+			sortInventory();
 
 		if (inventory[0] == null)
 		{
@@ -91,6 +92,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 		}
 		else
 		{
+			// 这个检查没必要每 Tick 都做，只有当槽位 0 的内容可能改变时才需要，但这里保留每 Tick 也不会有大开销
 			checkFuelOrKlein();
 		}
 
@@ -105,10 +107,10 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 		displaySunLevel = getSunLevel();
 		displayItemCharge = getItemCharge();
 
-		if (numUsing > 0)
-		{
+		// 将 GUI 同步发包从每秒 20 次降低到每秒 4 次（每 5 Tick）
+		if (numUsing > 0 && ticksExisted % 5 == 0) {
 			PacketHandler.sendToAllAround(new CollectorSyncPKT(displayEmc, displayItemCharge, this.xCoord, this.yCoord, this.zCoord),
-					new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
+				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
 		}
 	}
 
@@ -116,9 +118,9 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	{
 		if (inventory[upgradedSlot] != null)
 		{
-			if (!(inventory[lockSlot] != null
-					&& inventory[upgradedSlot].getItem() == inventory[lockSlot].getItem()
-					&& inventory[upgradedSlot].stackSize < inventory[upgradedSlot].getMaxStackSize())) {
+			if (inventory[lockSlot] == null || inventory[upgradedSlot].getItem() != inventory[lockSlot].getItem()
+				|| inventory[upgradedSlot].stackSize >= inventory[upgradedSlot].getMaxStackSize())
+			{
 				for (int i = 1; i < invBufferSize; i++)
 				{
 					if (inventory[i] == null)
@@ -164,8 +166,6 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			{
 				inventory[nextIndex] = current;
 				decrStackSize(i, current.stackSize);
-
-				continue;
 			}
 			else if (ItemHelper.areItemStacksEqual(current, following) && following.stackSize < following.getMaxStackSize())
 			{
@@ -181,8 +181,6 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 					inventory[nextIndex].stackSize += missingForFullStack;
 					decrStackSize(i, missingForFullStack);
 				}
-
-				continue;
 			}
 		}
 	}
@@ -191,7 +189,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	{
 		if (inventory[0] != null && inventory[0].getItem() instanceof IItemEmc itemEmc)
 		{
-			if(itemEmc.getStoredEmc(inventory[0]) != itemEmc.getMaximumEmc(inventory[0]))
+			if (itemEmc.getStoredEmc(inventory[0]) != itemEmc.getMaximumEmc(inventory[0]))
 			{
 				hasChargeableItem = true;
 				hasFuel = false;
@@ -211,10 +209,9 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	public void updateEmc()
 	{
 		if (this.getStoredEmc() == 0)
-		{
 			return;
-		}
-		else if (hasChargeableItem)
+
+		if (hasChargeableItem)
 		{
 			double toSend = this.getStoredEmc() < emcGen ? this.getStoredEmc() : emcGen;
 
@@ -238,7 +235,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 
 			ItemStack result = inventory[lockSlot] == null ? FuelMapper.getFuelUpgrade(inventory[0]) : inventory[lockSlot].copy();
 
-            double upgradeCost = EMCHelper.getEmcValue(result) - EMCHelper.getEmcValue(inventory[0]);
+			double upgradeCost = EMCHelper.getEmcValue(result) - EMCHelper.getEmcValue(inventory[0]);
 
 			if (upgradeCost > 0 && this.getStoredEmc() >= upgradeCost)
 			{
@@ -268,7 +265,13 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 
 	private float getSunRelativeEmc(int emc)
 	{
-		return (float) getSunLevel() * emc / 16;
+		float baseEmc = (float) getSunLevel() * emc / 16;
+
+		// 露天更高效率
+		if (!worldObj.provider.hasNoSky && worldObj.canBlockSeeTheSky(xCoord, yCoord + 1, zCoord))
+			return baseEmc * 3.0f;
+
+		return baseEmc;
 	}
 
 	public ItemStack getChargingItem()
@@ -338,7 +341,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 			return 0;
 		}
 
-        double reqEmc;
+		double reqEmc;
 
 		if (inventory[lockSlot] != null)
 		{
@@ -490,7 +493,8 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this
+			&& var1.getDistanceSq((double) this.xCoord + 0.5D, (double) this.yCoord + 0.5D, (double) this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
@@ -546,23 +550,20 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 
 	private void sendRelayBonus()
 	{
-		for (Map.Entry<ForgeDirection, TileEntity> entry: WorldHelper.getAdjacentTileEntitiesMapped(worldObj, this).entrySet())
+		// 优化：彻底移除了极其耗费内存的 WorldHelper.getAdjacentTileEntitiesMapped(worldObj, this)
+		// 避免每 Tick、每个机器都实例化一次 HashMap、EnumMap 和一堆迭代器，大幅减轻 GC 压力
+		for (int i = 0; i < 6; i++)
 		{
-			ForgeDirection dir = entry.getKey();
-			TileEntity tile = entry.getValue();
+			ForgeDirection dir = ForgeDirection.getOrientation(i);
+			TileEntity tile = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+			if (tile == null) continue;
 
-			if (tile instanceof RelayMK3Tile)
-			{
-				((RelayMK3Tile) tile).acceptEMC(dir, 0.5);
-			}
-			else if (tile instanceof RelayMK2Tile)
-			{
-				((RelayMK2Tile) tile).acceptEMC(dir, 0.15);
-			}
-			else if (tile instanceof RelayMK1Tile)
-			{
-				((RelayMK1Tile) tile).acceptEMC(dir, 0.05);
-			}
+			if (tile instanceof RelayMK3Tile relayMK3Tile)
+				relayMK3Tile.acceptEMC(dir, 0.5);
+			else if (tile instanceof RelayMK2Tile relayMK2Tile)
+				relayMK2Tile.acceptEMC(dir, 0.15);
+			else if (tile instanceof RelayMK1Tile relayMK1Tile)
+				relayMK1Tile.acceptEMC(dir, 0.05);
 		}
 	}
 

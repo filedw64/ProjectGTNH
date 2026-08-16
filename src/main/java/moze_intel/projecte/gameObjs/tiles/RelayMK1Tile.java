@@ -28,6 +28,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public double displayRawEmc;
 	private int numUsing;
 
+	private int ticksExisted = 0;
+
 	public RelayMK1Tile()
 	{
 		super(Constants.RELAY_MK1_MAX);
@@ -48,25 +50,27 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public void updateEntity()
 	{
 		if (worldObj.isRemote)
-		{
 			return;
-		}
 
+		ticksExisted++;
+
+		// 能量传输保持每Tick运行，保证吞吐量
 		sendEmc();
-		sortInventory();
+
+		// 将每 Tick 排序降低为每 10 Tick (0.5秒) 排序一次，极大降低 CPU 占用
+		if (ticksExisted % 10 == 0)
+			sortInventory();
 
 		ItemStack stack = inventory[0];
 
 		if (stack != null)
 		{
-			if(stack.getItem() instanceof IItemEmc itemEmc)
+			if (stack.getItem() instanceof IItemEmc itemEmc)
 			{
 				double emcVal = itemEmc.getStoredEmc(stack);
 
 				if (emcVal > chargeRate)
-				{
 					emcVal = chargeRate;
-				}
 
 				if (emcVal > 0 && this.getStoredEmc() + emcVal <= this.getMaximumEmc())
 				{
@@ -76,7 +80,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			}
 			else
 			{
-                double emcVal = EMCHelper.getEmcValue(stack);
+				double emcVal = EMCHelper.getEmcValue(stack);
 
 				if (emcVal > 0 && (this.getStoredEmc() + emcVal) <= this.getMaximumEmc())
 				{
@@ -89,18 +93,16 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		ItemStack chargeable = inventory[getSizeInventory() - 1];
 
 		if (chargeable != null && this.getStoredEmc() > 0 && chargeable.getItem() instanceof IItemEmc)
-		{
 			chargeItem(chargeable);
-		}
 
 		displayEmc = (int) this.getStoredEmc();
 		displayChargingEmc = getChargingEMC();
 		displayRawEmc = getRawEmc();
 
-		if (numUsing > 0)
-		{
+		// 将 GUI 同步发包从每秒 20 次降低到每秒 4 次（每 5 Tick），解决打开界面时的网络拥堵
+		if (numUsing > 0 && ticksExisted % 5 == 0) {
 			PacketHandler.sendToAllAround(new RelaySyncPKT(displayEmc, displayChargingEmc, displayRawEmc, this.xCoord, this.yCoord, this.zCoord),
-					new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
+				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
 		}
 	}
 
@@ -109,13 +111,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		if (this.getStoredEmc() == 0) return;
 
 		if (this.getStoredEmc() <= chargeRate)
-		{
 			this.sendToAllAcceptors(this.getStoredEmc());
-		}
-		else
-		{
-			this.sendToAllAcceptors(chargeRate);
-		}
+		else this.sendToAllAcceptors(chargeRate);
 	}
 
 	private void sortInventory()
@@ -125,9 +122,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 			ItemStack current = getStackInSlot(i);
 
 			if (current == null)
-			{
 				continue;
-			}
 
 			int nextIndex = i < invBufferSize ? i + 1 : 0;
 
@@ -163,51 +158,39 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-        if (!((starEmc + toSend) <= maxStarEmc)) {
-            toSend = maxStarEmc - starEmc;
-        }
-        itemEmc.addEmc(chargeable, toSend);
-        this.removeEMC(toSend);
-    }
+		if ((starEmc + toSend) > maxStarEmc)
+			toSend = maxStarEmc - starEmc;
+		itemEmc.addEmc(chargeable, toSend);
+		this.removeEMC(toSend);
+	}
 
-	public int getEmcScaled(int i)
-	{
+	public int getEmcScaled(int i) {
 		return (int) Math.round(displayEmc * i / this.getMaximumEmc());
 	}
 
 	private double getChargingEMC()
 	{
 		int index = getSizeInventory() - 1;
-		if (inventory[index] != null && inventory[index].getItem() instanceof IItemEmc)
-		{
-			return ((IItemEmc) inventory[index].getItem()).getStoredEmc(inventory[index]);
-		}
-
+		if (inventory[index] != null && inventory[index].getItem() instanceof IItemEmc iItemEmc)
+			return iItemEmc.getStoredEmc(inventory[index]);
 		return 0;
 	}
 
 	public int getChargingEMCScaled(int i)
 	{
 		int index = getSizeInventory() - 1;
-		if (inventory[index] != null && inventory[index].getItem() instanceof IItemEmc)
-		{
-			return ((int) Math.round(displayChargingEmc * i / ((IItemEmc) inventory[index].getItem()).getMaximumEmc(inventory[index])));
-		}
-
+		if (inventory[index] != null && inventory[index].getItem() instanceof IItemEmc iItemEmc)
+			return (int) Math.round(displayChargingEmc * i / iItemEmc.getMaximumEmc(inventory[index]));
 		return 0;
 	}
 
 	private double getRawEmc()
 	{
 		if (inventory[0] == null)
-		{
 			return 0;
-		}
 
-		if (inventory[0].getItem() instanceof IItemEmc)
-		{
-			return ((IItemEmc) inventory[0].getItem()).getStoredEmc(inventory[0]);
-		}
+		if (inventory[0].getItem() instanceof IItemEmc iItemEmc)
+			return iItemEmc.getStoredEmc(inventory[0]);
 
 		return EMCHelper.getEmcValue(inventory[0]) * inventory[0].stackSize;
 	}
@@ -215,17 +198,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public int getRawEmcScaled(int i)
 	{
 		if (inventory[0] == null)
-		{
 			return 0;
-		}
 
-		if (inventory[0].getItem() instanceof IItemEmc)
-		{
-			return (int) Math.round(displayRawEmc * i / ((IItemEmc) inventory[0].getItem()).getMaximumEmc(inventory[0]));
-		}
+		if (inventory[0].getItem() instanceof IItemEmc iItemEmc)
+			return (int) Math.round(displayRawEmc * i / iItemEmc.getMaximumEmc(inventory[0]));
 
-        double emc = EMCHelper.getEmcValue(inventory[0]);
-
+		double emc = EMCHelper.getEmcValue(inventory[0]);
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
 	}
 
@@ -263,14 +241,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	}
 
 	@Override
-	public int getSizeInventory()
-	{
+	public int getSizeInventory() {
 		return inventory.length;
 	}
 
 	@Override
-	public ItemStack getStackInSlot(int slot)
-	{
+	public ItemStack getStackInSlot(int slot) {
 		return inventory[slot];
 	}
 
@@ -278,16 +254,15 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public ItemStack decrStackSize(int slot, int qty)
 	{
 		ItemStack stack = inventory[slot];
-		if (stack != null)
-		{
-			if (stack.stackSize <= qty)
+		if (stack == null)
+			return stack;
+
+		if (stack.stackSize <= qty)
+			inventory[slot] = null;
+		else {
+			stack = stack.splitStack(qty);
+			if (stack.stackSize == 0)
 				inventory[slot] = null;
-			else
-			{
-				stack = stack.splitStack(qty);
-				if (stack.stackSize == 0)
-					inventory[slot] = null;
-			}
 		}
 		return stack;
 	}
@@ -295,18 +270,15 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public ItemStack getStackInSlotOnClosing(int slot)
 	{
-		if (inventory[slot] != null)
-		{
-			ItemStack stack = inventory[slot];
-			inventory[slot] = null;
-			return stack;
-		}
-		return null;
+		if (inventory[slot] == null) return null;
+
+		ItemStack stack = inventory[slot];
+		inventory[slot] = null;
+		return stack;
 	}
 
 	@Override
-	public void setInventorySlotContents(int slot, ItemStack stack)
-	{
+	public void setInventorySlotContents(int slot, ItemStack stack) {
 		inventory[slot] = stack;
 		if (stack != null && stack.stackSize > this.getInventoryStackLimit())
 			stack.stackSize = this.getInventoryStackLimit();
@@ -314,44 +286,39 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	}
 
 	@Override
-	public String getInventoryName()
-	{
+	public String getInventoryName() {
 		return "pe.relay.mk1";
 	}
 
 	@Override
-	public boolean hasCustomInventoryName()
-	{
+	public boolean hasCustomInventoryName() {
 		return false;
 	}
 
 	@Override
-	public int getInventoryStackLimit()
-	{
+	public int getInventoryStackLimit() {
 		return 64;
 	}
 
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this
+			&& var1.getDistanceSq(this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
-	public void openInventory()
-	{
+	public void openInventory() {
 		numUsing++;
 	}
 
 	@Override
-	public void closeInventory()
-	{
+	public void closeInventory() {
 		numUsing--;
 	}
 
 	@Override
-	public boolean isItemValidForSlot(int slot, ItemStack stack)
-	{
+	public boolean isItemValidForSlot(int slot, ItemStack stack) {
 		return true;
 	}
 
@@ -361,8 +328,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		int[] indexes = new int[inventory.length - 2];
 		byte counter = 0;
 
-		for (int i = 1; i < inventory.length - 1; i++)
-		{
+		for (int i = 1; i < inventory.length - 1; i++) {
 			indexes[counter] = i;
 			counter++;
 		}
@@ -371,14 +337,12 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	}
 
 	@Override
-	public boolean canInsertItem(int slot, ItemStack stack, int side)
-	{
+	public boolean canInsertItem(int slot, ItemStack stack, int side) {
 		return EMCHelper.doesItemHaveEmc(stack);
 	}
 
 	@Override
-	public boolean canExtractItem(int slot, ItemStack stack, int side)
-	{
+	public boolean canExtractItem(int slot, ItemStack stack, int side) {
 		return false;
 	}
 
@@ -386,15 +350,11 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public double acceptEMC(ForgeDirection side, double toAccept)
 	{
 		if (worldObj.getTileEntity(xCoord + side.offsetX, yCoord + side.offsetY, zCoord + side.offsetZ) instanceof RelayMK1Tile)
-		{
 			return 0; // Do not accept from other relays - avoid infinite loop / thrashing
-		}
-		else
-		{
-			double toAdd = Math.min(maximumEMC - currentEMC, toAccept);
-			currentEMC += toAdd;
-			return toAdd;
-		}
+
+		double toAdd = Math.min(maximumEMC - currentEMC, toAccept);
+		currentEMC += toAdd;
+		return toAdd;
 	}
 
 	@Override

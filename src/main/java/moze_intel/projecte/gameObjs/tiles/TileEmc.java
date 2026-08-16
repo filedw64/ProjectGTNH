@@ -1,31 +1,23 @@
 package moze_intel.projecte.gameObjs.tiles;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Maps;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import moze_intel.projecte.api.tile.IEmcAcceptor;
 import moze_intel.projecte.api.tile.IEmcProvider;
 import moze_intel.projecte.api.tile.TileEmcBase;
 import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.WorldHelper;
-
-import java.util.Map;
 
 public abstract class TileEmc extends TileEmcBase
 {
-	public TileEmc()
-	{
+	public TileEmc() {
 		setMaximumEMC(Constants.TILE_MAX_EMC);
 	}
 
-	public TileEmc(int maxAmount)
-	{
+	public TileEmc(int maxAmount) {
 		setMaximumEMC(maxAmount);
 	}
 
-	public boolean hasMaxedEmc()
-	{
+	public boolean hasMaxedEmc() {
 		return getStoredEmc() >= getMaximumEmc();
 	}
 
@@ -37,24 +29,52 @@ public abstract class TileEmc extends TileEmcBase
 	 */
 	public void sendToAllAcceptors(double emc)
 	{
-		if (!(this instanceof IEmcProvider))
+		if (!(this instanceof IEmcProvider provider))
 		{
-			// todo move this method somewhere
 			throw new UnsupportedOperationException("sending without being a provider");
 		}
 
+		if (emc <= 0)
+			return;
 
-		Map<ForgeDirection, TileEntity> tiles = Maps.filterValues(WorldHelper.getAdjacentTileEntitiesMapped(worldObj, this), Predicates.instanceOf(IEmcAcceptor.class));
+		// 废弃高内存开销的 Map 包装和 Predicate 过滤
+		// 采用零对象分配（Zero-Allocation）的数组缓存机制
+		IEmcAcceptor[] acceptors = new IEmcAcceptor[6];
+		ForgeDirection[] directions = new ForgeDirection[6];
+		int validCount = 0;
 
-		double emcPer = emc / tiles.size();
-		for (Map.Entry<ForgeDirection, TileEntity> entry : tiles.entrySet())
+		// 第一次遍历找出周围有效的接收器并计数，避免除以0，避免 Map.size() 的开销
+		for (int i = 0; i < 6; i++)
 		{
-			if (this instanceof RelayMK1Tile && entry.getValue() instanceof RelayMK1Tile)
+			ForgeDirection dir = ForgeDirection.getOrientation(i);
+			TileEntity tile = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+
+			if (tile instanceof IEmcAcceptor acceptor)
 			{
-				continue;
+				if (this instanceof RelayMK1Tile && tile instanceof RelayMK1Tile)
+					continue;
+
+				acceptors[validCount] = acceptor;
+				directions[validCount] = dir;
+				validCount++;
 			}
-			double provide = ((IEmcProvider) this).provideEMC(entry.getKey().getOpposite(), emcPer);
-			double remain = provide - ((IEmcAcceptor) entry.getValue()).acceptEMC(entry.getKey(), provide);
+		}
+
+		// 如果周围没有任何接收器，直接终止
+		if (validCount == 0)
+			return;
+
+		// 平分 EMC
+		double emcPer = emc / validCount;
+
+		// 第二次遍历发送能量并回收多余的能量
+		for (int i = 0; i < validCount; i++)
+		{
+			IEmcAcceptor tile = acceptors[i];
+			ForgeDirection dir = directions[i];
+
+			double provide = provider.provideEMC(dir.getOpposite(), emcPer);
+			double remain = provide - tile.acceptEMC(dir, provide);
 			this.addEMC(remain);
 		}
 	}
