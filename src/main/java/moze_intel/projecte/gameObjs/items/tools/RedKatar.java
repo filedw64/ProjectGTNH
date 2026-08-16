@@ -1,11 +1,7 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.api.item.IExtraFunction;
-import moze_intel.projecte.utils.ToolTipHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockGrass;
@@ -13,16 +9,14 @@ import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-
-import java.util.List;
 
 public class RedKatar extends PEToolBase implements IExtraFunction
 {
@@ -104,34 +98,14 @@ public class RedKatar extends PEToolBase implements IExtraFunction
 		return 72000;
 	}
 
-	// ==================== 神器彩字特效区 ====================
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean b)
-	{
-		super.addInformation(stack, player, list, b);
-		// 伪装成原版的蓝色属性面板
-		list.add(""); // 留一行空行，和原版格式保持一致
-		list.add(EnumChatFormatting.BLUE + "+ " + ToolTipHelper.getRainbowGlitch(12) + EnumChatFormatting.BLUE + " 伤害");
-	}
-
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
 	{
-		/*if (ProjectEConfig.useOldDamage)
-		{
-			return super.getAttributeModifiers(stack);
-		}
-
 		byte charge = stack.stackTagCompound == null ? 0 : getCharge(stack);
 		float damage = KATAR_BASE_ATTACK + charge; // Sword
 
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Weapon modifier", damage, 0));
-		return multimap;*/
-		// 返回空的 Multimap，彻底屏蔽掉原版的枯燥面板
-		return HashMultimap.create();
-
+		return multimap;
 	}
 }

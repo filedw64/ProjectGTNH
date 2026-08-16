@@ -1,13 +1,9 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.utils.ItemHelper;
-import moze_intel.projecte.utils.ToolTipHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockClay;
 import net.minecraft.block.BlockDirt;
@@ -16,6 +12,7 @@ import net.minecraft.block.BlockGravel;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -25,8 +22,6 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-
-import java.util.List;
 
 public class RedStar extends PEToolBase
 {
@@ -145,33 +140,14 @@ public class RedStar extends PEToolBase
 		return super.getDigSpeed(stack, block, metadata) + 48.0F;
 	}
 
-	// ==================== 神器彩字特效区 ====================
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean b)
-	{
-		super.addInformation(stack, player, list, b);
-		list.add("");
-		list.add(EnumChatFormatting.BLUE + "+ " + ToolTipHelper.getRainbowGlitch(9) + EnumChatFormatting.BLUE + " 挖掘速度");
-		list.add(EnumChatFormatting.BLUE + "+ " + ToolTipHelper.getRainbowGlitch(4) + EnumChatFormatting.BLUE + " 挖掘等级");
-	}
-
 	@Override
 	public Multimap<String, AttributeModifier> getAttributeModifiers(ItemStack stack)
 	{
-		/*if (ProjectEConfig.useOldDamage)
-		{
-			return super.getAttributeModifiers(stack);
-		}
-
 		byte charge = stack.stackTagCompound == null ? 0 : getCharge(stack);
 		float damage = STAR_BASE_ATTACK + charge;
 
 		Multimap<String, AttributeModifier> multimap = super.getAttributeModifiers(stack);
 		multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(field_111210_e, "Weapon modifier", damage, 0));
-		return multimap;*/
-		// 屏蔽原版属性面板
-		return HashMultimap.create();
+		return multimap;
 	}
 }
