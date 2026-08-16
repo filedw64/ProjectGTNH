@@ -63,7 +63,7 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 
 		if (player instanceof EntityPlayerSP playerSP) // 不通过 proxy 获取，降低开销
 			if (!player.capabilities.isFlying && playerSP.movementInput.jump)
-				player.motionY += 0.1D;
+				player.motionY = 0.3D; // 比爬梯快一点，模拟启用飞行时的瞬间悬停
 
 		// 强化：指数级消除惯性。只要松开了前后和左右移动键，立刻强力制动
 		if (player.moveForward == 0 && player.moveStrafing == 0) {
