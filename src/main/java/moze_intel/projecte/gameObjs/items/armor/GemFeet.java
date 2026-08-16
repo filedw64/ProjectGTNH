@@ -3,6 +3,13 @@ package moze_intel.projecte.gameObjs.items.armor;
 import com.google.common.collect.Multimap;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.gameObjs.items.IFlightProvider;
+import moze_intel.projecte.gameObjs.items.IStepAssister;
+import moze_intel.projecte.utils.ChatHelper;
+import moze_intel.projecte.utils.ClientKeyHelper;
+import moze_intel.projecte.utils.EnumArmorType;
+import moze_intel.projecte.utils.PEKeybind;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,13 +20,6 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
-import moze_intel.projecte.gameObjs.items.IStepAssister;
-import moze_intel.projecte.utils.ChatHelper;
-import moze_intel.projecte.utils.ClientKeyHelper;
-import moze_intel.projecte.utils.EnumArmorType;
-import moze_intel.projecte.utils.PEKeybind;
 
 import java.util.List;
 
@@ -50,6 +50,8 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 			.appendSibling(ChatHelper.modifyColor(new ChatComponentTranslation(s), e)));
 	}
 
+	private final static float SPEEDBOOST = 0.1F;
+
 	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack stack)
 	{
@@ -59,30 +61,22 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 			return;
 		}
 
-		if (!player.capabilities.isFlying && PECore.proxy.isJumpPressed())
-			player.motionY += 0.1D;
+		if (player instanceof EntityPlayerSP playerSP) // 不通过 proxy 获取，降低开销
+			if (!player.capabilities.isFlying && playerSP.movementInput.jump)
+				player.motionY += 0.1D;
 
 		// 强化：指数级消除惯性。只要松开了前后和左右移动键，立刻强力制动
 		if (player.moveForward == 0 && player.moveStrafing == 0) {
-			player.motionX *= 0.5D;
-			player.motionZ *= 0.5D;
+			player.motionX *= 0.75D; // 稍微削一点制动
+			player.motionZ *= 0.75D;
 		}
 
 		if (player.onGround) return;
 
 		if (player.motionY <= 0)
-			player.motionY *= 0.9D;
+			player.motionY *= 0.95D; // 削弱缓降
 
-		if (player.moveForward < 0) {
-			player.motionX *= 0.9D;
-			player.motionZ *= 0.9D;
-		}
-		else if (player.moveForward > 0 && player.motionX * player.motionX +
-			player.motionY * player.motionY + player.motionZ * player.motionZ < 3)
-		{
-			player.motionX *= 1.1D;
-			player.motionZ *= 1.1D;
-		}
+		player.moveFlying(player.moveStrafing, player.moveForward, SPEEDBOOST); // 在空中时按玩家方向提供动力
 	}
 
 	@Override
