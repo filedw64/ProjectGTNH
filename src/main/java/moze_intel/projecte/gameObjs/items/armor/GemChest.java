@@ -2,6 +2,11 @@ package moze_intel.projecte.gameObjs.items.armor;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.items.IFireProtector;
+import moze_intel.projecte.handlers.PlayerTimers;
+import moze_intel.projecte.utils.EnumArmorType;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -10,16 +15,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.items.IFireProtector;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
-import moze_intel.projecte.handlers.PlayerTimers;
-import moze_intel.projecte.utils.EnumArmorType;
-import moze_intel.projecte.utils.WorldHelper;
 
 import java.util.List;
 
-public class GemChest extends GemArmorBase implements IFireProtector, IFlightProvider
+public class GemChest extends GemArmorBase implements IFireProtector
 {
 	public GemChest() {
 		super(EnumArmorType.CHEST);
@@ -31,16 +30,14 @@ public class GemChest extends GemArmorBase implements IFireProtector, IFlightPro
 		tooltips.add(StatCollector.translateToLocal("pe.gem.chest.lorename"));
 	}
 
-	private final static double SPEEDBOOST = 0.18;
-
 	@Override
 	public void onArmorTick(World world, EntityPlayer player, ItemStack chest)
 	{
 		if (world.isRemote)
 		{
-			int x = MathHelper.floor_double(player.posX);
-			int y = MathHelper.floor_double(player.posY - player.getYOffset());
-			int z = MathHelper.floor_double(player.posZ);
+			final int x = MathHelper.floor_double(player.posX);
+			final int y = MathHelper.floor_double(player.posY - player.getYOffset());
+			final int z = MathHelper.floor_double(player.posZ);
 
 			if (world.blockExists(x, y - 1, z))
 			{
@@ -53,15 +50,6 @@ public class GemChest extends GemArmorBase implements IFireProtector, IFlightPro
 						player.fallDistance = 0.0f;
 						player.onGround = true;
 					}
-				}
-			}
-
-			// 修复与强化：基于玩家朝向（Yaw）的三角函数推力，彻底解决按W倒退的问题
-			if (player.capabilities.isFlying && player.moveForward > 0) {
-				final float yaw = (float) (player.rotationYaw * Math.PI / 180.0D);
-				if (player.motionX * player.motionX + player.motionZ * player.motionZ < 3.0) {
-					player.motionX -= MathHelper.sin(yaw) * SPEEDBOOST;
-					player.motionZ += MathHelper.cos(yaw) * SPEEDBOOST;
 				}
 			}
 		}
@@ -79,11 +67,6 @@ public class GemChest extends GemArmorBase implements IFireProtector, IFlightPro
 
 	@Override
 	public boolean canProtectAgainstFire(ItemStack stack, EntityPlayerMP player) {
-		return player.getCurrentArmor(2) == stack;
-	}
-
-	@Override
-	public boolean canProvideFlight(ItemStack stack, EntityPlayerMP player) {
 		return player.getCurrentArmor(2) == stack;
 	}
 }
