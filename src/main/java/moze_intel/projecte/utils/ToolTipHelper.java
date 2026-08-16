@@ -14,8 +14,9 @@ public final class ToolTipHelper {
 	@SideOnly(Side.CLIENT)
 	public static String getRainbowGlitch(final int length) {
 		final StringBuilder sb = new StringBuilder();
+		final long seed = (System.currentTimeMillis() / 100) % (Integer.MAX_VALUE - 7);
 		for (int i = 0; i < length; i++)
-			sb.append(rainbowColors[i % 7]).append(EnumChatFormatting.OBFUSCATED).append("X"); // 交替颜色 + 混淆乱码 + 占位符
+			sb.append(rainbowColors[(i + (int)seed) % 7]).append(EnumChatFormatting.OBFUSCATED).append("X"); // 交替颜色 + 混淆乱码 + 占位符
 		return sb.toString();
 	}
 }
