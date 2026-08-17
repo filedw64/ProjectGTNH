@@ -47,6 +47,7 @@ public final class ProjectEConfig {
 	public static int projectileCooldown;
 	public static boolean disableAllRadiusMining;
     public static int gemChestCooldown;
+	public static boolean enableArcaneTablet;
 
 	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
@@ -75,6 +76,8 @@ public final class ProjectEConfig {
 			gemChestCooldown = config.getInt("gemChestCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for Gem Chestplate explosion");
 
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
+
+			enableArcaneTablet = config.getBoolean("enableArcaneTablet", "items", false, "Enable Arcane Transmutation Tablet");
 
 			craftableTome = config.getBoolean("craftableTome", "difficulty", false, "The Tome of Knowledge can be crafted.");
 			altCraftingMat = config.getBoolean("altCraftingMat", "difficulty", false, "If true some ProjectE items require a nether star instead of a diamond.");

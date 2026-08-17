@@ -54,6 +54,7 @@ import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
 import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
+import moze_intel.projecte.gameObjs.items.ItemArcaneTransmutationTablet;
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.items.Matter;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
@@ -346,6 +347,11 @@ public class ObjHandler
 		GameRegistry.registerItem(tome, tome.getUnlocalizedName());
 		GameRegistry.registerItem(transmutationTablet, transmutationTablet.getUnlocalizedName());
 		GameRegistry.registerItem(manual, manual.getUnlocalizedName());
+
+		if (ProjectEConfig.enableArcaneTablet)
+		{
+			GameRegistry.registerItem(arcaneTablet, "arcane_transmutation_tablet");
+		}
 
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
