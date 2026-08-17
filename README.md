@@ -18,7 +18,7 @@ Please try the latest release build before reporting, be sure to also include an
 
 https://github.com/filedw64/ProjectGTNH/realeses/latest
 
-#### \# Current Team Members (Actually, there's no "team")
+#### \# Current Team Members
 
 filedw64 - Developer of this program - GTNH Support:
 
