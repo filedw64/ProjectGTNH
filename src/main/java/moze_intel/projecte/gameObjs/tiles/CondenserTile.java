@@ -44,19 +44,14 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	{
 		// 失效检查
 		if (this.isInvalid())
-		{
 			return;
-		}
 
 		updateChest();
 
 		if (this.worldObj.isRemote)
-		{
 			return;
-		}
 
-		if (!loadChecks)
-		{
+		if (!loadChecks) {
 			TileEntityHandler.addCondenser(this);
 			checkLockAndUpdate();
 			loadChecks = true;
@@ -65,12 +60,9 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		displayEmc = this.getStoredEmc();
 
 		if (lock != null && requiredEmc != 0)
-		{
 			condense();
-		}
 
-		if (numPlayersUsing > 0)
-		{
+		if (numPlayersUsing > 0) {
 			PacketHandler.sendToAllAround(new CondenserSyncPKT(displayEmc, requiredEmc, this.xCoord, this.yCoord, this.zCoord),
 				new TargetPoint(this.worldObj.provider.dimensionId, this.xCoord, this.yCoord, this.zCoord, 8));
 		}
@@ -80,26 +72,21 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	{
 		lock = inventory[0];
 
-		if (lock == null)
-		{
+		if (lock == null) {
 			displayEmc = 0.0;
 			requiredEmc = 0.0;
 			this.isAcceptingEmc = false;
 			return;
 		}
 
-		if (EMCHelper.doesItemHaveEmc(lock))
-		{
+		if (EMCHelper.doesItemHaveEmc(lock)) {
 			double lockEmc = EMCHelper.getEmcValue(lock);
-
-			if (requiredEmc != lockEmc)
-			{
+			if (requiredEmc != lockEmc) {
 				requiredEmc = lockEmc;
 				this.isAcceptingEmc = true;
 			}
 		}
-		else
-		{
+		else {
 			lock = null;
 			inventory[0] = null;
 
@@ -116,12 +103,9 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			ItemStack stack = getStackInSlot(i);
 
 			if (stack == null || isStackEqualToLock(stack))
-			{
 				continue;
-			}
 
-			if (stack.stackSize <= 0)
-			{
+			if (stack.stackSize <= 0) {
 				inventory[i] = null;
 				continue;
 			}
@@ -130,68 +114,43 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			break;
 		}
 
-		if (this.getStoredEmc() >= requiredEmc && this.hasSpace())
-		{
+		if (this.getStoredEmc() >= requiredEmc && this.hasSpace()) {
 			this.removeEMC(requiredEmc);
 			pushStack();
 		}
 	}
 
-	protected void pushStack()
-	{
+	protected void pushStack() {
 		int slot = getSlotForStack();
+		if (slot == 0) return;
 
-		if (slot == 0)
-		{
-			return;
-		}
 		if (inventory[slot] == null)
-		{
-			// 清理了原本被注释掉的无用 NBT 处理死代码，保持代码整洁
-			inventory[slot] = lock.copy();
-		}
-		else
-		{
-			inventory[slot].stackSize += 1;
-		}
+			inventory[slot] = lock.copy(); // 清理了原本被注释掉的无用 NBT 处理死代码，保持代码整洁
+		else inventory[slot].stackSize += 1;
 		this.markDirty();
 	}
 
-	protected int getSlotForStack()
-	{
-		for (int i = 1; i < inventory.length; i++)
-		{
+	protected int getSlotForStack() {
+		for (int i = 1; i < inventory.length; i++) {
 			ItemStack stack = inventory[i];
-
 			if (stack == null)
-			{
 				return i;
-			}
 
 			if (isStackEqualToLock(stack) && stack.stackSize < stack.getMaxStackSize())
-			{
 				return i;
-			}
 		}
 
 		return 0;
 	}
 
-	protected boolean hasSpace()
-	{
-		for (int i = 1; i < inventory.length; i++)
-		{
+	protected boolean hasSpace() {
+		for (int i = 1; i < inventory.length; i++) {
 			ItemStack stack = inventory[i];
-
 			if (stack == null)
-			{
 				return true;
-			}
 
 			if (isStackEqualToLock(stack) && stack.stackSize < stack.getMaxStackSize())
-			{
 				return true;
-			}
 		}
 
 		return false;
@@ -200,40 +159,29 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	protected boolean isStackEqualToLock(ItemStack stack)
 	{
 		if (lock == null)
-		{
 			return false;
-		}
 
 		// 优化：清理了包裹在大括号外的死代码注释，直接返回比对结果
 		return ItemHelper.areItemStacksEqual(lock, stack);
 	}
 
-	public int getProgressScaled()
-	{
+	public int getProgressScaled() {
 		if (requiredEmc == 0)
-		{
 			return 0;
-		}
 
 		if (displayEmc >= requiredEmc)
-		{
 			return Constants.MAX_CONDENSER_PROGRESS;
-		}
 
-		return (int) ((displayEmc * Constants.MAX_CONDENSER_PROGRESS) / requiredEmc);
+		return (int) (displayEmc * Constants.MAX_CONDENSER_PROGRESS / requiredEmc);
 	}
 
 	@Override
-	public void invalidate()
-	{
+	public void invalidate() {
 		super.invalidate();
-
 		loadChecks = false;
 
 		if (!this.worldObj.isRemote)
-		{
 			TileEntityHandler.removeCondenser(this);
-		}
 	}
 
 	@Override
@@ -248,10 +196,8 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 
 			// 使用 & 255 转换为无符号整型，防止未来槽位扩充超过127时发生溢出，并增加边界保护
 			int slot = subNBT.getByte("Slot") & 255;
-			if (slot >= 0 && slot < inventory.length)
-			{
+			if (slot < inventory.length)
 				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
-			}
 		}
 	}
 
@@ -264,9 +210,7 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		for (int i = 0; i < inventory.length; i++)
 		{
 			if (inventory[i] == null)
-			{
 				continue;
-			}
 
 			NBTTagCompound subNBT = new NBTTagCompound();
 			subNBT.setByte("Slot", (byte) i);
@@ -278,14 +222,12 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	}
 
 	@Override
-	public int getSizeInventory()
-	{
+	public int getSizeInventory() {
 		return inventory.length;
 	}
 
 	@Override
-	public ItemStack getStackInSlot(int slot)
-	{
+	public ItemStack getStackInSlot(int slot) {
 		return inventory[slot];
 	}
 
@@ -294,36 +236,26 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	{
 		ItemStack stack = inventory[slot];
 
-		if (stack != null)
-		{
-			if (stack.stackSize <= qnt)
-			{
-				inventory[slot] = null;
-			}
-			else
-			{
-				stack = stack.splitStack(qnt);
+		if (stack == null) return null;
 
-				if (stack.stackSize == 0)
-				{
-					inventory[slot] = null;
-				}
-			}
+		if (stack.stackSize <= qnt)
+			inventory[slot] = null;
+		else {
+			stack = stack.splitStack(qnt);
+			if (stack.stackSize == 0)
+				inventory[slot] = null;
 		}
 
 		return stack;
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int slot)
-	{
-		if (inventory[slot] != null)
-		{
-			ItemStack stack = inventory[slot];
-			inventory[slot] = null;
-			return stack;
-		}
-		return null;
+	public ItemStack getStackInSlotOnClosing(int slot) {
+		if (inventory[slot] == null) return null;
+
+		ItemStack stack = inventory[slot];
+		inventory[slot] = null;
+		return stack;
 	}
 
 	@Override
@@ -332,52 +264,44 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 		inventory[slot] = stack;
 
 		if (stack != null && stack.stackSize > this.getInventoryStackLimit())
-		{
 			stack.stackSize = this.getInventoryStackLimit();
-		}
 
 		this.markDirty();
 	}
 
 	@Override
-	public String getInventoryName()
-	{
+	public String getInventoryName() {
 		return "tile.pe_condenser.name";
 	}
 
 	@Override
-	public boolean hasCustomInventoryName()
-	{
+	public boolean hasCustomInventoryName() {
 		return false;
 	}
 
 	@Override
-	public int getInventoryStackLimit()
-	{
+	public int getInventoryStackLimit() {
 		return 64;
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer var1)
-	{
+	public boolean isUseableByPlayer(EntityPlayer var1) {
 		// 简化三元运算符
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this
+			&& var1.getDistanceSq(this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	public void updateChest()
 	{
 		// 修复原版 MC 的运算优先级 Bug (原为 % 20 * 4 == 0)
 		if (++ticksSinceSync % 80 == 0)
-		{
 			worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.condenser, 1, numPlayersUsing);
-		}
 
 		prevLidAngle = lidAngle;
 		float angleIncrement = 0.1F;
 		double adjustedXCoord, adjustedZCoord;
 
-		if (numPlayersUsing > 0 && lidAngle == 0.0F)
-		{
+		if (numPlayersUsing > 0 && lidAngle == 0.0F) {
 			adjustedXCoord = xCoord + 0.5D;
 			adjustedZCoord = zCoord + 0.5D;
 			worldObj.playSoundEffect(adjustedXCoord, yCoord + 0.5D, adjustedZCoord, "random.chestopen", 0.5F, worldObj.rand.nextFloat() * 0.1F + 0.9F);
@@ -388,18 +312,11 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			float var8 = lidAngle;
 
 			if (numPlayersUsing > 0)
-			{
 				lidAngle += angleIncrement;
-			}
-			else
-			{
-				lidAngle -= angleIncrement;
-			}
+			else lidAngle -= angleIncrement;
 
 			if (lidAngle > 1.0F)
-			{
 				lidAngle = 1.0F;
-			}
 
 			if (lidAngle < 0.5F && var8 >= 0.5F)
 			{
@@ -409,45 +326,36 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 			}
 
 			if (lidAngle < 0.0F)
-			{
 				lidAngle = 0.0F;
-			}
 		}
 	}
 
 	@Override
 	public boolean receiveClientEvent(int number, int arg)
 	{
-		if (number == 1)
-		{
+		if (number == 1) {
 			numPlayersUsing = arg;
 			return true;
 		}
-		else return super.receiveClientEvent(number, arg);
+		return super.receiveClientEvent(number, arg);
 	}
 
 	@Override
-	public void openInventory()
-	{
+	public void openInventory() {
 		++numPlayersUsing;
 		worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.condenser, 1, numPlayersUsing);
 	}
 
 	@Override
-	public void closeInventory()
-	{
+	public void closeInventory() {
 		--numPlayersUsing;
 		worldObj.addBlockEvent(xCoord, yCoord, zCoord, ObjHandler.condenser, 1, numPlayersUsing);
 	}
 
 	@Override
-	public boolean isItemValidForSlot(int slot, ItemStack stack)
-	{
+	public boolean isItemValidForSlot(int slot, ItemStack stack) {
 		if (slot == 0)
-		{
 			return false;
-		}
-
 		return !isStackEqualToLock(stack) && EMCHelper.doesItemHaveEmc(stack);
 	}
 
@@ -456,52 +364,37 @@ public class CondenserTile extends TileEmcDirection implements IInventory, ISide
 	{
 		// 废弃了原版每次调用都 new int[91] 的设计
 		// 懒加载缓存
-		if (accessibleSlots == null)
-		{
+		if (accessibleSlots == null) {
 			accessibleSlots = new int[inventory.length - 1];
 			for (int i = 1; i < inventory.length; i++)
-			{
 				accessibleSlots[i - 1] = i;
-			}
 		}
 
 		return accessibleSlots;
 	}
 
 	@Override
-	public boolean canInsertItem(int slot, ItemStack item, int side)
-	{
+	public boolean canInsertItem(int slot, ItemStack item, int side) {
 		if (slot == 0)
-		{
 			return false;
-		}
-
 		return isItemValidForSlot(slot, item);
 	}
 
 	@Override
-	public boolean canExtractItem(int slot, ItemStack item, int side)
-	{
+	public boolean canExtractItem(int slot, ItemStack item, int side) {
 		if (slot == 0)
-		{
 			return false;
-		}
-
 		return isStackEqualToLock(item);
 	}
 
 	@Override
 	public double acceptEMC(ForgeDirection side, double toAccept)
 	{
-		if (isAcceptingEmc)
-		{
+		if (isAcceptingEmc) {
 			double toAdd = Math.min(maximumEMC - currentEMC, toAccept);
 			addEMC(toAdd);
 			return toAdd;
 		}
-		else
-		{
-			return 0;
-		}
+		return 0;
 	}
 }

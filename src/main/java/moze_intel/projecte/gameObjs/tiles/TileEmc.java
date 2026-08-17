@@ -9,18 +9,15 @@ import moze_intel.projecte.utils.Constants;
 
 public abstract class TileEmc extends TileEmcBase
 {
-	public TileEmc()
-	{
+	public TileEmc() {
 		setMaximumEMC(Constants.TILE_MAX_EMC);
 	}
 
-	public TileEmc(int maxAmount)
-	{
+	public TileEmc(int maxAmount) {
 		setMaximumEMC(maxAmount);
 	}
 
-	public boolean hasMaxedEmc()
-	{
+	public boolean hasMaxedEmc() {
 		return getStoredEmc() >= getMaximumEmc();
 	}
 
@@ -32,10 +29,8 @@ public abstract class TileEmc extends TileEmcBase
 	 */
 	public void sendToAllAcceptors(double emc)
 	{
-		if (!(this instanceof IEmcProvider))
-		{
+		if (!(this instanceof IEmcProvider provider))
 			throw new UnsupportedOperationException("sending without being a provider");
-		}
 
 		// 废弃了耗费性能的 WorldHelper.getAdjacentTileEntitiesMapped 以及 Guava 的 Maps.filterValues。
 		// 采用双重循环策略
@@ -43,49 +38,36 @@ public abstract class TileEmc extends TileEmcBase
 		boolean isRelay = this instanceof RelayMK1Tile;
 
 		// 计算周围有效的 EMC 接收者数量
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-		{
+		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
 			TileEntity tile = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
-
-			if (tile instanceof IEmcAcceptor)
-			{
+			if (tile instanceof IEmcAcceptor) {
 				if (isRelay && tile instanceof RelayMK1Tile)
-				{
 					continue; // 继电器之间不互相传输
-				}
 				acceptorCount++;
 			}
 		}
 
 		if (acceptorCount == 0)
-		{
 			return;
-		}
 
 		double emcPer = emc / acceptorCount;
-		IEmcProvider provider = (IEmcProvider) this;
 
 		// 平均分配 EMC 并回收溢出部分
 		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
 		{
 			TileEntity tile = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
 
-			if (tile instanceof IEmcAcceptor)
-			{
-				if (isRelay && tile instanceof RelayMK1Tile)
-				{
-					continue;
-				}
+			if (!(tile instanceof IEmcAcceptor acceptor)) continue;
 
-				double provided = provider.provideEMC(dir.getOpposite(), emcPer);
-				double accepted = ((IEmcAcceptor) tile).acceptEMC(dir, provided);
-				double remain = provided - accepted;
+			if (isRelay && tile instanceof RelayMK1Tile)
+				continue;
 
-				if (remain > 0)
-				{
-					this.addEMC(remain);
-				}
-			}
+			double provided = provider.provideEMC(dir.getOpposite(), emcPer);
+			double accepted = acceptor.acceptEMC(dir, provided);
+			double remain = provided - accepted;
+
+			if (remain > 0)
+				this.addEMC(remain);
 		}
 	}
 }

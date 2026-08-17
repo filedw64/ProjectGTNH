@@ -31,16 +31,14 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	// 缓存对外暴露的槽位数组
 	protected int[] accessibleSlots;
 
-	public RelayMK1Tile()
-	{
+	public RelayMK1Tile() {
 		super(Constants.RELAY_MK1_MAX);
 		chargeRate = Constants.RELAY_MK1_OUTPUT;
 		inventory = new ItemStack[8];
 		invBufferSize = 6;
 	}
 
-	public RelayMK1Tile(int sizeInv, int maxEmc, int chargeRate)
-	{
+	public RelayMK1Tile(int sizeInv, int maxEmc, int chargeRate) {
 		super(maxEmc);
 		this.chargeRate = chargeRate;
 		inventory = new ItemStack[sizeInv + 2];
@@ -52,9 +50,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	{
 		// 失效检查
 		if (worldObj.isRemote || this.isInvalid())
-		{
 			return;
-		}
 
 		sendEmc();
 		sortInventory();
@@ -167,7 +163,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-		if (!((starEmc + toSend) <= maxStarEmc)) {
+		if (starEmc + toSend > maxStarEmc) {
 			toSend = maxStarEmc - starEmc;
 		}
 		itemEmc.addEmc(chargeable, toSend);
@@ -247,7 +243,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 
 			// 使用 & 255 转换为无符号整型，防止越界异常
 			int slot = subNBT.getByte("Slot") & 255;
-			if (slot >= 0 && slot < getSizeInventory())
+			if (slot < getSizeInventory())
 				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
 		}
 	}

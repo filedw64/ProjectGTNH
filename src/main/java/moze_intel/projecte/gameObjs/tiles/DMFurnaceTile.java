@@ -22,14 +22,12 @@ public class DMFurnaceTile extends RMFurnaceTile implements IInventory, ISidedIn
 	}
 
 	@Override
-	public int getSizeInventory()
-	{
+	public int getSizeInventory() {
 		return 19;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public int getCookProgressScaled(int value)
-	{
+	public int getCookProgressScaled(int value) {
 		return furnaceCookTime * value / ticksBeforeSmelt;
 	}
 
@@ -37,18 +35,12 @@ public class DMFurnaceTile extends RMFurnaceTile implements IInventory, ISidedIn
 	public boolean isItemValidForSlot(int slot, ItemStack stack)
 	{
 		if (stack == null)
-		{
 			return false;
-		}
 
 		if (slot == 0)
-		{
 			return TileEntityFurnace.isItemFuel(stack) || stack.getItem() instanceof IItemEmc;
-		}
 		else if (slot >= 1 && slot <= 9)
-		{
 			return FurnaceRecipes.smelting().getSmeltingResult(stack) != null;
-		}
 
 		return false;
 	}

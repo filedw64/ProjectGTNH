@@ -22,23 +22,19 @@ public abstract class TileEmcDirection extends TileEmc
 		ForgeDirection.WEST.ordinal()
 	};
 
-	public TileEmcDirection()
-	{
+	public TileEmcDirection() {
 		this.orientation = ForgeDirection.SOUTH;
 	}
 
-	public ForgeDirection getOrientation()
-	{
+	public ForgeDirection getOrientation() {
 		return orientation;
 	}
 
-	public void setOrientation(ForgeDirection orientation)
-	{
+	public void setOrientation(ForgeDirection orientation) {
 		this.orientation = orientation;
 	}
 
-	public void setOrientation(int orientation)
-	{
+	public void setOrientation(int orientation) {
 		this.orientation = ForgeDirection.getOrientation(orientation);
 	}
 
@@ -52,9 +48,7 @@ public abstract class TileEmcDirection extends TileEmc
 		setOrientation(direction);
 
 		if (sendPacket)
-		{
 			PacketHandler.sendToAll(new OrientationSyncPKT(this, direction));
-		}
 	}
 
 	@Override
@@ -62,18 +56,15 @@ public abstract class TileEmcDirection extends TileEmc
 	{
 		super.readFromNBT(nbtTagCompound);
 
-		if (nbtTagCompound.hasKey("Direction"))
-		{
+		if (nbtTagCompound.hasKey("Direction")) {
 			// 使用 & 255 转换为无符号整型
 			this.orientation = ForgeDirection.getOrientation(nbtTagCompound.getByte("Direction") & 255);
 		}
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbtTagCompound)
-	{
+	public void writeToNBT(NBTTagCompound nbtTagCompound) {
 		super.writeToNBT(nbtTagCompound);
-
 		nbtTagCompound.setByte("Direction", (byte) orientation.ordinal());
 	}
 
@@ -86,8 +77,7 @@ public abstract class TileEmcDirection extends TileEmc
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet)
-	{
+	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity packet) {
 		this.readFromNBT(packet.func_148857_g());
 	}
 }
