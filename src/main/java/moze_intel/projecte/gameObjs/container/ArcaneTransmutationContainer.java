@@ -275,6 +275,7 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 		this.balanceCrafting();
 	}
 
+	// 这下面是借助了AI，因为当时不想写了，但是下面的这些疑似有致命bug，可以先删去，尚在排查
 	// --- 将这个方法加在 ArcaneTransmutationContainer.java 的最下面 ---
 
 	public void fillRecipe(EntityPlayer player, ItemStack[] recipe) {
