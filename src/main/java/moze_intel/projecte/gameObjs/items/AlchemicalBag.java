@@ -41,45 +41,35 @@ public class AlchemicalBag extends ItemPE
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
 
-	public AlchemicalBag()
-	{
-		this.setUnlocalizedName("alchemical_bag");
-		this.hasSubtypes = true;
-		this.setMaxStackSize(1);
-		this.setMaxDamage(0);
+	public AlchemicalBag() {
+		setUnlocalizedName("alchemical_bag");
+		hasSubtypes = true;
+		setMaxStackSize(1);
+		setMaxDamage(0);
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
-	{
+	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
 		if (!world.isRemote)
-		{
 			player.openGui(PECore.instance, Constants.ALCH_BAG_GUI, world, (int) player.posX, (int) player.posY, (int) player.posZ);
-		}
-
 		return stack;
 	}
 
 	@Override
-	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
-	{
+	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5) {
 		if (!(entity instanceof EntityPlayer player))
-		{
 			return;
-		}
 
 		ItemStack[] inv = AlchemicalBags.get(player, (byte) stack.getItemDamage());
 
-		if (player.openContainer instanceof AlchBagContainer)
+		if (player.openContainer instanceof AlchBagContainer bag)
 		{
-			ItemStack[] openContainerInv = ((AlchBagContainer) player.openContainer).inventory.getInventory();
+			ItemStack[] openContainerInv = bag.inventory.getInventory();
 			for (int i = 0; i < openContainerInv.length; i++) // Do not use foreach - to avoid desync
 			{
 				ItemStack current = openContainerInv[i];
-				if (current != null && current.getItem() instanceof IAlchBagItem)
-				{
-					((IAlchBagItem) current.getItem()).updateInAlchBag(openContainerInv, player, current);
-				}
+				if (current != null && current.getItem() instanceof IAlchBagItem bagItem)
+					bagItem.updateInAlchBag(openContainerInv, player, current);
 			}
 			// Do not AlchemicalBags.set/syncPartial here - vanilla handles it because it's the open container
 		}
@@ -89,14 +79,11 @@ public class AlchemicalBag extends ItemPE
 			for (int i = 0; i < inv.length; i++) // Do not use foreach - to avoid desync
 			{
 				ItemStack current = inv[i];
-				if (current != null && current.getItem() instanceof IAlchBagItem)
-				{
-					hasChanged = ((IAlchBagItem) current.getItem()).updateInAlchBag(inv, player, current);
-				}
+				if (current != null && current.getItem() instanceof IAlchBagItem bagItem)
+					hasChanged |= bagItem.updateInAlchBag(inv, player, current);
 			}
 
-			if (!player.worldObj.isRemote && hasChanged)
-			{
+			if (!player.worldObj.isRemote && hasChanged) {
 				AlchemicalBags.set(player, ((byte) stack.getItemDamage()), inv);
 				AlchemicalBags.syncPartial(player, stack.getItemDamage());
 			}
@@ -104,80 +91,58 @@ public class AlchemicalBag extends ItemPE
 	}
 
 	@Override
-	public int getMaxItemUseDuration(ItemStack stack)
-	{
+	public int getMaxItemUseDuration(ItemStack stack) {
 		return 1;
 	}
 
 	@Override
-	public String getItemStackDisplayName(ItemStack stack)
-	{
+	public String getItemStackDisplayName(ItemStack stack) {
 		String name = super.getItemStackDisplayName(stack);
 		int i = stack.getItemDamage();
 
 		if (stack.getItemDamage() > 15)
-		{
 			return name + " (" + StatCollector.translateToLocal("pe.debug.metainvalid.name") + ")";
-		}
 
 		String color = " (" + StatCollector.translateToLocal(unlocalizedColors[i]) + ")";
 		return name + color;
 	}
 
 	@Override
-	public void onCreated(ItemStack stack, World world, EntityPlayer player)
-	{
+	public void onCreated(ItemStack stack, World world, EntityPlayer player) {
 		super.onCreated(stack, world, player);
-
 		if (!world.isRemote)
-		{
 			player.addStat(AchievementHandler.ALCH_BAG, 1);
-		}
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list)
-	{
+	public void getSubItems(Item item, CreativeTabs cTab, List<ItemStack> list) {
 		for (int i = 0; i < 16; ++i)
 			list.add(new ItemStack(item, 1, i));
 	}
 
 	@SideOnly(Side.CLIENT)
-	public IIcon getIconFromDamage(int par1)
-	{
+	public IIcon getIconFromDamage(int par1) {
 		return icons[MathHelper.clamp_int(par1, 0, 15)];
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister register)
-	{
+	public void registerIcons(IIconRegister register) {
 		icons = new IIcon[16];
-
 		for (int i = 0; i < 16; i++)
-		{
 			icons[i] = register.registerIcon(this.getTexture("alchemy_bags", colors[i]));
-		}
 	}
 
-	public static ItemStack getFirstBagWithSuctionItem(EntityPlayer player, ItemStack[] inventory)
-	{
-		for (ItemStack stack : inventory)
-		{
-			if (stack == null)
-			{
-				continue;
-			}
+	public static ItemStack getFirstBagWithSuctionItem(EntityPlayer player, ItemStack[] inventory) {
+		for (ItemStack stack : inventory) {
+			if (stack == null) continue;
+			if (stack.getItem() != ObjHandler.alchBag) continue;
 
-			if (stack.getItem() == ObjHandler.alchBag)
-			{
-				ItemStack[] inv = AlchemicalBags.get(player, ((byte) stack.getItemDamage()));
-				if (ItemHelper.invContainsItem(inv, new ItemStack(ObjHandler.blackHole, 1, 1))
-						|| ItemHelper.invContainsItem(inv, new ItemStack(ObjHandler.voidRing, 1, 1)))
+			ItemStack[] inv = AlchemicalBags.get(player, ((byte) stack.getItemDamage()));
+			if (ItemHelper.invContainsItem(inv, new ItemStack(ObjHandler.blackHole, 1, 1))
+				|| ItemHelper.invContainsItem(inv, new ItemStack(ObjHandler.voidRing, 1, 1)))
 				return stack;
-			}
 		}
-
 		return null;
 	}
 }

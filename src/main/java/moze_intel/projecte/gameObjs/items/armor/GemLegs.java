@@ -14,33 +14,34 @@ import java.util.List;
 
 public class GemLegs extends GemArmorBase
 {
-    public GemLegs()
-    {
-        super(EnumArmorType.LEGS);
-    }
+	public GemLegs() {
+		super(EnumArmorType.LEGS);
+	}
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
-    {
-        tooltips.add(StatCollector.translateToLocal("pe.gem.legs.lorename"));
-    }
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused) {
+		tooltips.add(StatCollector.translateToLocal("pe.gem.legs.lorename"));
+	}
 
-    @Override
-    public void onArmorTick(World world, EntityPlayer player, ItemStack stack)
-    {
-        if (world.isRemote)
-        {
-            if (player.isSneaking() && !player.onGround && player.motionY <= 0)
-            {
-                player.motionY *= 2;
-            }
-        }
+	@Override
+	public void onArmorTick(World world, EntityPlayer player, ItemStack stack) {
+		if (player.posY <= -12.0D) // 当玩家Y坐标小于等于 -12 时触发
+		{
+			player.posY = -12.0D; // 将玩家强行托在 y=-12 的高度
+			if (player.motionY < 0.0D)
+				player.motionY = 0.0D; // 消除向下的速度
+			player.fallDistance = 0.0F; // 清空坠落距离
+			player.onGround = true; // 让系统认为玩家踩在方块上
+		}
 
-        if (player.isSneaking())
-        {
-            AxisAlignedBB box = AxisAlignedBB.getBoundingBox(player.posX - 3.5, player.posY - 3.5, player.posZ - 3.5, player.posX + 3.5, player.posY + 3.5, player.posZ + 3.5);
-            WorldHelper.repelEntitiesInAABBFromPoint(world, box, player.posX, player.posY, player.posZ, true);
-        }
-    }
+		if (!player.isSneaking()) return;
+
+		if (world.isRemote && !player.onGround && player.motionY <= 0) // 原版的自然极限下落速度是 -3.92
+			player.motionY -= 0.40D; // 额外的五倍重力加速度
+
+		// 优化一下：使用 boundingBox 扩张
+		AxisAlignedBB box = player.boundingBox.expand(3.5, 3.5, 3.5);
+		WorldHelper.repelEntitiesInAABBFromPoint(world, box, player.posX, player.posY, player.posZ, true);
+	}
 }

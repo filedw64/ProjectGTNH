@@ -73,7 +73,11 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 		if (worldObj.isRemote || this.isInvalid())
 			return;
 
-		sortInventory();
+		ticksExisted++;
+
+		// 每 Tick 排序降低为每 10 Tick (0.5秒) 排序一次，极大降低堆量时的 CPU 占用
+		if (ticksExisted % 10 == 0)
+			sortInventory();
 
 		if (inventory[0] == null) {
 			hasChargeableItem = false;
