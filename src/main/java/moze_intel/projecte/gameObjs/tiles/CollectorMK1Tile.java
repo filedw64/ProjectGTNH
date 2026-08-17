@@ -256,8 +256,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	public int getSunLevel() {
 		if (worldObj.provider.isHellWorld)
 			return 16;
-		int light = worldObj.getBlockLightValue(xCoord, yCoord + 1, zCoord) + 1;
-		return Math.max(light, 8);
+		return worldObj.getBlockLightValue(xCoord, yCoord + 1, zCoord) + 1;
 	}
 
 	public int getEmcScaled(int i) {
