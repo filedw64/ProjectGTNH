@@ -315,16 +315,6 @@ public final class ItemHelper {
 		return new ItemStack(item, 1, metaData);
 	}
 
-	@Deprecated
-	public static boolean hasSpace(IInventory inv, ItemStack stack) {
-		return hasSpaceForSingle(inv, stack);
-	}
-
-	@Deprecated
-	public static boolean hasSpace(ItemStack[] inv, ItemStack stack) {
-		return hasSpaceForSingle(inv, stack);
-	}
-
 	/**
 	 * Ignore stack size.
 	 * @return space in the inv for the stack
@@ -354,6 +344,16 @@ public final class ItemHelper {
 				stackable += maxStack - invStack.stackSize;
 		}
 		return stackable;
+	}
+
+	@Deprecated
+	public static boolean hasSpace(IInventory inv, ItemStack stack) {
+		return hasSpaceForSingle(inv, stack);
+	}
+
+	@Deprecated
+	public static boolean hasSpace(ItemStack[] inv, ItemStack stack) {
+		return hasSpaceForSingle(inv, stack);
 	}
 
 	/**
@@ -427,11 +427,14 @@ public final class ItemHelper {
 	public static boolean isOre(Block block, int meta)
 	{
 		if (block == Blocks.lit_redstone_ore)
-		{
 			return true;
-		}
 		String oreDictName = getOreDictionaryName(new ItemStack(block, 1, meta));
 		return oreDictName.startsWith("ore") || oreDictName.startsWith("denseore");
+	}
+
+	public static boolean isOreOD(String s) {
+		return s != null && !s.startsWith("oreberry") && !s.equals("crushedPineMaterial") && (s.startsWith("ore") || s.startsWith("rawOre")
+			|| s.startsWith("crushed") || s.startsWith("dustPure") || s.startsWith("dustImpure"));
 	}
 
 	public static ItemStack[] nbtToArray(NBTTagList list)
