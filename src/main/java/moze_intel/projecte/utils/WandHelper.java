@@ -4,6 +4,7 @@ import moze_intel.projecte.playerData.Transmutation;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -17,82 +18,86 @@ import java.util.Set;
 
 public class WandHelper {
 
-	// 获取需要延伸放置的方块坐标列表 (返回的是原方块位置，放置时需要向 side 偏移一格)
+	private static final int[][] PLANES_XZ = {{1,0,0}, {-1,0,0}, {0,0,1}, {0,0,-1}, {1,0,1}, {1,0,-1}, {-1,0,1}, {-1,0,-1}};
+	private static final int[][] PLANES_XY = {{1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {1,1,0}, {1,-1,0}, {-1,1,0}, {-1,-1,0}};
+	private static final int[][] PLANES_YZ = {{0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}, {0,1,1}, {0,1,-1}, {0,-1,1}, {0,-1,-1}};
+
 	public static List<ChunkCoordinates> getBlocksToPlace(World world, int x, int y, int z, int side, int maxBlocks) {
 		Block targetBlock = world.getBlock(x, y, z);
 		int targetMeta = world.getBlockMetadata(x, y, z);
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
+		ForgeDirection opp = dir.getOpposite();
 
-		List<ChunkCoordinates> result = new ArrayList<>();
-		Queue<ChunkCoordinates> queue = new LinkedList<>();
+		List<ChunkCoordinates> toPlace = new ArrayList<>();
+		Queue<ChunkCoordinates> candidates = new LinkedList<>();
 		Set<ChunkCoordinates> visited = new HashSet<>();
 
-		ChunkCoordinates start = new ChunkCoordinates(x, y, z);
-		queue.add(start);
+		ChunkCoordinates start = new ChunkCoordinates(x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ);
+		candidates.add(start);
 		visited.add(start);
 
-		// 八个方向（包括对角线）
-		int[][] dirs = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+		int[][] offsets = (side == 0 || side == 1) ? PLANES_XZ : (side == 2 || side == 3) ? PLANES_XY : PLANES_YZ;
 
-		while (!queue.isEmpty() && result.size() < maxBlocks) {
-			ChunkCoordinates curr = queue.poll();
+		while (!candidates.isEmpty() && toPlace.size() < maxBlocks) {
+			ChunkCoordinates curr = candidates.poll();
 
-			// 检查对应面是否为空气或可替换方块
-			int placeX = curr.posX + dir.offsetX;
-			int placeY = curr.posY + dir.offsetY;
-			int placeZ = curr.posZ + dir.offsetZ;
+			if (curr.posY < 0 || curr.posY >= 256) continue;
 
-			if (world.isAirBlock(placeX, placeY, placeZ) || world.getBlock(placeX, placeY, placeZ).isReplaceable(world, placeX, placeY, placeZ)) {
-				result.add(curr);
+			// 【优化】防止扫描导致未加载的区块被强制加载/生成
+			if (!world.blockExists(curr.posX, curr.posY, curr.posZ)) continue;
+
+			Block blockAt = world.getBlock(curr.posX, curr.posY, curr.posZ);
+			if (!world.isAirBlock(curr.posX, curr.posY, curr.posZ) && !blockAt.isReplaceable(world, curr.posX, curr.posY, curr.posZ)) {
+				continue;
 			}
 
-			for (int[] d : dirs) {
-				int nx = curr.posX, ny = curr.posY, nz = curr.posZ;
+			int suppX = curr.posX + opp.offsetX;
+			int suppY = curr.posY + opp.offsetY;
+			int suppZ = curr.posZ + opp.offsetZ;
 
-				// 根据点击的面决定在哪个平面上扩散
-				if (side == 0 || side == 1) { nx += d[0]; nz += d[1]; } // Y轴面 -> 扩散 X, Z
-				else if (side == 2 || side == 3) { nx += d[0]; ny += d[1]; } // Z轴面 -> 扩散 X, Y
-				else { ny += d[0]; nz += d[1]; } // X轴面 -> 扩散 Y, Z
+			// 【优化】同样拦截支撑方块跨区块加载
+			if (!world.blockExists(suppX, suppY, suppZ)) continue;
 
-				ChunkCoordinates next = new ChunkCoordinates(nx, ny, nz);
-				if (!visited.contains(next)) {
-					visited.add(next);
-					if (world.getBlock(nx, ny, nz) == targetBlock && world.getBlockMetadata(nx, ny, nz) == targetMeta) {
-						queue.add(next);
-					}
+			if (world.getBlock(suppX, suppY, suppZ) != targetBlock || world.getBlockMetadata(suppX, suppY, suppZ) != targetMeta) {
+				continue;
+			}
+
+			AxisAlignedBB aabb = targetBlock.getCollisionBoundingBoxFromPool(world, curr.posX, curr.posY, curr.posZ);
+			if (aabb != null && !world.checkNoEntityCollision(aabb)) {
+				continue;
+			}
+
+			toPlace.add(curr);
+
+			for (int[] offset : offsets) {
+				ChunkCoordinates next = new ChunkCoordinates(curr.posX + offset[0], curr.posY + offset[1], curr.posZ + offset[2]);
+				if (visited.add(next)) {
+					candidates.add(next);
 				}
 			}
 		}
-		return result;
+		return toPlace;
 	}
 
-	// 尝试消耗 EMC 或 背包物品
-	public static boolean consumeCost(EntityPlayer player, ItemStack targetStack) {
+	// 【优化】接收预计算好的 EMC 价格和知识，不再重复计算
+	public static boolean consumeCost(EntityPlayer player, ItemStack targetStack, boolean hasKnowledge, double emcCost) {
 		if (player.capabilities.isCreativeMode) return true;
 
-		boolean hasKnowledge = Transmutation.hasKnowledgeForStack(targetStack, player);
-		double emcCost = EMCHelper.getEmcValue(targetStack);
-
-		// 1. 尝试消耗个人 EMC
 		if (hasKnowledge && emcCost > 0) {
 			double currentEmc = Transmutation.getEmc(player);
 			if (currentEmc >= emcCost) {
 				Transmutation.setEmc(player, currentEmc - emcCost);
-				// 注意: 服务端修改 EMC 后，可能需要发包给客户端同步 (类似 SyncEmcPKT)
 				return true;
 			}
 		}
 
-		// 2. 尝试消耗背包实体方块
 		for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
 			ItemStack invStack = player.inventory.getStackInSlot(i);
 			if (invStack != null && ItemHelper.basicAreStacksEqual(invStack, targetStack)) {
 				player.inventory.decrStackSize(i, 1);
-				player.inventoryContainer.detectAndSendChanges();
-				return true;
+				return true; // 注意：直接 return true，不需要每次 detectAndSendChanges 降低开销
 			}
 		}
-
 		return false;
 	}
 }

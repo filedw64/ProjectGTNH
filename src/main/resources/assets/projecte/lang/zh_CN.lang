@@ -76,6 +76,8 @@ item.pe_tome.name=炼金术秘卷
 item.pe_transmutation_tablet.name=便携式转化桌
 item.pe_manual.name=炼金术士之书[WIP]
 
+item.emc_builders_wand.name=EMC建筑之杖
+
 pe.manual.tooltip1=卷二
 
 tile.pe_alchemy_chest.name=炼金术箱子
@@ -331,7 +333,7 @@ pe.transmutation.transmute=转化桌
 # pe.transmutation.learned5=e
 # pe.transmutation.learned6=d
 # pe.transmutation.learned7=!
-# 
+#
 # pe.transmutation.unlearned0=U
 # pe.transmutation.unlearned1=n
 # pe.transmutation.unlearned2=l
@@ -363,9 +365,9 @@ pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
 
 # Yes these empty lines are for the manual
-# Don't translate them for now. 
+# Don't translate them for now.
 # You may find a copy of translated manual (Simplified Chinese, may be partial) in commit history.
-# 
+#
 # This message is left by the most recent translator. For further question(s), if any,
 # please contact the translator on GitHub.
 #
