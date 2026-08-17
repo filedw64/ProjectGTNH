@@ -237,6 +237,8 @@ public class ObjHandler
 	public static Item transmutationTablet = new TransmutationTablet();
 	public static Item manual = new PEManual();
 
+	public static Item arcaneTablet = new ItemArcaneTransmutationTablet();
+
 	public static void register()
 	{
 		// Blocks without ItemBlock
