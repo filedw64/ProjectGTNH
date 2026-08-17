@@ -32,11 +32,6 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 	public int currentItemBurnTime;
 	public int furnaceCookTime;
 
-	// 缓存对外暴露的槽位数组，避免高频访问时产生 GC 内存垃圾
-	protected int[] accessibleSlots0;
-	protected int[] accessibleSlots1;
-	protected int[] accessibleSlotsSide;
-
 	public RMFurnaceTile() {
 		super(64);
 	}
@@ -668,28 +663,25 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 		return false;
 	}
 
-	@Override
-	public int[] getAccessibleSlotsFromSide(int side)
-	{
-		// 解决高频分配新数组导致的GC问题
-		if (accessibleSlots0 == null)
-		{
-			accessibleSlots0 = new int[]{15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
-			accessibleSlots1 = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
-			accessibleSlotsSide = new int[]{0, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
-		}
+	// 提前构建对外暴露的槽位数组，避免高频访问时产生 GC 内存垃圾
+	private final static int[] rmAccessibleSlots0 = new int[]{15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
+	private final static int[] rmAccessibleSlots1 = new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
+	private final static int[] rmAccessibleSlotsSide = new int[]{0, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26};
+	protected final static int[] invalidAccessibleSlots = new int[0];
 
+	@Override
+	public int[] getAccessibleSlotsFromSide(int side) {
+		// 解决高频分配新数组导致的 GC 问题
 		return switch (side) {
-			case 0 -> accessibleSlots0;
-			case 1 -> accessibleSlots1;
-			case 2, 3, 4, 5 -> accessibleSlotsSide;
-			default -> new int[]{};
+			case 0 -> rmAccessibleSlots0;
+			case 1 -> rmAccessibleSlots1;
+			case 2, 3, 4, 5 -> rmAccessibleSlotsSide;
+			default -> invalidAccessibleSlots;
 		};
 	}
 
 	@Override
-	public boolean canInsertItem(int slot, ItemStack stack, int side)
-	{
+	public boolean canInsertItem(int slot, ItemStack stack, int side) {
 		if (side == 0)
 			return false;
 		if (side == 1)
