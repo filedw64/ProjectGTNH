@@ -28,18 +28,17 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public double displayRawEmc;
 	private int numUsing;
 
-	private int ticksExisted = 0;
+	// 缓存对外暴露的槽位数组
+	protected int[] accessibleSlots;
 
-	public RelayMK1Tile()
-	{
+	public RelayMK1Tile() {
 		super(Constants.RELAY_MK1_MAX);
 		chargeRate = Constants.RELAY_MK1_OUTPUT;
 		inventory = new ItemStack[8];
 		invBufferSize = 6;
 	}
 
-	public RelayMK1Tile(int sizeInv, int maxEmc, int chargeRate)
-	{
+	public RelayMK1Tile(int sizeInv, int maxEmc, int chargeRate) {
 		super(maxEmc);
 		this.chargeRate = chargeRate;
 		inventory = new ItemStack[sizeInv + 2];
@@ -49,7 +48,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public void updateEntity()
 	{
-		if (worldObj.isRemote)
+		// 失效检查
+		if (worldObj.isRemote || this.isInvalid())
 			return;
 
 		ticksExisted++;
@@ -158,8 +158,9 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double maxStarEmc = itemEmc.getMaximumEmc(chargeable);
 		double toSend = this.getStoredEmc() < chargeRate ? this.getStoredEmc() : chargeRate;
 
-		if ((starEmc + toSend) > maxStarEmc)
+		if (starEmc + toSend > maxStarEmc) {
 			toSend = maxStarEmc - starEmc;
+		}
 		itemEmc.addEmc(chargeable, toSend);
 		this.removeEMC(toSend);
 	}
@@ -200,8 +201,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		if (inventory[0] == null)
 			return 0;
 
-		if (inventory[0].getItem() instanceof IItemEmc iItemEmc)
-			return (int) Math.round(displayRawEmc * i / iItemEmc.getMaximumEmc(inventory[0]));
+		double emc = EMCHelper.getEmcValue(inventory[0]);
+		if (emc <= 0) return 0; // 防范除零或异常
 
 		double emc = EMCHelper.getEmcValue(inventory[0]);
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
@@ -217,8 +218,10 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		for (int i = 0; i < list.tagCount(); i++)
 		{
 			NBTTagCompound subNBT = list.getCompoundTagAt(i);
-			byte slot = subNBT.getByte("Slot");
-			if (slot >= 0 && slot < getSizeInventory())
+
+			// 使用 & 255 转换为无符号整型，防止越界异常
+			int slot = subNBT.getByte("Slot") & 255;
+			if (slot < getSizeInventory())
 				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
 		}
 	}
@@ -303,8 +306,8 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public boolean isUseableByPlayer(EntityPlayer var1)
 	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this
-			&& var1.getDistanceSq(this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D) <= 64.0D;
+		// 优化：简化三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this && var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
@@ -325,15 +328,20 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side)
 	{
-		int[] indexes = new int[inventory.length - 2];
-		byte counter = 0;
+		// 缓存计算结果
+		if (accessibleSlots == null)
+		{
+			accessibleSlots = new int[inventory.length - 2];
+			byte counter = 0;
 
-		for (int i = 1; i < inventory.length - 1; i++) {
-			indexes[counter] = i;
-			counter++;
+			for (int i = 1; i < inventory.length - 1; i++)
+			{
+				accessibleSlots[counter] = i;
+				counter++;
+			}
 		}
 
-		return indexes;
+		return accessibleSlots;
 	}
 
 	@Override
