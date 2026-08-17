@@ -113,8 +113,8 @@ public class GemHelmet extends GemArmorBase implements IGoggles, IRevealer, IVis
 			// === 夜视逻辑处理 ===
 			if (isNightVisionEnabled(stack))
 			{
-				// 只在时间少于 600 秒时才刷新夜视
-				if (!player.isPotionActive(Potion.nightVision) || player.getActivePotionEffect(Potion.nightVision).getDuration() < 12000)
+				final PotionEffect nightVision = player.getActivePotionEffect(Potion.nightVision); // 去除 containsKey 的哈希查询
+				if (nightVision == null || nightVision.getDuration() < 36000) // 只在时间少于 1800 秒时才刷新夜视
 					player.addPotionEffect(new PotionEffect(Potion.nightVision.id, 72000, 0)); // 3600s (永续)
 
 				// 强制将 DataWatcher 中负责药水颜色的 7 号位设为 0 (无颜色/无粒子)
@@ -141,11 +141,10 @@ public class GemHelmet extends GemArmorBase implements IGoggles, IRevealer, IVis
 		return true;
 	}
 
-	// 【新增】Vis减耗接口实现
 	@Override
 	@Optional.Method(modid = "Thaumcraft")
 	public int getVisDiscount(ItemStack stack, EntityPlayer player, Aspect aspect) {
-		return 50; // 无视要素类型，全局提供 50% 减耗
+		return 30; // 无视要素类型，全局提供 30% 减耗
 	}
 
 	public void doZap(EntityPlayer player) {
