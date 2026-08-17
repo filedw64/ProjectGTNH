@@ -34,6 +34,7 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 	public int displaySunLevel;
 	public double displayItemCharge;
 	private int numUsing;
+	private int ticksExisted = 0;
 
 	public CollectorMK1Tile() {
 		super(Constants.COLLECTOR_MK1_MAX);

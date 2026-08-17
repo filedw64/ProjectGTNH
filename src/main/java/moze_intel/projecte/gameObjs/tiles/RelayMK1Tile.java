@@ -27,6 +27,7 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 	public double displayChargingEmc;
 	public double displayRawEmc;
 	private int numUsing;
+	private int ticksExisted = 0;
 
 	// 缓存对外暴露的槽位数组
 	protected int[] accessibleSlots;
@@ -204,7 +205,6 @@ public class RelayMK1Tile extends TileEmc implements IInventory, ISidedInventory
 		double emc = EMCHelper.getEmcValue(inventory[0]);
 		if (emc <= 0) return 0; // 防范除零或异常
 
-		double emc = EMCHelper.getEmcValue(inventory[0]);
 		return MathHelper.floor_double(displayRawEmc * i / (emc * inventory[0].getMaxStackSize()));
 	}
 
