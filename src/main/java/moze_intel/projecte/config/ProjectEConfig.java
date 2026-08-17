@@ -18,6 +18,8 @@ public final class ProjectEConfig {
 	public static boolean showPedestalTooltipInGUI;
 
 	public static boolean enableTimeWatch;
+	public static boolean enableInfiniteFuel;
+	public static boolean enableInfiniteSteak;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;

@@ -3,6 +3,29 @@ package moze_intel.projecte.gameObjs;
 import cpw.mods.fml.common.IFuelHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import moze_intel.projecte.gameObjs.items.AlchemicalBag;
+import moze_intel.projecte.gameObjs.items.AlchemicalFuel;
+import moze_intel.projecte.gameObjs.items.CataliticLens;
+import moze_intel.projecte.gameObjs.items.CovalenceDust;
+import moze_intel.projecte.gameObjs.items.DestructionCatalyst;
+import moze_intel.projecte.gameObjs.items.DiviningRodLow;
+import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
+import moze_intel.projecte.gameObjs.items.DiviningRodHigh;
+import moze_intel.projecte.gameObjs.items.EvertideAmulet;
+import moze_intel.projecte.gameObjs.items.GemEternalDensity;
+import moze_intel.projecte.gameObjs.items.HyperkineticLens;
+import moze_intel.projecte.gameObjs.items.KleinStar;
+import moze_intel.projecte.gameObjs.items.Matter;
+import moze_intel.projecte.gameObjs.items.MercurialEye;
+import moze_intel.projecte.gameObjs.items.PEManual;
+import moze_intel.projecte.gameObjs.items.PhilosophersStone;
+import moze_intel.projecte.gameObjs.items.RepairTalisman;
+import moze_intel.projecte.gameObjs.items.TimeWatch;
+import moze_intel.projecte.gameObjs.items.Tome;
+import moze_intel.projecte.gameObjs.items.TransmutationTablet;
+import moze_intel.projecte.gameObjs.items.VolcaniteAmulet;
+import moze_intel.projecte.gameObjs.items.InfiniteFuel;
+import moze_intel.projecte.gameObjs.items.InfiniteSteak;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
@@ -43,27 +66,6 @@ import moze_intel.projecte.gameObjs.entity.EntityNovaCataclysmPrimed;
 import moze_intel.projecte.gameObjs.entity.EntityNovaCatalystPrimed;
 import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
-import moze_intel.projecte.gameObjs.items.AlchemicalBag;
-import moze_intel.projecte.gameObjs.items.AlchemicalFuel;
-import moze_intel.projecte.gameObjs.items.CataliticLens;
-import moze_intel.projecte.gameObjs.items.CovalenceDust;
-import moze_intel.projecte.gameObjs.items.DestructionCatalyst;
-import moze_intel.projecte.gameObjs.items.DiviningRodHigh;
-import moze_intel.projecte.gameObjs.items.DiviningRodLow;
-import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
-import moze_intel.projecte.gameObjs.items.EvertideAmulet;
-import moze_intel.projecte.gameObjs.items.GemEternalDensity;
-import moze_intel.projecte.gameObjs.items.HyperkineticLens;
-import moze_intel.projecte.gameObjs.items.KleinStar;
-import moze_intel.projecte.gameObjs.items.Matter;
-import moze_intel.projecte.gameObjs.items.MercurialEye;
-import moze_intel.projecte.gameObjs.items.PEManual;
-import moze_intel.projecte.gameObjs.items.PhilosophersStone;
-import moze_intel.projecte.gameObjs.items.RepairTalisman;
-import moze_intel.projecte.gameObjs.items.TimeWatch;
-import moze_intel.projecte.gameObjs.items.Tome;
-import moze_intel.projecte.gameObjs.items.TransmutationTablet;
-import moze_intel.projecte.gameObjs.items.VolcaniteAmulet;
 import moze_intel.projecte.gameObjs.items.armor.DMArmor;
 import moze_intel.projecte.gameObjs.items.armor.GemChest;
 import moze_intel.projecte.gameObjs.items.armor.GemFeet;
@@ -227,6 +229,9 @@ public class ObjHandler
 
 	public static Item tome = new Tome();
 
+	public static Item infiniteFuel = new InfiniteFuel();
+	public static Item infiniteSteak = new InfiniteSteak();
+
 	public static Item waterOrb = new WaterOrb();
 	public static Item lavaOrb = new LavaOrb();
 	public static Item lootBall = new LootBallItem();
@@ -345,6 +350,16 @@ public class ObjHandler
 		GameRegistry.registerItem(transmutationTablet, transmutationTablet.getUnlocalizedName());
 		GameRegistry.registerItem(manual, manual.getUnlocalizedName());
 
+		if (ProjectEConfig.enableInfiniteFuel)
+		{
+			GameRegistry.registerItem(infiniteFuel, "infinite_fuel");
+		}
+
+		if (ProjectEConfig.enableInfiniteSteak)
+		{
+			GameRegistry.registerItem(infiniteSteak, "infinite_steak");
+		}
+
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
 		GameRegistry.registerTileEntityWithAlternatives(InterdictionTile.class, "InterdictionTile", "Interdiction Torch Tile");
@@ -383,6 +398,24 @@ public class ObjHandler
 			diamondReplacement = new ItemStack(Items.nether_star);
 			diamondBlockReplacement = new ItemStack(Items.nether_star);
 		}
+
+		// 无限燃料：转化桌 外面一圈木炭
+		GameRegistry.addRecipe(new ItemStack(infiniteFuel),
+			"CCC",
+			"CTC",
+			"CCC",
+			'C', new ItemStack(Items.coal, 1, 1),
+			'T', transmutationTablet
+		);
+
+		// 无限牛排：转化桌 外面一圈牛排
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak),
+			"MMM",
+			"MTM",
+			"MMM",
+			'M', Items.cooked_beef,
+			'T', transmutationTablet
+		));
 
 		//Shaped Recipes
 		//Philos Stone
