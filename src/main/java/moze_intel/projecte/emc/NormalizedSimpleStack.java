@@ -198,7 +198,7 @@ public abstract class NormalizedSimpleStack {
 		public final String desc;
 		public final int counter;
 
-		public NSSFake(String desc) {
+		private NSSFake(String desc) {
 			this.desc = desc;
 			this.counter = (++fakeItemCounter);
 		}
