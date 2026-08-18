@@ -98,7 +98,6 @@ public final class EMCHelper
 			return false;
 
 		SimpleStack ss = SimpleStack.getFor(stack);
-		ss.qnty = 1;
 
 		if (!ss.isValid())
 			return false;

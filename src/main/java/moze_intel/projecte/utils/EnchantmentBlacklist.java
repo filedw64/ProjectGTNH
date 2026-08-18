@@ -12,14 +12,12 @@ public final class EnchantmentBlacklist {
     public static boolean add(ItemStack stack) {
         SimpleStack ss = SimpleStack.getFor(stack);
         if (!ss.isValid()) return false;
-        ss.qnty = 1;
-        return blacklist.add(ss);
+		return blacklist.add(ss);
     }
 
     public static boolean contains(ItemStack stack) {
 		SimpleStack ss = SimpleStack.getFor(stack);
         if (!ss.isValid()) return false;
-        ss.qnty = 1;
-        return blacklist.contains(ss);
+		return blacklist.contains(ss);
     }
 }

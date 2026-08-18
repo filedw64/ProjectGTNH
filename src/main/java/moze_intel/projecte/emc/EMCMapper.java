@@ -101,11 +101,11 @@ public final class EMCMapper
 					return;
 				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
-					emc.put(new NBTSimpleStack(id, 1, nbtnssItem.damage, nbtnssItem.nbt), val);
-				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
+					emc.put(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
+				else emc.put(new SimpleStack(id, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				emc.put(new FluidSimpleStack(nssFluid.fluid.getID(), 1), val);
+				emc.put(new FluidSimpleStack(nssFluid.fluid.getID()), val);
 			}
 		});
 
@@ -132,15 +132,11 @@ public final class EMCMapper
 	}
 
 	public static boolean mapContains(SimpleStack key) {
-		SimpleStack copy = key.copy();
-		copy.qnty = 1;
 		return emc.containsKey(key);
 	}
 
 	public static Double getEmcValue(SimpleStack stack) {
-		SimpleStack copy = stack.copy();
-		copy.qnty = 1;
-		return emc.get(copy);
+		return emc.get(stack);
 	}
 
 	public static void clearMaps() {

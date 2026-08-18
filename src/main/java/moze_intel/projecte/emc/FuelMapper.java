@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc;
 
-import com.google.common.collect.Lists;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.EMCHelper;
@@ -9,10 +8,11 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class FuelMapper {
-	private static final List<SimpleStack> FUEL_MAP = Lists.newArrayList();
+	private static final List<SimpleStack> FUEL_MAP = new ArrayList<>();
 
 	public static void loadMap() {
 		FUEL_MAP.clear(); // 直接 clear，不需要判空
@@ -65,18 +65,14 @@ public final class FuelMapper {
 	private static void addToMap(SimpleStack stack) {
 		if (!stack.isValid()) return;
 
-		stack.qnty = 1; // 不需要 copy
-
 		if (!FUEL_MAP.contains(stack))
 			FUEL_MAP.add(stack);
 	}
 
-	// 复用单次创建的 SimpleStack 对象
 	private static int indexInMap(ItemStack stack) {
 		if (stack == null || stack.getItem() == null)
 			return -1;
 		SimpleStack ss = new SimpleStack(stack);
-		ss.qnty = 1;
 		return FUEL_MAP.indexOf(ss);
 	}
 }
