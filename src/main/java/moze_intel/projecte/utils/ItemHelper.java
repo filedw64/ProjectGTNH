@@ -432,6 +432,14 @@ public final class ItemHelper {
 		return oreDictName.startsWith("ore") || oreDictName.startsWith("denseore");
 	}
 
+	public static boolean isOre(ItemStack stack) {
+		final int[] oreIds = OreDictionary.getOreIDs(stack);
+		for (int oreId : oreIds)
+			if (isOreOD(OreDictionary.getOreName(oreId)))
+				return true;
+		return false;
+	}
+
 	public static boolean isOreOD(String s) {
 		return s != null && !s.startsWith("oreberry") && !s.equals("crushedPineMaterial") && (s.startsWith("ore") || s.startsWith("rawOre")
 			|| s.startsWith("crushed") || s.startsWith("dustPure") || s.startsWith("dustImpure"));
