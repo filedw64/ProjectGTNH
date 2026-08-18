@@ -4,6 +4,7 @@ import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
+import moze_intel.projecte.rendering.MercurialHUD;
 import net.minecraft.client.renderer.entity.RenderSnowball;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -41,6 +42,8 @@ import moze_intel.projecte.rendering.NovaCataclysmRenderer;
 import moze_intel.projecte.rendering.NovaCatalystRenderer;
 import moze_intel.projecte.rendering.PedestalItemRenderer;
 import moze_intel.projecte.rendering.PedestalRenderer;
+import moze_intel.projecte.rendering.WandRenderer;
+import moze_intel.projecte.rendering.MercurialEyeRenderer;
 import moze_intel.projecte.utils.ClientKeyHelper;
 
 public class ClientProxy implements IProxy
@@ -105,10 +108,14 @@ public class ClientProxy implements IProxy
 		MinecraftForge.EVENT_BUS.register(new ToolTipEvent());
 		MinecraftForge.EVENT_BUS.register(new TransmutationRenderingEvent());
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
+		MinecraftForge.EVENT_BUS.register(new MercurialHUD());
+		FMLCommonHandler.instance().bus().register(new MercurialHUD());
 
 		PlayerRender pr = new PlayerRender();
 		MinecraftForge.EVENT_BUS.register(pr);
 		FMLCommonHandler.instance().bus().register(pr);
+		MinecraftForge.EVENT_BUS.register(new WandRenderer());
+		MinecraftForge.EVENT_BUS.register(new MercurialEyeRenderer());
 	}
 
 	@Override
