@@ -2,7 +2,12 @@ package moze_intel.projecte.gameObjs.tiles;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.api.tile.IEmcAcceptor;
+import moze_intel.projecte.gameObjs.blocks.MatterFurnace;
+import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.block.Block;
+import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -14,155 +19,190 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.Facing;
 import net.minecraftforge.common.util.ForgeDirection;
-import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.api.tile.IEmcAcceptor;
-import moze_intel.projecte.gameObjs.blocks.MatterFurnace;
-import moze_intel.projecte.utils.ItemHelper;
 
 public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventory, IEmcAcceptor
 {
-	private final float EMC_CONSUMPTION = 1.6f;
-	public ItemStack[] inventory = new ItemStack[27];
-	public int outputSlot = 14;
-	public int[] inputStorage = new int[] {2, 13};
-	public int[] outputStorage = new int[] {15, 26};
-	public int ticksBeforeSmelt = 3;
-	public int efficiencyBonus = 4;
+	private static final float EMC_CONSUMPTION = 1.6F;
+
+	private final ItemStack[] inventory;
+	protected final int ticksBeforeSmelt;
+	private final int efficiencyBonus;
+	private final int outputSlot;
+	private final int[] inputStorage;
+	private final int[] outputStorage;
+	private final float oreDoubleChance;
+
 	public int furnaceBurnTime;
 	public int currentItemBurnTime;
 	public int furnaceCookTime;
+	private int ticksExisted = 0;
+	private ItemStack cachedResult;
+	private float storedXP = 0;
+
+	private static final int[] inputStorageRM = new int[] {2, 13};
+	private static final int[] outputStorageRM = new int[] {15, 26};
+	private static final int[] inputStorageDM = new int[] {2, 9};
+	private static final int[] outputStorageDM = new int[] {11, 18};
+
+	private static final FurnaceRecipes furnaceRecipes = FurnaceRecipes.smelting();
 
 	public RMFurnaceTile() {
 		super(64);
+		this.inventory = new ItemStack[27];
+		this.ticksBeforeSmelt = 3;
+		this.efficiencyBonus = 4;
+		this.outputSlot = 14;
+		this.inputStorage = inputStorageRM;
+		this.outputStorage = outputStorageRM;
+		this.oreDoubleChance = 1F;
+	}
+
+	// only for DMFurnaceTile
+	RMFurnaceTile(boolean ignored) {
+		super(64);
+		this.inventory = new ItemStack[19];
+		this.ticksBeforeSmelt = 10;
+		this.efficiencyBonus = 3;
+		this.outputSlot = 10;
+		this.inputStorage = inputStorageDM;
+		this.outputStorage = outputStorageDM;
+		this.oreDoubleChance = 0.5F;
 	}
 
 	@Override
 	public void updateEntity()
 	{
-		// 失效检查
 		if (this.isInvalid())
-			return;
+			return; // 失效检查
 
-		boolean flag = furnaceBurnTime > 0;
-		boolean flag1 = false;
+		ticksExisted++;
 
-		if (furnaceBurnTime > 0)
+		final boolean flag = furnaceBurnTime > 0;
+		boolean changed = false;
+
+		if (flag)
 			--furnaceBurnTime;
 
-		if (worldObj.isRemote) return;
+		if (worldObj.isRemote)
+			return;
 
-		pullFromInventories();
-		pushSmeltStack();
+		if (ticksExisted % 10 == 0) {
+			pullFromInventory(); // 外部容器吸取频率降低为每 10 tick 一次
+			pushSmeltStack(); // 每 10 tick 将物品推送到熔炼槽
+			pushOutputStack(); // 每 10 tick 将物品推送到熔炼产物槽
+			pushToInventory(); // 推送至外部容器的频率降低为每 10 tick 一次
+		}
 
-		if (canSmelt() && inventory[0] != null && inventory[0].getItem() instanceof IItemEmc itemEmc)
+		if (ticksExisted % 20 == 0 && inventory[0] != null && inventory[0].getItem() instanceof IItemEmc itemEmc
+			&& itemEmc.getStoredEmc(inventory[0]) > 0)
 		{
-			if (itemEmc.getStoredEmc(inventory[0]) >= EMC_CONSUMPTION)
-			{
-				itemEmc.extractEmc(inventory[0], EMC_CONSUMPTION);
-				this.addEMC(EMC_CONSUMPTION);
+			final double remain = maximumEMC - currentEMC; // 每 20 tick 提取一次 emc
+			if (remain > 0)
+				this.addEMC(itemEmc.extractEmc(inventory[0], remain)); // 一次吸取尽可能多的 emc
+		}
+
+		final boolean flag2 = canSmelt();
+
+		if (!flag2) return;
+
+		if (furnaceBurnTime == 0) {
+			if (currentEMC >= EMC_CONSUMPTION) {
+				currentItemBurnTime = 0;
+				furnaceBurnTime = 1; // 当燃烧时间耗尽时再尝试消耗 emc 燃烧
+				currentEMC -= EMC_CONSUMPTION;
 			}
-		}
-
-		if (this.getStoredEmc() >= EMC_CONSUMPTION)
-		{
-			furnaceBurnTime = 1;
-			this.removeEMC(EMC_CONSUMPTION);
-		}
-
-		if (furnaceBurnTime == 0 && canSmelt())
-		{
-			currentItemBurnTime = furnaceBurnTime = getItemBurnTime(inventory[0]);
-
-			if (furnaceBurnTime > 0)
-			{
-				flag1 = true;
-
-				if (inventory[0] != null)
-				{
-					--inventory[0].stackSize;
-
-					if (inventory[0].stackSize == 0)
-						inventory[0] = inventory[0].getItem().getContainerItem(inventory[0]);
+			else {
+				currentItemBurnTime = furnaceBurnTime = getItemBurnTime(inventory[0]);
+				if (currentItemBurnTime > 0) {
+					changed = true;
+					if (inventory[0] != null) {
+						--inventory[0].stackSize;
+						if (inventory[0].stackSize == 0)
+							inventory[0] = inventory[0].getItem().getContainerItem(inventory[0]);
+					}
 				}
 			}
 		}
 
-		if (furnaceBurnTime > 0 && canSmelt())
-		{
+		if (furnaceBurnTime > 0) {
 			++furnaceCookTime;
-
-			if (furnaceCookTime >= ticksBeforeSmelt)
-			{
+			if (furnaceCookTime >= ticksBeforeSmelt) {
 				furnaceCookTime = 0;
 				smeltItem();
-				flag1 = true;
+				changed = true;
 			}
 		}
+		else furnaceCookTime = 0; // 到达这里，说明燃料没有供给上，烧炼进度清零
 
-		if (flag != furnaceBurnTime > 0)
-		{
-			flag1 = true;
+		if (flag != (furnaceBurnTime > 0)) {
+			changed = true; // 熔炉的状态发生了改变
 			Block block = worldObj.getBlock(xCoord, yCoord, zCoord);
-
-			if (!this.worldObj.isRemote && block instanceof MatterFurnace matterFurnace)
+			if (block instanceof MatterFurnace matterFurnace)
 				matterFurnace.updateFurnaceBlockState(furnaceBurnTime > 0, worldObj, xCoord, yCoord, zCoord);
 		}
 
-		if (flag1)
+		if (changed)
 			markDirty();
-
-		pushOutput();
-		pushToInventories();
 	}
 
 	public boolean isBurning() {
 		return furnaceBurnTime > 0;
 	}
 
-	protected boolean isRMFurnace() {
-		return !(this instanceof DMFurnaceTile);
-	}
-
-	private void pushSmeltStack()
-	{
-		ItemStack stack = inventory[1];
+	// 将输入槽的物品推送到熔炼槽中
+	private void pushSmeltStack() {
+		ItemStack stack = inventory[1]; // 熔炼槽中的当前物品堆
 
 		for (int i = inputStorage[0]; i <= inputStorage[1]; i++)
 		{
 			ItemStack slotStack = inventory[i];
 
-			if (slotStack != null && (stack == null || ItemHelper.areItemStacksEqual(slotStack, stack)))
-			{
-				if (stack == null)
-				{
-					inventory[1] = slotStack.copy();
-					inventory[i] = null;
-					stack = inventory[1]; // 更新引用
-					continue;
-				}
+			if (slotStack == null)
+				continue;
 
-				int remain = stack.getMaxStackSize() - stack.stackSize;
+			if (furnaceRecipes.getSmeltingResult(slotStack) == null)
+				continue; // 这个物品不是熔炉的原料
 
-				if (remain == 0)
-					break;
-				if (slotStack.stackSize <= remain) {
-					inventory[i] = null;
-					stack.stackSize += slotStack.stackSize;
-				}
-				else {
-					this.decrStackSize(i, remain);
-					stack.stackSize += remain;
-				}
+			if (stack == null) {
+				inventory[1] = slotStack;
+				inventory[i] = null; // 清空这个输入槽
+				if (slotStack.getMaxStackSize() <= slotStack.stackSize)
+					break; // 熔炼槽满了，跳出循环
+				stack = inventory[1]; // 更新引用
+				continue; // 这个输入槽已经空了
+			}
+
+			final int remain = stack.getMaxStackSize() - stack.stackSize;
+			if (remain <= 0) break; // 熔炼槽满了，跳出循环
+
+			if (!ItemHelper.areItemStacksEqual(slotStack, stack))
+				continue;
+
+			if (slotStack.stackSize <= remain) {
+				inventory[i] = null;
+				stack.stackSize += slotStack.stackSize;
+				if (slotStack.stackSize == remain)
+					break; // 熔炼槽满了，跳出循环
+			}
+			else {
+				this.decrStackSize(i, remain);
+				stack.stackSize += remain;
+				break; // 熔炼槽满了，跳出循环
 			}
 		}
 	}
 
-	private void pushOutput()
-	{
+	// 将熔炼产物推送到输出槽中
+	private void pushOutputStack() {
 		ItemStack output = inventory[outputSlot];
 
-		if (output == null)
-			return;
+		if (output == null) {
+			if (cachedResult != null) {
+				inventory[outputSlot] = output = cachedResult;
+				cachedResult = null;
+			}
+			else return;
+		}
 
 		for (int i = outputStorage[0]; i <= outputStorage[1]; i++)
 		{
@@ -189,260 +229,144 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 		}
 	}
 
-	// 计算能够装下多少该物品
-	private int calculateAvailableOutputSpace(ItemStack template)
-	{
-		int space = 0;
-		if (inventory[outputSlot] == null)
-			space += template.getMaxStackSize();
-		else if (ItemHelper.areItemStacksEqual(inventory[outputSlot], template))
-			space += inventory[outputSlot].getMaxStackSize() - inventory[outputSlot].stackSize;
+	// 烧炼熔炼槽中的物品
+	private void smeltItem() {
+		ItemStack toSmelt = inventory[1];
+		if (toSmelt == null) return;
+		ItemStack smeltResult = furnaceRecipes.getSmeltingResult(toSmelt);
+		if (smeltResult == null) return;
+		final boolean isOre = ItemHelper.isOre(toSmelt);
+		final boolean multiple = isOre && worldObj.rand.nextFloat() <= oreDoubleChance;
+		ItemStack resultStack = smeltResult.copy();
+		if (multiple)
+			resultStack.stackSize *= 2;
 
-		for (int i = outputStorage[0]; i <= outputStorage[1]; i++) {
-			if (inventory[i] == null)
-				space += template.getMaxStackSize();
-			else if (ItemHelper.areItemStacksEqual(inventory[i], template))
-				space += inventory[i].getMaxStackSize() - inventory[i].stackSize;
-		}
-		return space;
-	}
-
-	// 将结果分配进输出槽位中
-	private void addStackToOutputs(ItemStack result)
-	{
-		if (inventory[outputSlot] == null)
-		{
-			int toAdd = Math.min(result.stackSize, result.getMaxStackSize());
-			inventory[outputSlot] = result.copy();
-			inventory[outputSlot].stackSize = toAdd;
-			result.stackSize -= toAdd;
-		}
-		else if (ItemHelper.areItemStacksEqual(inventory[outputSlot], result))
-		{
-			int toAdd = Math.min(result.stackSize, inventory[outputSlot].getMaxStackSize() - inventory[outputSlot].stackSize);
-			inventory[outputSlot].stackSize += toAdd;
-			result.stackSize -= toAdd;
-		}
-
-		for (int i = outputStorage[0]; i <= outputStorage[1] && result.stackSize > 0; i++)
-		{
-			if (inventory[i] == null)
-			{
-				int toAdd = Math.min(result.stackSize, result.getMaxStackSize());
-				inventory[i] = result.copy();
-				inventory[i].stackSize = toAdd;
-				result.stackSize -= toAdd;
-			}
-			else if (ItemHelper.areItemStacksEqual(inventory[i], result))
-			{
-				int toAdd = Math.min(result.stackSize, inventory[i].getMaxStackSize() - inventory[i].stackSize);
-				inventory[i].stackSize += toAdd;
-				result.stackSize -= toAdd;
+		ItemStack currentSmelted = getStackInSlot(outputSlot);
+		if (currentSmelted == null)
+			setInventorySlotContents(outputSlot, resultStack);
+		else {
+			currentSmelted.stackSize += smeltResult.stackSize; // canSmelt() 保证了烧炼后能存下一倍的产物
+			if (multiple) {
+				if (currentSmelted.getMaxStackSize() - currentSmelted.stackSize < smeltResult.stackSize) // 翻倍的那份放不下了
+					cachedResult = smeltResult.copy(); // 缓存一份烧炼结果，等有空位了再取出
+				else currentSmelted.stackSize += smeltResult.stackSize;
 			}
 		}
+		decrStackSize(1, 1);
+		storedXP += furnaceRecipes.func_151398_b(smeltResult) * (multiple ? 2 : 1);
 	}
 
-	private void smeltItem()
-	{
-		boolean isRM = isRMFurnace();
+	// 判断能否执行熔炼操作(缓存的烧炼结果被输出，熔炼槽中有物品，能烧炼，产物能堆进输出槽)
+	private boolean canSmelt() {
+		if (cachedResult != null)
+			return false;
 
-		// 先处理主输入槽
-		if (!smeltSlot(1) || !isRM)
-			return; // 如果是暗物质熔炉，或者输出已满，只处理这一个槽位即可
+		ItemStack toSmelt = inventory[1];
+		if (toSmelt == null)
+			return false;
 
-		// 批量熔炼整个储备输入库存
-		for (int i = inputStorage[0]; i <= inputStorage[1]; i++)
-			if (!smeltSlot(i))
-				break; // 空间不足，停止熔炼
-	}
+		ItemStack smeltResult = furnaceRecipes.getSmeltingResult(toSmelt);
+		if (smeltResult == null)
+			return false;
 
-	private boolean smeltSlot(int slot)
-	{
-		ItemStack toSmelt = inventory[slot];
-		if (toSmelt == null) return true;
+		ItemStack currentSmelted = getStackInSlot(outputSlot);
 
-		ItemStack smeltResultTemplate = FurnaceRecipes.smelting().getSmeltingResult(toSmelt);
-		if (smeltResultTemplate == null) return true;
-
-		boolean isOre = ItemHelper.getOreDictionaryName(toSmelt).startsWith("ore");
-		int resultSizePerItem = smeltResultTemplate.stackSize * (isOre ? 2 : 1);
-
-		int itemsToSmelt = toSmelt.stackSize; // 只要堆叠在此，就整组熔炼
-		int maxCanFit = calculateAvailableOutputSpace(smeltResultTemplate) / resultSizePerItem;
-
-		// 只消耗能放得下的量
-		int actualSmelt = Math.min(itemsToSmelt, maxCanFit);
-
-		if (actualSmelt > 0)
-		{
-			ItemStack result = smeltResultTemplate.copy();
-			result.stackSize = actualSmelt * resultSizePerItem; // 也能安全分配
-
-			addStackToOutputs(result);
-			decrStackSize(slot, actualSmelt);
-		}
-
-		return actualSmelt == itemsToSmelt;
-	}
-
-	private boolean canSmelt()
-	{
-		if (canSmeltSlot(1))
+		if (currentSmelted == null)
 			return true;
+		if (!ItemHelper.areItemStacksEqual(currentSmelted, smeltResult))
+			return false;
 
-		if (isRMFurnace()) {
-			for (int i = inputStorage[0]; i <= inputStorage[1]; i++)
-				if (canSmeltSlot(i))
-					return true;
-		}
-		return false;
+		final int result = currentSmelted.stackSize + smeltResult.stackSize;
+		return result <= currentSmelted.getMaxStackSize();
 	}
 
-	private boolean canSmeltSlot(int slot)
-	{
-		ItemStack toSmelt = inventory[slot];
-		if (toSmelt == null) return false;
-
-		ItemStack smeltResult = FurnaceRecipes.smelting().getSmeltingResult(toSmelt);
-		if (smeltResult == null) return false;
-
-		boolean isOre = ItemHelper.getOreDictionaryName(toSmelt).startsWith("ore");
-		int resultSizePerItem = smeltResult.stackSize * (isOre ? 2 : 1);
-
-		return calculateAvailableOutputSpace(smeltResult) >= resultSizePerItem;
-	}
-
-	private void pullFromInventories()
-	{
-		TileEntity tile = this.worldObj.getTileEntity(this.xCoord, this.yCoord + 1, this.zCoord);
-
+	// 从上方的 tile 中获取所有可用的物品
+	private void pullFromInventory() {
+		final TileEntity tile = this.worldObj.getTileEntity(this.xCoord, this.yCoord + 1, this.zCoord);
 		if (tile instanceof ISidedInventory inv)
 		{
-			final int side = 0;
-			int[] slots = inv.getAccessibleSlotsFromSide(side);
+			final int[] accessibleSlots = inv.getAccessibleSlotsFromSide(0);
+			// 0 = The bottom side of the tile pulling from (ForgeDirection.DOWN)
 
-			for (int i : slots) {
-				ItemStack stack = inv.getStackInSlot(i);
+			for (int i = 0, length = accessibleSlots.length; i < length; i++) {
+				final int slotId = accessibleSlots[i];
+				ItemStack stack = inv.getStackInSlot(slotId);
 				if (stack == null) continue;
-
-				if (inv.canExtractItem(i, stack, side)) {
-					if (TileEntityFurnace.isItemFuel(stack) || stack.getItem() instanceof IItemEmc) {
-						if (inventory[0] == null) {
-							inventory[0] = stack;
-							inv.setInventorySlotContents(i, null);
-							break;
-						} else if (ItemHelper.areItemStacksEqual(stack, inventory[0])) {
-							int remain = inventory[0].getMaxStackSize() - inventory[0].stackSize;
-							if (stack.stackSize <= remain) {
-								inventory[0].stackSize += stack.stackSize;
-								inv.setInventorySlotContents(i, null);
-								break;
-							} else {
-								inventory[0].stackSize += remain;
-								stack.stackSize -= remain;
-							}
-						}
-						continue;
-					}
-
-					for (int j = inputStorage[0]; j < inputStorage[1]; j++) {
-						ItemStack otherStack = inventory[j];
-
-						if (otherStack == null) {
-							inventory[j] = stack;
-							inv.setInventorySlotContents(i, null);
-							break;
-						} else if (ItemHelper.areItemStacksEqual(stack, otherStack)) {
-							int remain = otherStack.getMaxStackSize() - otherStack.stackSize;
-							if (stack.stackSize <= remain) {
-								inventory[j].stackSize += stack.stackSize;
-								inv.setInventorySlotContents(i, null);
-								break;
-							} else {
-								inventory[j].stackSize += remain;
-								stack.stackSize -= remain;
-							}
-						}
-					}
-				}
+				if (!inv.canExtractItem(slotId, stack, 0)) continue;
+				pullStackFromInventorySlot(inv, slotId, stack);
 			}
 		}
 		else if (tile instanceof IInventory inv)
 		{
-			for (int i = 0; i < inv.getSizeInventory(); i++)
-			{
-				ItemStack stack = inv.getStackInSlot(i);
+			for (int slotId = 0, length = inv.getSizeInventory(); slotId < length; slotId++) {
+				ItemStack stack = inv.getStackInSlot(slotId);
 				if (stack == null) continue;
+				pullStackFromInventorySlot(inv, slotId, stack);
+			}
+		}
+	}
 
-				if (TileEntityFurnace.isItemFuel(stack) || stack.getItem() instanceof IItemEmc)
-				{
-					if (inventory[0] == null)
-					{
-						inventory[0] = stack;
-						inv.setInventorySlotContents(i, null);
-						break;
+	// 从 inv 的 slotId 号槽位取出 stack
+	private void pullStackFromInventorySlot(IInventory inv, int slotId, ItemStack stack) {
+		if (stack == null) return;
+		if (TileEntityFurnace.isItemFuel(stack) || stack.getItem() instanceof IItemEmc) {
+			ItemStack fuelStack = inventory[0];
+			if (fuelStack == null) {
+				inventory[0] = stack;
+				inv.setInventorySlotContents(slotId, null);
+			}
+			else if (ItemHelper.areItemStacksEqual(stack, fuelStack)) {
+				final int remain = fuelStack.getMaxStackSize() - fuelStack.stackSize;
+				if (remain > 0) {
+					if (stack.stackSize <= remain) {
+						fuelStack.stackSize += stack.stackSize;
+						inv.setInventorySlotContents(slotId, null);
 					}
-					else if (ItemHelper.areItemStacksEqual(stack, inventory[0]))
-					{
-						int remain = inventory[0].getMaxStackSize() - inventory[0].stackSize;
-						if (stack.stackSize <= remain)
-						{
-							inventory[0].stackSize += stack.stackSize;
-							inv.setInventorySlotContents(i, null);
-							break;
-						}
-						else
-						{
-							inventory[0].stackSize += remain;
-							stack.stackSize -= remain;
-						}
+					else {
+						fuelStack.stackSize += remain;
+						stack.stackSize -= remain;
 					}
-					continue;
 				}
-				else if (FurnaceRecipes.smelting().getSmeltingResult(stack) == null)
-				{
-					continue;
+			}
+			return; // inv 的这一格装的是燃料，不再执行后续逻辑
+		}
+
+		if (furnaceRecipes.getSmeltingResult(stack) == null)
+			return; // 这个物品没有烧炼配方
+
+		for (int j = inputStorage[0]; j <= inputStorage[1]; j++) // 2~13 槽全部枚举一遍
+		{
+			ItemStack inputStack = inventory[j];
+			if (inputStack == null) {
+				inventory[j] = stack;
+				inv.setInventorySlotContents(slotId, null);
+				return; // inv 的这一格已经空了
+			}
+			else if (ItemHelper.areItemStacksEqual(stack, inputStack)) {
+				final int remain = inputStack.getMaxStackSize() - inputStack.stackSize;
+				if (remain <= 0) continue; // 这个输入槽已经满了
+				if (stack.stackSize <= remain) {
+					inputStack.stackSize += stack.stackSize;
+					inv.setInventorySlotContents(slotId, null);
+					return; // inv 的这一格已经空了
 				}
-
-				for (int j = inputStorage[0]; j < inputStorage[1]; j++)
-				{
-					ItemStack otherStack = inventory[j];
-
-					if (otherStack == null)
-					{
-						inventory[j] = stack;
-						inv.setInventorySlotContents(i, null);
-						break;
-					}
-					else if (ItemHelper.areItemStacksEqual(stack, otherStack))
-					{
-						int remain = otherStack.getMaxStackSize() - otherStack.stackSize;
-						if (stack.stackSize <= remain)
-						{
-							inventory[j].stackSize += stack.stackSize;
-							inv.setInventorySlotContents(i, null);
-							break;
-						}
-						else
-						{
-							inventory[j].stackSize += remain;
-							stack.stackSize -= remain;
-						}
-					}
+				else {
+					inputStack.stackSize += remain;
+					stack.stackSize -= remain;
 				}
 			}
 		}
 	}
 
-	private void pushToInventories()
+	private void pushToInventory()
 	{
 		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
 		{
 			if (dir.offsetY > 0) continue;
 
-			int x = this.xCoord + dir.offsetX;
-			int y = this.yCoord + dir.offsetY;
-			int z = this.zCoord + dir.offsetZ;
+			final int x = this.xCoord + dir.offsetX;
+			final int y = this.yCoord + dir.offsetY;
+			final int z = this.zCoord + dir.offsetZ;
 
 			TileEntity tile = this.worldObj.getTileEntity(x, y, z);
 			if (tile == null) continue;
@@ -514,58 +438,61 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 		}
 	}
 
-	private int getItemBurnTime(ItemStack stack)
-	{
-		int val = TileEntityFurnace.getItemBurnTime(stack);
+	private int getItemBurnTime(ItemStack stack) {
+		final int val = TileEntityFurnace.getItemBurnTime(stack);
 		return (val * ticksBeforeSmelt) / 200 * efficiencyBonus;
 	}
 
+	// 将存储的经验生成为经验球
+	public void spawnXPOrbs(EntityPlayer player) {
+		int total = (int) storedXP, toSpawn;
+		while (total > 0) {
+			toSpawn = EntityXPOrb.getXPSplit(total);
+			total -= toSpawn;
+			player.worldObj.spawnEntityInWorld(new EntityXPOrb(player.worldObj, player.posX,
+				player.posY + 0.5D, player.posZ + 0.5D, toSpawn));
+		}
+		storedXP = 0;
+	}
+
 	@SideOnly(Side.CLIENT)
-	public int getCookProgressScaled(int value)
-	{
+	public int getCookProgressScaled(int value) {
 		return (furnaceCookTime + (isBurning() && canSmelt() ? 1 : 0)) * value / ticksBeforeSmelt;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public int getBurnTimeRemainingScaled(int value)
-	{
-		if (this.currentItemBurnTime == 0)
-			this.currentItemBurnTime = ticksBeforeSmelt;
-
+	public int getBurnTimeRemainingScaled(int value) {
+		if (currentItemBurnTime == 0)
+			currentItemBurnTime = ticksBeforeSmelt;
 		return furnaceBurnTime * value / currentItemBurnTime;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt)
-	{
+	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
 		furnaceBurnTime = nbt.getShort("BurnTime");
 		furnaceCookTime = nbt.getShort("CookTime");
-		currentItemBurnTime = getItemBurnTime(inventory[0]);
 
 		NBTTagList list = nbt.getTagList("Items", 10);
-		inventory = new ItemStack[getSizeInventory()];
-		for (int i = 0; i < list.tagCount(); i++)
-		{
+		//inventory = new ItemStack[getSizeInventory()]; // 这行应该是不需要的，因为在创建方块实体实例的时候就已经初始化过了
+		for (int i = 0; i < list.tagCount(); i++) {
 			NBTTagCompound subNBT = list.getCompoundTagAt(i);
-
 			// 使用 & 255 转换为无符号整型
 			int slot = subNBT.getByte("Slot") & 255;
 			if (slot < getSizeInventory())
 				inventory[slot] = ItemStack.loadItemStackFromNBT(subNBT);
 		}
+		currentItemBurnTime = getItemBurnTime(inventory[0]);
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt)
-	{
+	public void writeToNBT(NBTTagCompound nbt) {
 		super.writeToNBT(nbt);
 		nbt.setShort("BurnTime", (short) furnaceBurnTime);
 		nbt.setShort("CookTime", (short) furnaceCookTime);
 
 		NBTTagList list = new NBTTagList();
-		for (int i = 0; i < getSizeInventory(); i++)
-		{
+		for (int i = 0; i < getSizeInventory(); i++) {
 			if (inventory[i] == null) continue;
 			NBTTagCompound subNBT = new NBTTagCompound();
 			subNBT.setByte("Slot", (byte) i);
@@ -586,36 +513,29 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 	}
 
 	@Override
-	public ItemStack decrStackSize(int slot, int qty)
-	{
+	public ItemStack decrStackSize(int slot, int qty) {
+		if (inventory[slot] == null) return null;
 		ItemStack stack = inventory[slot];
-
-		if (stack != null)
-		{
-			if (stack.stackSize <= qty)
+		if (stack.stackSize <= qty)
+			inventory[slot] = null;
+		else {
+			stack = stack.splitStack(qty);
+			if (stack.stackSize == 0)
 				inventory[slot] = null;
-			else {
-				stack = stack.splitStack(qty);
-				if (stack.stackSize == 0)
-					inventory[slot] = null;
-			}
 		}
 		return stack;
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int slot)
-	{
+	public ItemStack getStackInSlotOnClosing(int slot) {
 		if (inventory[slot] == null) return null;
-
 		ItemStack stack = inventory[slot];
 		inventory[slot] = null;
 		return stack;
 	}
 
 	@Override
-	public void setInventorySlotContents(int slot, ItemStack stack)
-	{
+	public void setInventorySlotContents(int slot, ItemStack stack) {
 		inventory[slot] = stack;
 		if (stack != null && stack.stackSize > this.getInventoryStackLimit())
 			stack.stackSize = this.getInventoryStackLimit();
@@ -650,15 +570,14 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 	public void closeInventory() {}
 
 	@Override
-	public boolean isItemValidForSlot(int slot, ItemStack stack)
-	{
+	public boolean isItemValidForSlot(int slot, ItemStack stack) {
 		if (stack == null)
 			return false;
 
 		if (slot == 0)
 			return TileEntityFurnace.isItemFuel(stack) || stack.getItem() instanceof IItemEmc;
-		else if (slot >= 1 && slot <= 13)
-			return FurnaceRecipes.smelting().getSmeltingResult(stack) != null;
+		else if (slot >= 1 && slot <= inputStorage[1])
+			return furnaceRecipes.getSmeltingResult(stack) != null;
 
 		return false;
 	}
@@ -685,22 +604,20 @@ public class RMFurnaceTile extends TileEmc implements IInventory, ISidedInventor
 		if (side == 0)
 			return false;
 		if (side == 1)
-			return slot <= inputStorage[1] && slot >= inputStorage[0];
+			return inputStorage[0] <= slot && slot <= inputStorage[1];
 		return slot == 0;
 	}
 
 	@Override
 	public boolean canExtractItem(int slot, ItemStack stack, int side) {
-		return slot >= outputStorage[0];
+		return slot >= outputSlot;
 	}
 
 	@Override
-	public double acceptEMC(ForgeDirection side, double toAccept)
-	{
-		if (this.getStoredEmc() < EMC_CONSUMPTION)
-		{
-			double needed = EMC_CONSUMPTION - this.getStoredEmc();
-			double accept = Math.min(needed, toAccept);
+	public double acceptEMC(ForgeDirection side, double toAccept) {
+		final double needed = maximumEMC - currentEMC;
+		if (needed > 0) {
+			final double accept = Math.min(needed, toAccept);
 			this.addEMC(accept);
 			return accept;
 		}
