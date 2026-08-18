@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc;
 
-import com.google.common.collect.Lists;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.utils.Comparators;
 import moze_intel.projecte.utils.EMCHelper;
@@ -9,18 +8,14 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public final class FuelMapper
-{
-	private static final List<SimpleStack> FUEL_MAP = Lists.newArrayList();
+public final class FuelMapper {
+	private static final List<SimpleStack> FUEL_MAP = new ArrayList<>();
 
-	public static void loadMap()
-	{
-		if (!FUEL_MAP.isEmpty())
-		{
-			FUEL_MAP.clear();
-		}
+	public static void loadMap() {
+		FUEL_MAP.clear(); // 直接 clear，不需要判空
 
 		addToMap(new ItemStack(Items.coal, 1, 1));
 		addToMap(new ItemStack(Items.redstone));
@@ -41,33 +36,24 @@ public final class FuelMapper
 		FUEL_MAP.sort(Comparators.SIMPLESTACK_ASCENDING);
 	}
 
-	private static void addToMap(ItemStack stack)
-	{
+	private static void addToMap(ItemStack stack) {
 		if (EMCHelper.doesItemHaveEmc(stack))
-		{
 			addToMap(new SimpleStack(stack));
-		}
 	}
 
-	public static boolean isStackFuel(ItemStack stack)
-	{
-		return mapContains(new SimpleStack(stack));
+	public static boolean isStackFuel(ItemStack stack) {
+		return indexInMap(stack) != -1;
 	}
 
-	public static boolean isStackMaxFuel(ItemStack stack)
-	{
-		return indexInMap(new SimpleStack(stack)) == FUEL_MAP.size() - 1;
+	public static boolean isStackMaxFuel(ItemStack stack) {
+		return indexInMap(stack) == FUEL_MAP.size() - 1;
 	}
 
-	public static ItemStack getFuelUpgrade(ItemStack stack)
-	{
-		SimpleStack fuel = new SimpleStack(stack);
+	public static ItemStack getFuelUpgrade(ItemStack stack) {
+		int index = indexInMap(stack);
 
-		int index = indexInMap(fuel);
-
-		if (index == -1)
-		{
-			PELogger.logFatal("Tried to upgrade invalid fuel: " + stack);
+		if (index == -1) {
+			PELogger.logWarn("Try to upgrade invalid fuel: " + stack);
 			return null;
 		}
 
@@ -76,32 +62,17 @@ public final class FuelMapper
 		return FUEL_MAP.get(nextIndex).toItemStack();
 	}
 
-	private static void addToMap(SimpleStack stack)
-	{
-		if (stack.isValid())
-		{
-			// 不再需要 .copy() 和强制修改 qnty
-			if (!FUEL_MAP.contains(stack))
-			{
-				FUEL_MAP.add(stack);
-			}
-		}
+	private static void addToMap(SimpleStack stack) {
+		if (!stack.isValid()) return;
+
+		if (!FUEL_MAP.contains(stack))
+			FUEL_MAP.add(stack);
 	}
 
-	private static boolean mapContains(SimpleStack stack)
-	{
-		if (!stack.isValid())
-		{
-			return false;
-		}
-
-		// 不再需要 .copy() 和强制修改 qnty
-		return FUEL_MAP.contains(stack);
-	}
-
-	private static int indexInMap(SimpleStack stack)
-	{
-		// 不再需要 .copy() 和强制修改 qnty
-		return FUEL_MAP.indexOf(stack);
+	private static int indexInMap(ItemStack stack) {
+		if (stack == null || stack.getItem() == null)
+			return -1;
+		SimpleStack ss = new SimpleStack(stack);
+		return FUEL_MAP.indexOf(ss);
 	}
 }

@@ -32,7 +32,6 @@ public class SimpleStack {
 
 		Item item = Item.getItemById(id);
 		if (item != null)
-			// 因为不再记录原始数量，转换为 ItemStack 时默认数量设为 1 即可
 			return new ItemStack(item, 1, damage);
 
 		return null;
@@ -64,11 +63,11 @@ public class SimpleStack {
 		return "id:" + id + " damage:" + damage;
 	}
 
-	public static SimpleStack getFor(ItemStack is) {
+    public static SimpleStack getFor(ItemStack is) {
 		if (is == null || is.getItem() == null) return null;
 		NBTTagCompound nbt = ItemHelper.filterNBT(is);
 		if (nbt != null)
 			return new NBTSimpleStack(is, nbt);
-		return new SimpleStack(is);
-	}
+        return new SimpleStack(is);
+    }
 }

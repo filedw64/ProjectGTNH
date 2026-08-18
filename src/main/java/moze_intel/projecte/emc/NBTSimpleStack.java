@@ -24,7 +24,6 @@ public class NBTSimpleStack extends SimpleStack {
 		Item item = Item.getItemById(id);
 		if (item == null) return null;
 
-		// 默认数量给 1
 		ItemStack stack = new ItemStack(item, 1, damage);
 		stack.stackTagCompound = (NBTTagCompound) nbt.copy();
 
@@ -46,7 +45,6 @@ public class NBTSimpleStack extends SimpleStack {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NBTSimpleStack other)
-			// 移除了 qnty == other.qnty
 			return id == other.id && damage == other.damage && nbt.equals(other.nbt);
 		return false;
 	}
@@ -56,7 +54,6 @@ public class NBTSimpleStack extends SimpleStack {
 		Object obj = Item.itemRegistry.getObjectById(id);
 
 		if (obj != null)
-			// 移除了输出中的 qnty
 			return Item.itemRegistry.getNameForObject(obj) + " " + damage + " " + nbt;
 
 		return "id:" + id + " damage:" + damage + " nbt:" + nbt;

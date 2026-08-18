@@ -7,14 +7,13 @@ import net.minecraftforge.fluids.FluidStack;
 
 public class FluidSimpleStack extends SimpleStack {
 	public FluidSimpleStack(int id) {
-		super(id, 0); // Fluid没有damage(子ID)，固定传0
+		super(id, 0);
 	}
 
 	public FluidSimpleStack(FluidStack fs) {
 		this(-1);
-		if (fs != null && fs.getFluid() != null) {
+		if (fs != null && fs.getFluid() != null)
 			id = fs.getFluidID();
-		}
 	}
 
 	@Override
@@ -25,7 +24,7 @@ public class FluidSimpleStack extends SimpleStack {
 	public FluidStack toFluidStack() {
 		Fluid fluid = FluidRegistry.getFluid(id);
 		if (fluid == null) return null;
-		return new FluidStack(fluid, 1); // 不再记录原始数量，默认返回1mB
+		return new FluidStack(fluid, 1);
 	}
 
 	@Override
@@ -40,9 +39,8 @@ public class FluidSimpleStack extends SimpleStack {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof FluidSimpleStack other) {
+		if (obj instanceof FluidSimpleStack other)
 			return this.id == other.id;
-		}
 		return false;
 	}
 

@@ -20,8 +20,6 @@ import moze_intel.projecte.utils.PrefixConfiguration;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.File;
@@ -103,19 +101,11 @@ public final class EMCMapper
 					return;
 				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
-					// 移除了代表 qnty 的 1 参数
 					emc.put(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
-				else
-					// 移除了代表 qnty 的 1 参数
-					emc.put(new SimpleStack(id, nssItem.damage), val);
+				else emc.put(new SimpleStack(id, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
-				// 流体非空检查
-				if (fluid != null)
-					// 移除了代表 qnty 的 1 参数
-					emc.put(new FluidSimpleStack(fluid.getID()), val);
-				else PELogger.logWarn("Fluid not found in registry for NSSFluid: %s. Skipping...", nssFluid.name);
+				emc.put(new FluidSimpleStack(nssFluid.fluid.getID()), val);
 			}
 		});
 
@@ -142,12 +132,10 @@ public final class EMCMapper
 	}
 
 	public static boolean mapContains(SimpleStack key) {
-		// 不再需要复制对象强改 qnty=1，直接查询即可
 		return emc.containsKey(key);
 	}
 
 	public static Double getEmcValue(SimpleStack stack) {
-		// 不再需要复制对象强改 qnty=1，直接查询即可
 		return emc.get(stack);
 	}
 
