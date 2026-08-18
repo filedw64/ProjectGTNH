@@ -36,7 +36,8 @@ public class ToolTipEvent
 
 	static {
 		DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
-		symbols.setExponentSeparator("e");
+		// 使用 config 中的自定义字符串作为科学计数法的分隔符，如果由于类加载顺序问题为空则默认给 "e"
+		symbols.setExponentSeparator(ProjectEConfig.sciFormat != null ? ProjectEConfig.sciFormat : "e");
 		SCI_FORMAT = new DecimalFormat("0.000E0", symbols);
 	}
 
