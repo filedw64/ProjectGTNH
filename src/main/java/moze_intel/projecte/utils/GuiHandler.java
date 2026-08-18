@@ -118,13 +118,13 @@ public class GuiHandler implements IGuiHandler {
 				break;
 			case Constants.CONDENSER_MK2_GUI:
 				// 补充强制类型转换前的 instanceof 检查
-				if (tile instanceof CondenserMK2Tile)
-					return new CondenserMK2Container(player.inventory, (CondenserMK2Tile) tile);
+				if (tile instanceof CondenserMK2Tile condenserMK2Tile)
+					return new CondenserMK2Container(player.inventory, condenserMK2Tile);
 				break;
 			case Constants.PEDESTAL_GUI:
 				// 补充强制类型转换前的 instanceof 检查
-				if (tile instanceof DMPedestalTile)
-					return new PedestalContainer(player.inventory, ((DMPedestalTile) tile));
+				if (tile instanceof DMPedestalTile dmPedestalTile)
+					return new PedestalContainer(player.inventory, dmPedestalTile);
 				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
@@ -196,13 +196,13 @@ public class GuiHandler implements IGuiHandler {
 				break;
 			case Constants.CONDENSER_MK2_GUI:
 				// 补充强制类型转换前的 instanceof 检查
-				if (tile instanceof CondenserMK2Tile)
-					return new GUICondenserMK2(player.inventory, (CondenserMK2Tile) tile);
+				if (tile instanceof CondenserMK2Tile condenserMK2Tile)
+					return new GUICondenserMK2(player.inventory, condenserMK2Tile);
 				break;
 			case Constants.PEDESTAL_GUI:
 				// 补充强制类型转换前的 instanceof 检查
-				if (tile instanceof DMPedestalTile)
-					return new GUIPedestal(player.inventory, ((DMPedestalTile) tile));
+				if (tile instanceof DMPedestalTile dmPedestalTile)
+					return new GUIPedestal(player.inventory, dmPedestalTile);
 				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);

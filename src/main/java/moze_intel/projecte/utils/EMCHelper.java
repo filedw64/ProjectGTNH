@@ -46,9 +46,7 @@ public final class EMCHelper
 			ItemStack stack = inv.getStackInSlot(i);
 
 			if (stack == null || stack.getItem() == null)
-			{
 				continue;
-			}
 
 			if (stack.getItem() instanceof IItemEmc itemEmc)
 			{
@@ -59,40 +57,27 @@ public final class EMCHelper
 					return minFuel;
 				}
 			}
-			else if (!metRequirement && FuelMapper.isStackFuel(stack))
-			{
+			else if (FuelMapper.isStackFuel(stack)) {
 				double emc = getEmcValue(stack);
-				int toRemove = ((int) Math.ceil((minFuel - emcConsumed) / emc));
-
-				if (stack.stackSize >= toRemove)
-				{
+				if (emc == 0) continue; // how could this happen?
+				int toRemove = (int) ((minFuel - emcConsumed) / emc);
+				if (stack.stackSize >= toRemove) {
 					removeCounts[i] = toRemove;
 					emcConsumed += emc * toRemove;
 					metRequirement = true;
 				}
-				else
-				{
+				else {
 					removeCounts[i] = stack.stackSize;
 					emcConsumed += emc * stack.stackSize;
-
-					if (emcConsumed >= minFuel)
-					{
-						metRequirement = true;
-					}
 				}
 			}
+			if (metRequirement) break;
 		}
 
-		if (metRequirement)
-		{
+		if (metRequirement) {
 			for (int i = 0; i < invSize; i++)
-			{
 				if (removeCounts[i] > 0)
-				{
 					inv.decrStackSize(i, removeCounts[i]);
-				}
-			}
-
 			player.inventoryContainer.detectAndSendChanges();
 			return emcConsumed;
 		}
@@ -113,6 +98,7 @@ public final class EMCHelper
 			return false;
 
 		SimpleStack ss = SimpleStack.getFor(stack);
+		ss.qnty = 1;
 
 		if (!ss.isValid())
 			return false;
@@ -124,8 +110,7 @@ public final class EMCHelper
 	}
 
 	// 返回 double 避免拆装箱
-	public static double getEmcValue(Block block)
-	{
+	public static double getEmcValue(Block block) {
 		if (block == null) return 0.0;
 		SimpleStack stack = new SimpleStack(new ItemStack(block));
 
@@ -136,8 +121,7 @@ public final class EMCHelper
 	}
 
 	// 返回 double 避免拆装箱
-	public static double getEmcValue(Item item)
-	{
+	public static double getEmcValue(Item item) {
 		if (item == null) return 0.0;
 		SimpleStack stack = new SimpleStack(new ItemStack(item));
 
@@ -168,9 +152,7 @@ public final class EMCHelper
 		if (!ss.isValid()) return 0.0;
 
 		if (EMCMapper.mapContains(ss))
-		{
 			return EMCMapper.getEmcValue(ss) + getEnchantEmcBonus(stack) + getStoredEMCBonus(stack);
-		}
 
 		if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0)
 		{
@@ -181,8 +163,7 @@ public final class EMCHelper
 
 				int rest = (stack.getMaxDamage() - stack.getItemDamage());
 
-				if (rest <= 0)
-				{
+				if (rest <= 0) {
 					//Not Impossible. Don't use durability or enchants for emc calculation if this happens.
 					return emc;
 				}
@@ -213,23 +194,19 @@ public final class EMCHelper
 			Enchantment ench = Enchantment.enchantmentsList[entry.getKey()];
 
 			if (ench != null && ench.getWeight() > 0) // 补充 null 校验，防止越界或模组冲突
-			{
 				result += (double) Constants.ENCH_EMC_BONUS / ench.getWeight() * entry.getValue();
-			}
 		}
 
 		return result;
 	}
 
-	public static double getKleinStarMaxEmc(ItemStack stack)
-	{
+	public static double getKleinStarMaxEmc(ItemStack stack) {
 		return Constants.MAX_KLEIN_EMC[stack.getItemDamage()];
 	}
 
 	public static double getStoredEMCBonus(ItemStack stack) {
-		if (stack.stackTagCompound != null && stack.stackTagCompound.hasKey("StoredEMC")) {
+		if (stack.stackTagCompound != null)
 			return stack.stackTagCompound.getDouble("StoredEMC");
-		}
 		return 0.0;
 	}
 }
