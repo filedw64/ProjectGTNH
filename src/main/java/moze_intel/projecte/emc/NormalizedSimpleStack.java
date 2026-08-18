@@ -58,7 +58,7 @@ public abstract class NormalizedSimpleStack {
 
 	public abstract String json();
 
-	private static final Map<NSSItem, NSSItem> itemMap = new HashMap<>(); // 引入全局缓存
+	private static final Map<NSSItem, NSSItem> itemMap = new HashMap<>(); // 引入全局对象池
 
 	public static NSSItem forItem(String itemName, int damage, NBTTagCompound nbt) {
 		if (nbt == null) return forItem(itemName, damage);
@@ -68,7 +68,7 @@ public abstract class NormalizedSimpleStack {
 		}
 
 		NSSItem temp = new NBTNSSItem(itemName, damage, nbt);
-		return itemMap.computeIfAbsent(temp, k -> k); // 复用已存在的相同 NSSItem
+		return itemMap.computeIfAbsent(temp, nss -> nss); // 复用已存在的相同 NSSItem
 	}
 
 	public static NSSItem forItem(String itemName, int damage) {
@@ -78,7 +78,7 @@ public abstract class NormalizedSimpleStack {
 		}
 
 		NSSItem temp = new NSSItem(itemName, damage);
-		return itemMap.computeIfAbsent(temp, k -> k); // 复用已存在的相同 NSSItem
+		return itemMap.computeIfAbsent(temp, nss -> nss); // 复用已存在的相同 NSSItem
 	}
 
 	public static NSSItem forItem(Block block) {
@@ -220,7 +220,8 @@ public abstract class NormalizedSimpleStack {
 
 		@Override
 		public int hashCode() {
-			return counter; // 直接用 counter 作为 hashCode
+			return System.identityHashCode(this);
+			// NSSFake 也是注册单例的，直接用 Object 的默认 hashCode
 		}
 	}
 
@@ -243,11 +244,9 @@ public abstract class NormalizedSimpleStack {
 
 	public static class NSSFluid extends NormalizedSimpleStack {
 		public final Fluid fluid;
-		private final int cachedHash;
 
 		private NSSFluid(Fluid fluid) {
 			this.fluid = fluid;
-			this.cachedHash = fluid.getName().hashCode();
 		}
 
 		@Override
@@ -262,7 +261,8 @@ public abstract class NormalizedSimpleStack {
 
 		@Override
 		public int hashCode() {
-			return cachedHash;
+			return System.identityHashCode(this);
+			// NSSFluid 是注册单例的，直接用 Object 的默认 hashCode
 		}
 
 		@Override
@@ -284,16 +284,15 @@ public abstract class NormalizedSimpleStack {
 
 	public static class NSSOreDictionary extends NormalizedSimpleStack {
 		public final String od;
-		private final int cachedHash;
 
 		private NSSOreDictionary(String od) {
 			this.od = od;
-			this.cachedHash = od.hashCode();
 		}
 
 		@Override
 		public int hashCode() {
-			return cachedHash;
+			return System.identityHashCode(this);
+			// NSSOreDictionary 也是注册单例的，直接用 Object 的默认 hashCode
 		}
 
 		@Override
