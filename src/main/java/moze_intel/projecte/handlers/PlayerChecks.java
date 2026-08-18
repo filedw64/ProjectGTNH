@@ -10,6 +10,7 @@ import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +20,7 @@ public final class PlayerChecks
 	private static final Set<EntityPlayerMP> swrgOverrides = new HashSet<>();
 	private static final Set<EntityPlayerMP> gemArmorReadyChecks = new HashSet<>();
 	private static final Set<EntityPlayerMP> hadFlightItem = new HashSet<>();
+	private static final Set<EntityPlayerMP> wearGemHelmet = new HashSet<>();
 	private static final TObjectIntHashMap<EntityPlayerMP> projectileCooldowns = new TObjectIntHashMap<>();
 	private static final TObjectIntHashMap<EntityPlayerMP> gemChestCooldowns = new TObjectIntHashMap<>();
 
@@ -65,6 +67,12 @@ public final class PlayerChecks
 				PlayerHelper.updateClientServerFlight(player, true);
 			hadFlightItem.add(player);
 		}
+
+		final ItemStack helmet = player.inventory.armorInventory[3];
+		if (helmet != null && helmet.getItem() == ObjHandler.gemHelmet)
+			wearGemHelmet.add(player);
+		else if (wearGemHelmet.remove(player))
+			player.removePotionEffect(Potion.nightVision.id);
 
 		if (!shouldPlayerResistFire(player)) {
 			if (player.isImmuneToFire())
@@ -207,13 +215,17 @@ public final class PlayerChecks
 		swrgOverrides.clear();
 		gemArmorReadyChecks.clear();
 		hadFlightItem.clear();
+		wearGemHelmet.clear();
 		projectileCooldowns.clear();
+		gemChestCooldowns.clear();
 	}
 
 	public static void removePlayerFromLists(EntityPlayerMP player) {
 		swrgOverrides.remove(player);
 		gemArmorReadyChecks.remove(player);
 		hadFlightItem.remove(player);
+		wearGemHelmet.remove(player);
 		projectileCooldowns.remove(player);
+		gemChestCooldowns.remove(player);
 	}
 }

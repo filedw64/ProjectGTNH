@@ -61,7 +61,7 @@ public class CollectorMK3Container extends Container
 
 		for (int i = 0; i < this.crafters.size(); ++i)
 		{
-			ICrafting icrafting = (ICrafting)this.crafters.get(i);
+			ICrafting icrafting = this.crafters.get(i);
 
 			if(sunLevel != tile.getSunLevel())
 				icrafting.sendProgressBarUpdate(this, 1, tile.getSunLevel());
@@ -103,7 +103,7 @@ public class CollectorMK3Container extends Container
 				return null;
 			}
 		}
-		else if (slotIndex >= 19 && slotIndex <= 54)
+		else if (slotIndex <= 54)
 		{
 			if (!FuelMapper.isStackFuel(stack) || FuelMapper.isStackMaxFuel(stack) || !this.mergeItemStack(stack, 1, 16, false))
 			{

@@ -27,18 +27,18 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		this.mapper = mapper;
 		mapper.setValueBefore(NormalizedSimpleStack.forFluid(FluidRegistry.WATER), CCCInit.finiteWater ? 8e-3 : -Double.MAX_VALUE);
 
-		//1 Bucket of Lava = 1 Block of Obsidian
-		mapper.addConversion(1000, NormalizedSimpleStack.forFluid(FluidRegistry.LAVA), Arrays.asList(NormalizedSimpleStack.forItem(Blocks.obsidian)));
+		// 1 Bucket of Lava = 1 Block of Obsidian
+		// 替换 Arrays.asList 为 Collections.singletonList 减少内存分配
+		mapper.addConversion(1000, NormalizedSimpleStack.forFluid(FluidRegistry.LAVA), Collections.singletonList(NormalizedSimpleStack.forItem(Blocks.obsidian)));
 
-		//Add Conversion in case MFR is not present and milk is not an actual fluid
+		// Add Conversion in case MFR is not present and milk is not an actual fluid
 		NormalizedSimpleStack fakeMilkFluid = NormalizedSimpleStack.forFake("fakeMilkFluid");
 		mapper.setValueBefore(fakeMilkFluid, 16.0);
 		mapper.addConversion(1, NormalizedSimpleStack.forItem(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.forItem(Items.bucket), fakeMilkFluid));
 
 		Fluid milkFluid = FluidRegistry.getFluid("milk");
-		if (milkFluid != null) {
-			mapper.addConversion(1000, NormalizedSimpleStack.forFluid(milkFluid), Arrays.asList(fakeMilkFluid));
-		}
+		if (milkFluid != null)
+			mapper.addConversion(1000, NormalizedSimpleStack.forFluid(milkFluid), Collections.singletonList(fakeMilkFluid));
 
 		for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry.getRegisteredFluidContainerData()) {
 			Fluid fluid = data.fluid.getFluid();
@@ -46,7 +46,9 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 				ImmutableMap.of(NormalizedSimpleStack.forItem(data.emptyContainer), 1, NormalizedSimpleStack.forFluid(fluid), data.fluid.amount));
 		}
 
-		addMelting(Blocks.obsidian, "molten.obisidan", 288);
+		addMelting(Blocks.obsidian, "molten.obsidian", 288);
+		addMelting(Blocks.obsidian, "obsidian.molten", 288);
+
 		addMelting(Blocks.glass, "glass.molten", 1000);
 		addMelting(Blocks.glass_pane, "glass.molten", 250);
 		addMelting(Items.ender_pearl, "ender", 250);
@@ -78,25 +80,25 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 	}
 
 	public void addMelting(String odName, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.forOreDictionary(odName), fluidName, amount);
+		NormalizedSimpleStack nss = NormalizedSimpleStack.forOreDictionary(odName);
+		if (nss != null) addMelting(nss, fluidName, amount);
 	}
 
 	public void addMelting(Item item, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.forItem(item), fluidName, amount);
+		NormalizedSimpleStack nss = NormalizedSimpleStack.forItem(item);
+		if (nss != null) addMelting(nss, fluidName, amount);
 	}
 
 	public void addMelting(Block block, String fluidName, int amount) {
-		addMelting(NormalizedSimpleStack.forItem(block), fluidName, amount);
+		NormalizedSimpleStack nss = NormalizedSimpleStack.forItem(block);
+		if (nss != null) addMelting(nss, fluidName, amount);
 	}
 
 	public void addMelting(NormalizedSimpleStack stack, String fluidName, int amount) {
 		Fluid fluid = FluidRegistry.getFluid(fluidName);
-		if (fluid != null) {
+		if (fluid != null)
 			mapper.addConversion(amount, NormalizedSimpleStack.forFluid(fluid), Collections.singletonList(stack));
-		}
-		else {
-			PELogger.logWarn("Can not get Fluid '%s'", fluidName);
-		}
+		else PELogger.logDebug("Can not get Fluid '%s', skipping melting recipe.", fluidName); // WARN 降级为 DEBUG
 	}
 
 	@Override
