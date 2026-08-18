@@ -68,8 +68,7 @@ public final class ProjectEConfig {
 			config.load();
 
 			// Load GTNH Integration config
-			questMode = config.getString("QuestAndRecipeMode", "integration", "vanilla",
-				"Mode for GTNH integration. Valid values: 'vanilla' (default PE recipes but adds quests), 'true' (hardcore GTNH recipes and quests), 'false' (disable quests and integration).");
+			questMode = config.getString("QuestAndRecipeMode", "integration", "vanilla", "Mode for GTNH integration. Valid values: 'vanilla' (default PE recipes but adds quests), 'true' (hardcore GTNH recipes and quests), 'false' (disable quests and integration).");
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
