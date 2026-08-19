@@ -1,16 +1,15 @@
 package moze_intel.projecte.gameObjs.tiles;
 
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.network.PacketHandler;
+import moze_intel.projecte.network.packets.SyncPedestalPKT;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.Packet;
 import net.minecraft.util.AxisAlignedBB;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.network.PacketHandler;
-import moze_intel.projecte.network.packets.SyncPedestalPKT;
 
 public class DMPedestalTile extends TileEmc implements IInventory
 {
@@ -57,9 +56,9 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		{
 			ItemStack stack = getItemStack();
 			// 不但要有物品，而且必须是合法的 ProjectE 饰品
-			if (stack != null && stack.getItem() instanceof IPedestalItem)
+			if (stack != null && stack.getItem() instanceof IPedestalItem iPedestalItem)
 			{
-				((IPedestalItem) stack.getItem()).updateInPedestal(worldObj, xCoord, yCoord, zCoord);
+				iPedestalItem.updateInPedestal(worldObj, xCoord, yCoord, zCoord);
 
 				// 仅在客户端进行粒子运算，切断服务端的无效开销
 				if (worldObj.isRemote)
@@ -95,15 +94,15 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
 		for (int l = 0; l < 3; ++l) // Ripped from vanilla enderchest
 		{
-			double d1 = (double)((float)yCoord + worldObj.rand.nextFloat());
+			double d1 = (float)yCoord + worldObj.rand.nextFloat();
 			double d3, d4, d5;
 			int i1 = worldObj.rand.nextInt(2) * 2 - 1;
 			int j1 = worldObj.rand.nextInt(2) * 2 - 1;
 			d4 = ((double)worldObj.rand.nextFloat() - 0.5D) * 0.125D;
 			double d2 = (double)zCoord + 0.5D + 0.25D * (double)j1;
-			d5 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)j1);
+			d5 = worldObj.rand.nextFloat() * 1.0F * (float)j1;
 			double d0 = (double)xCoord + 0.5D + 0.25D * (double)i1;
-			d3 = (double)(worldObj.rand.nextFloat() * 1.0F * (float)i1);
+			d3 = worldObj.rand.nextFloat() * 1.0F * (float)i1;
 			worldObj.spawnParticle("portal", d0, d1, d2, d3, d4, d5);
 		}
 	}
@@ -296,7 +295,7 @@ public class DMPedestalTile extends TileEmc implements IInventory
 			}
 		}
 
-		if (newState != this.getActive() && worldObj != null)
+		if (newState != isActive && worldObj != null)
 		{
 			if (newState)
 			{
@@ -305,7 +304,7 @@ public class DMPedestalTile extends TileEmc implements IInventory
 				// 优化：切断服务端的无效粒子计算，仅客户端渲染
 				if (worldObj.isRemote)
 				{
-					for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+					for (int i = 0; i < worldObj.rand.nextInt(15) + 10; ++i)
 					{
 						this.worldObj.spawnParticle("witchMagic", centeredX + worldObj.rand.nextGaussian() * 0.13D,
 							yCoord + 1 + worldObj.rand.nextGaussian() * 0.13D,
@@ -320,7 +319,7 @@ public class DMPedestalTile extends TileEmc implements IInventory
 
 				if (worldObj.isRemote)
 				{
-					for (int i = 0; i < worldObj.rand.nextInt(35) + 10; ++i)
+					for (int i = 0; i < worldObj.rand.nextInt(15) + 10; ++i)
 					{
 						this.worldObj.spawnParticle("smoke", centeredX + worldObj.rand.nextGaussian() * 0.13D,
 							yCoord + 1 + worldObj.rand.nextGaussian() * 0.13D,
