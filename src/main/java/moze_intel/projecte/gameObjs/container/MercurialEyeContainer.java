@@ -11,17 +11,14 @@ import moze_intel.projecte.gameObjs.container.slots.mercurial.SlotMercurialTarge
 
 public class MercurialEyeContainer extends Container
 {
-	private MercurialEyeInventory inventory;
 
 	public MercurialEyeContainer(InventoryPlayer invPlayer, MercurialEyeInventory mercEyeInv)
 	{
-		inventory = mercEyeInv;
-
 		//Klein Star
-		this.addSlotToContainer(new SlotMercurialKlein(inventory, 0, 50, 26));
+		this.addSlotToContainer(new SlotMercurialKlein(mercEyeInv, 0, 50, 26));
 
 		//Target
-		this.addSlotToContainer(new SlotMercurialTarget(inventory, 1, 104, 26));
+		this.addSlotToContainer(new SlotMercurialTarget(mercEyeInv, 1, 104, 26));
 
 		//Player inventory
 		for (int i = 0; i < 3; i++)
@@ -71,13 +68,13 @@ public class MercurialEyeContainer extends Container
 		}
 		else // Moving from player inventory
 		{
-			if (((Slot)inventorySlots.get(0)).isItemValid(stack) && ((Slot)inventorySlots.get(0)).getStack() == null)
+			if (inventorySlots.get(0).isItemValid(stack) && inventorySlots.get(0).getStack() == null)
 			{ // Is a valid klein star and the slot is empty?
-				((Slot)inventorySlots.get(0)).putStack(stack.splitStack(1));
+				inventorySlots.get(0).putStack(stack.splitStack(1));
 			}
-			else if (((Slot)inventorySlots.get(1)).isItemValid(stack) && ((Slot)inventorySlots.get(1)).getStack() == null)
+			else if (inventorySlots.get(1).isItemValid(stack) && inventorySlots.get(1).getStack() == null)
 			{ // Is a valid target block and the slot is empty?
-				((Slot)inventorySlots.get(1)).putStack(stack.splitStack(1));
+				inventorySlots.get(1).putStack(stack.splitStack(1));
 			}
 			else // Is neither, ignore
 			{
@@ -87,7 +84,7 @@ public class MercurialEyeContainer extends Container
 		}
 		if (stack.stackSize == 0)
 		{
-			slot.putStack((ItemStack) null);
+			slot.putStack(null);
 		}
 		else
 		{

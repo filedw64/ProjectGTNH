@@ -6,8 +6,17 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.api.item.IProjectileShooter;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
+import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
+import moze_intel.projecte.utils.ClientKeyHelper;
+import moze_intel.projecte.utils.FluidHelper;
+import moze_intel.projecte.utils.MathUtils;
+import moze_intel.projecte.utils.PEKeybind;
+import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockCauldron;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -20,21 +29,10 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import net.minecraftforge.fluids.IFluidHandler;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.api.item.IProjectileShooter;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
-import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
-import moze_intel.projecte.utils.ClientKeyHelper;
-import moze_intel.projecte.utils.MathUtils;
-import moze_intel.projecte.utils.PEKeybind;
-import moze_intel.projecte.utils.PlayerHelper;
-import moze_intel.projecte.utils.FluidHelper;
 
 import java.util.List;
 
@@ -56,10 +54,8 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 		{
 			TileEntity tile = world.getTileEntity(x, y, z);
 
-			if (tile instanceof IFluidHandler)
+			if (tile instanceof IFluidHandler tank)
 			{
-				IFluidHandler tank = (IFluidHandler) tile;
-
 				if (FluidHelper.canFillTank(tank, FluidRegistry.WATER, sideHit))
 				{
 					FluidHelper.fillTank(tank, FluidRegistry.WATER, sideHit, 1000);
@@ -71,7 +67,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 			int meta = world.getBlockMetadata(x, y, z);
 			if (block == Blocks.cauldron && meta < 3)
 			{
-				((BlockCauldron) block).func_150024_a(world, x, y, z, meta + 1);
+				Blocks.cauldron.func_150024_a(world, x, y, z, meta + 1);
 			}
 		}
 
@@ -91,7 +87,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 				int k = mop.blockZ;
 				if (!(world.getTileEntity(i, j, k) instanceof IFluidHandler))
 				{
-					switch(mop.sideHit)
+					switch (mop.sideHit)
 					{
 						case 0: --j; break;
 						case 1: ++j; break;
@@ -119,7 +115,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 	{
 		if (world.provider.isHellWorld)
 		{
-			world.playSoundEffect((double)((float)i + 0.5F), (double)((float)j + 0.5F), (double)((float)k + 0.5F), "random.fizz", 0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+			world.playSoundEffect((float)i + 0.5F, (float)j + 0.5F, (float)k + 0.5F, "random.fizz", 0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
 
 			for (int l = 0; l < 8; ++l)
 			{
@@ -135,12 +131,10 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IBaubl
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int invSlot, boolean par5)
 	{
-		if (invSlot > 8 || !(entity instanceof EntityPlayer))
+		if (invSlot > 8 || !(entity instanceof EntityPlayer player))
 		{
 			return;
 		}
-
-		EntityPlayer player = (EntityPlayer) entity;
 
 		int x = (int) Math.floor(player.posX);
 		int y = (int) (player.posY - player.getYOffset());
