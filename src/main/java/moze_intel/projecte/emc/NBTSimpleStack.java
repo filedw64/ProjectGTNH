@@ -7,8 +7,8 @@ import net.minecraft.nbt.NBTTagCompound;
 public class NBTSimpleStack extends SimpleStack {
 	public NBTTagCompound nbt;
 
-	public NBTSimpleStack(int id, int qnty, int damage, NBTTagCompound nbt) {
-		super(id, qnty, damage);
+	public NBTSimpleStack(int id, int damage, NBTTagCompound nbt) {
+		super(id, damage);
 		this.nbt = (NBTTagCompound) nbt.copy();
 	}
 
@@ -24,7 +24,7 @@ public class NBTSimpleStack extends SimpleStack {
 		Item item = Item.getItemById(id);
 		if (item == null) return null;
 
-		ItemStack stack = new ItemStack(item, qnty, damage);
+		ItemStack stack = new ItemStack(item, 1, damage);
 		stack.stackTagCompound = (NBTTagCompound) nbt.copy();
 
 		return stack;
@@ -33,8 +33,8 @@ public class NBTSimpleStack extends SimpleStack {
 	@Override
 	public SimpleStack copy() {
 		if (nbt == null || nbt.hasNoTags())
-			return new SimpleStack(id, qnty, damage);
-		return new NBTSimpleStack(id, qnty, damage, nbt);
+			return new SimpleStack(id, damage);
+		return new NBTSimpleStack(id, damage, nbt);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class NBTSimpleStack extends SimpleStack {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NBTSimpleStack other)
-			return id == other.id && qnty == other.qnty && damage == other.damage && nbt.equals(other.nbt);
+			return id == other.id && damage == other.damage && nbt.equals(other.nbt);
 		return false;
 	}
 
@@ -54,8 +54,8 @@ public class NBTSimpleStack extends SimpleStack {
 		Object obj = Item.itemRegistry.getObjectById(id);
 
 		if (obj != null)
-			return Item.itemRegistry.getNameForObject(obj) + " " + qnty + " " + damage + " " + nbt;
+			return Item.itemRegistry.getNameForObject(obj) + " " + damage + " " + nbt;
 
-		return "id:" + id + " damage:" + damage + " qnty:" + qnty + " nbt:" + nbt;
+		return "id:" + id + " damage:" + damage + " nbt:" + nbt;
 	}
 }

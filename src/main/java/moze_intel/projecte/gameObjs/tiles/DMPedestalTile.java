@@ -52,7 +52,9 @@ public class DMPedestalTile extends TileEmc implements IInventory
 			boundsCalculated = true;
 		}
 
-		if (getActive())
+		if (!getActive()) return;
+
+		if (getItemStack() != null)
 		{
 			ItemStack stack = getItemStack();
 			// 不但要有物品，而且必须是合法的 ProjectE 饰品
@@ -79,20 +81,17 @@ public class DMPedestalTile extends TileEmc implements IInventory
 				// 如果物品被拿走，或者被替换成了普通物品（作为展示台），自动静默关闭
 				setActive(false);
 			}
+			else particleCooldown--;
 		}
+		else if (!worldObj.isRemote)
+			setActive(false);
 	}
 
 	private void spawnParticles()
 	{
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.5, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.2, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.5, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.5, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.2, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.5, 0, 0, 0);
-		worldObj.spawnParticle("flame", xCoord + 0.8, yCoord + 0.3, zCoord + 0.8, 0, 0, 0);
-		for (int l = 0; l < 3; ++l) // Ripped from vanilla enderchest
+		// 降低火焰粒子数量，原来是固定的8个，现在改为随机 1~2 个，位置随机选取
+		final int flameCount = worldObj.rand.nextInt(2) + 1;
+		for (int i = 0; i < flameCount; i++)
 		{
 			double d1 = (float)yCoord + worldObj.rand.nextFloat();
 			double d3, d4, d5;
@@ -105,36 +104,39 @@ public class DMPedestalTile extends TileEmc implements IInventory
 			d3 = worldObj.rand.nextFloat() * 1.0F * (float)i1;
 			worldObj.spawnParticle("portal", d0, d1, d2, d3, d4, d5);
 		}
+
+		// 将原本的3个传送门粒子减少为1个
+		final int i1 = worldObj.rand.nextInt(2) * 2 - 1;
+		final int j1 = worldObj.rand.nextInt(2) * 2 - 1;
+		final double d0 = xCoord + 0.5D + 0.25D * i1;
+		final double d1 = yCoord + worldObj.rand.nextFloat();
+		final double d2 = zCoord + 0.5D + 0.25D * j1;
+		final double d3 = worldObj.rand.nextFloat() * i1;
+		final double d4 = (worldObj.rand.nextFloat() - 0.5D) * 0.125D;
+		final double d5 = worldObj.rand.nextFloat() * j1;
+		worldObj.spawnParticle("portal", d0, d1, d2, d3, d4, d5);
 	}
 
-	public int getActivityCooldown()
-	{
+	public int getActivityCooldown() {
 		return activityCooldown;
 	}
 
-	public void setActivityCooldown(int i)
-	{
+	public void setActivityCooldown(int i) {
 		activityCooldown = i;
 	}
 
-	public void decrementActivityCooldown()
-	{
+	public void decrementActivityCooldown() {
 		activityCooldown--;
 	}
 
-	public ItemStack getItemStack()
-	{
+	public ItemStack getItemStack() {
 		return getStackInSlot(0);
 	}
 
 	public AxisAlignedBB getEffectBounds()
 	{
-		if (effectBounds == null)
-		{
-			// Chunk is still loading weirdness, return an empty box just for this tick.
-			return AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
-		}
-		return effectBounds;
+		// Chunk is still loading weirdness, return an empty box just for this tick.
+		return effectBounds == null ? AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0) : effectBounds;
 	}
 
 	@Override
@@ -147,11 +149,10 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		for (int i = 0; i < tagList.tagCount(); ++i)
 		{
 			NBTTagCompound compound = tagList.getCompoundTagAt(i);
-			byte slot = compound.getByte("Slot");
-			if (slot >= 0 && slot < inventory.length)
-			{
+			// NBT槽位安全读取
+			int slot = compound.getByte("Slot") & 255;
+			if (slot < inventory.length)
 				inventory[slot] = ItemStack.loadItemStackFromNBT(compound);
-			}
 		}
 		setActive(tag.getBoolean("isActive"));
 		activityCooldown = tag.getInteger("activityCooldown");
@@ -166,13 +167,12 @@ public class DMPedestalTile extends TileEmc implements IInventory
 
 		for (int i = 0; i < this.inventory.length; ++i)
 		{
-			if (this.inventory[i] != null)
-			{
-				NBTTagCompound compound = new NBTTagCompound();
-				compound.setByte("Slot", (byte)i);
-				this.inventory[i].writeToNBT(compound);
-				tagList.appendTag(compound);
-			}
+			if (this.inventory[i] == null) continue;
+
+			NBTTagCompound compound = new NBTTagCompound();
+			compound.setByte("Slot", (byte)i);
+			this.inventory[i].writeToNBT(compound);
+			tagList.appendTag(compound);
 		}
 
 		tag.setTag("Items", tagList);
@@ -181,14 +181,12 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	}
 
 	@Override
-	public int getSizeInventory()
-	{
+	public int getSizeInventory() {
 		return inventory.length;
 	}
 
 	@Override
-	public ItemStack getStackInSlot(int slot)
-	{
+	public ItemStack getStackInSlot(int slot) {
 		return inventory[slot];
 	}
 
@@ -199,24 +197,18 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		if (inventory[slot] != null)
 		{
 			if (amt > inventory[slot].stackSize)
-			{
 				setInventorySlotContents(slot, null);
-			}
-			else
-			{
+			else {
 				result = inventory[slot].splitStack(amt);
 				if (inventory[slot].stackSize <= 0)
-				{
 					setInventorySlotContents(slot, null);
-				}
 			}
 		}
 		return result;
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int slot)
-	{
+	public ItemStack getStackInSlotOnClosing(int slot) {
 		return inventory[slot];
 	}
 
@@ -226,43 +218,38 @@ public class DMPedestalTile extends TileEmc implements IInventory
 		inventory[slot] = itemStack;
 
 		if (itemStack != null && itemStack.stackSize > this.getInventoryStackLimit())
-		{
 			itemStack.stackSize = this.getInventoryStackLimit();
-		}
 
 		this.markDirty();
 	}
 
 	@Override
-	public String getInventoryName()
-	{
+	public String getInventoryName() {
 		return "pe.pedestal.shortname";
 	}
 
 	@Override
-	public boolean hasCustomInventoryName()
-	{
+	public boolean hasCustomInventoryName() {
 		return false;
 	}
 
 	@Override
-	public int getInventoryStackLimit()
-	{
+	public int getInventoryStackLimit() {
 		return 64;
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer var1)
-	{
-		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) != this ? false : var1.getDistanceSq((double)this.xCoord + 0.5D, (double)this.yCoord + 0.5D, (double)this.zCoord + 0.5D) <= 64.0D;
+	public boolean isUseableByPlayer(EntityPlayer var1) {
+		// 简化三元运算符
+		return this.worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord) == this
+			&& var1.getDistanceSq(this.xCoord + 0.5D, this.yCoord + 0.5D, this.zCoord + 0.5D) <= 64.0D;
 	}
 
 	@Override
-	public void openInventory() { }
+	public void openInventory() {}
 
 	@Override
-	public void closeInventory()
-	{
+	public void closeInventory() {
 		this.markDirty();
 	}
 
@@ -273,15 +260,15 @@ public class DMPedestalTile extends TileEmc implements IInventory
 	}
 
 	@Override
-	public Packet getDescriptionPacket()
-	{
+	public Packet getDescriptionPacket() {
 		return PacketHandler.getMCPacket(new SyncPedestalPKT(this));
 	}
 
-	public boolean getActive()
-	{
+	public boolean getActive() {
 		return isActive;
 	}
+
+	private final static double MULTIPLIER = 0.12999999523162842D;
 
 	public void setActive(boolean newState)
 	{

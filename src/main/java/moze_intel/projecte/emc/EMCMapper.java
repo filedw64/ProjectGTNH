@@ -20,8 +20,6 @@ import moze_intel.projecte.utils.PrefixConfiguration;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.io.File;
@@ -103,15 +101,11 @@ public final class EMCMapper
 					return;
 				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
-					emc.put(new NBTSimpleStack(id, 1, nbtnssItem.damage, nbtnssItem.nbt), val);
-				else emc.put(new SimpleStack(id, 1, nssItem.damage), val);
+					emc.put(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
+				else emc.put(new SimpleStack(id, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				Fluid fluid = FluidRegistry.getFluid(nssFluid.name);
-				// 流体非空检查
-				if (fluid != null)
-					emc.put(new FluidSimpleStack(fluid.getID(), 1), val);
-				else PELogger.logWarn("Fluid not found in registry for NSSFluid: %s. Skipping...", nssFluid.name);
+				emc.put(new FluidSimpleStack(nssFluid.fluid.getID()), val);
 			}
 		});
 
@@ -138,15 +132,11 @@ public final class EMCMapper
 	}
 
 	public static boolean mapContains(SimpleStack key) {
-		SimpleStack copy = key.copy();
-		copy.qnty = 1;
 		return emc.containsKey(key);
 	}
 
 	public static Double getEmcValue(SimpleStack stack) {
-		SimpleStack copy = stack.copy();
-		copy.qnty = 1;
-		return emc.get(copy);
+		return emc.get(stack);
 	}
 
 	public static void clearMaps() {

@@ -2,6 +2,11 @@ package moze_intel.projecte.gameObjs.container;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.api.item.IItemEmc;
+import moze_intel.projecte.gameObjs.container.slots.matterFurnace.SlotFurnaceFuel;
+import moze_intel.projecte.gameObjs.container.slots.matterFurnace.SlotFurnaceInput;
+import moze_intel.projecte.gameObjs.container.slots.matterFurnace.SlotFurnaceOutput;
+import moze_intel.projecte.gameObjs.tiles.DMFurnaceTile;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -10,8 +15,6 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.tileentity.TileEntityFurnace;
-import moze_intel.projecte.api.item.IItemEmc;
-import moze_intel.projecte.gameObjs.tiles.DMFurnaceTile;
 
 public class DMFurnaceContainer extends Container
 {
@@ -25,23 +28,23 @@ public class DMFurnaceContainer extends Container
 		this.tile = tile;
 
 		//Fuel Slot
-		this.addSlotToContainer(new Slot(tile, 0, 49, 53));
+		this.addSlotToContainer(new SlotFurnaceFuel(tile, 0, 49, 53));
 
 		//Input(0)
-		this.addSlotToContainer(new Slot(tile, 1, 49, 17));
+		this.addSlotToContainer(new SlotFurnaceInput(tile, 1, 49, 17));
 
 		//Input Storage
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 4; j++)
-				this.addSlotToContainer(new Slot(tile, i * 4 + j + 2, 13 + i * 18, 8 + j * 18));
+				this.addSlotToContainer(new SlotFurnaceInput(tile, i * 4 + j + 2, 13 + i * 18, 8 + j * 18));
 
 		//Output
-		this.addSlotToContainer(new Slot(tile, 10, 109, 35));
+		this.addSlotToContainer(new SlotFurnaceOutput(tile, 10, 109, 35));
 
 		//OutputStorage
 		for (int i = 0; i < 2; i++)
 			for (int j = 0; j < 4; j++)
-				this.addSlotToContainer(new Slot(tile, i * 4 + j + 11, 131 + i * 18, 8 + j * 18));
+				this.addSlotToContainer(new SlotFurnaceOutput(tile, i * 4 + j + 11, 131 + i * 18, 8 + j * 18));
 
 		//Player Inventory
 		for (int i = 0; i < 3; i++)

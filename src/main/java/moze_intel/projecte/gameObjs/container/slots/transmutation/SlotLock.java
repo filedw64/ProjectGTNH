@@ -50,8 +50,8 @@ public class SlotLock extends Slot {
 	}
 
 	@Override
-	public void onPickupFromSlot(EntityPlayer par1EntityPlayer, ItemStack par2ItemStack) {
-		super.onPickupFromSlot(par1EntityPlayer, par2ItemStack);
+	public void onPickupFromSlot(EntityPlayer player, ItemStack stack) {
+		super.onPickupFromSlot(player, stack);
 		inv.searchpage = 0;
 		inv.updateOutputs();
 	}

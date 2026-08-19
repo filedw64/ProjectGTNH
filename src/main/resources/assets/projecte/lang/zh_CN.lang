@@ -189,7 +189,7 @@ pe.darkpick.mode2=3x 竖直模式
 pe.darkpick.mode3=3x 横向模式
 pe.darkpick.mode4=3x 直线模式
 
-pe.divining.avgemc=平均EMC值为%s，共%s个方块
+pe.divining.avgemc=探查到%s个方块，平均EMC值为：%s
 pe.divining.maxemc=最高EMC：%s
 pe.divining.secondmax=第二高EMC：%s
 pe.divining.thirdmax=第三高EMC：%s
@@ -331,7 +331,7 @@ pe.transmutation.transmute=转化桌
 # pe.transmutation.learned5=e
 # pe.transmutation.learned6=d
 # pe.transmutation.learned7=!
-# 
+#
 # pe.transmutation.unlearned0=U
 # pe.transmutation.unlearned1=n
 # pe.transmutation.unlearned2=l
@@ -363,9 +363,9 @@ pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
 
 # Yes these empty lines are for the manual
-# Don't translate them for now. 
+# Don't translate them for now.
 # You may find a copy of translated manual (Simplified Chinese, may be partial) in commit history.
-# 
+#
 # This message is left by the most recent translator. For further question(s), if any,
 # please contact the translator on GitHub.
 #

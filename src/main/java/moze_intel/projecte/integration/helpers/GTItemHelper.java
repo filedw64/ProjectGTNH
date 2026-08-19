@@ -2,7 +2,7 @@ package moze_intel.projecte.integration.helpers;
 
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FluidSimpleStack;
-import moze_intel.projecte.integration.GregTech.GTSimpleStack;
+import moze_intel.projecte.emc.SimpleStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -39,7 +39,7 @@ public class GTItemHelper {
 	}
 
     public static double GTtoolEMC(ItemStack is) {
-        GTSimpleStack ss = new GTSimpleStack(is);
+        SimpleStack ss = SimpleStack.getFor(is);
         if (!EMCMapper.mapContains(ss))
             return 0.0;
         double res = EMCMapper.getEmcValue(ss);
@@ -68,7 +68,7 @@ public class GTItemHelper {
 		NBTTagCompound nbt = is.getTagCompound();
 		long amount = nbt.getLong("mFluidDisplayAmount");
 		if (amount <= 0) return 0.0;
-		FluidSimpleStack ss = new FluidSimpleStack(is.getItemDamage(), 1);
+		FluidSimpleStack ss = new FluidSimpleStack(is.getItemDamage());
 		if (!EMCMapper.mapContains(ss)) return 0.0;
 		return EMCMapper.getEmcValue(ss) * amount;
 	}

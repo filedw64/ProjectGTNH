@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,51 +34,51 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 	public static List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
 	public static boolean emcDependencyForUnconsumedItems = false;
-    Set<Class<?>> canNotMap = new HashSet<>();
+	Set<Class<?>> canNotMap = new HashSet<>();
 	Map<Class<?>, Integer> recipeCount = new HashMap<>();
 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
-        emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false,
+		emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false,
 			"Items crafted with unconsumed ingredients get an emc value, only when unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
-        for (IRecipeMapper recipeMapper : recipeMappers) {
-            recipeMapper.setEnabled(config.getBoolean("enable".concat(recipeMapper.getName()) , "IRecipeImplementations",
+		for (IRecipeMapper recipeMapper : recipeMappers) {
+			recipeMapper.setEnabled(config.getBoolean("enable".concat(recipeMapper.getName()) , "IRecipeImplementations",
 				true, recipeMapper.getDescription()));
-        }
+		}
 
-        for (IRecipe recipe : CraftingManager.getInstance().getRecipeList()) {
+		for (IRecipe recipe : CraftingManager.getInstance().getRecipeList()) {
 			Class<?> clazz = recipe.getClass();
 			if (canNotMap.contains(clazz)) continue;
 
 			ItemStack recipeOutput = recipe.getRecipeOutput();
 			if (recipeOutput == null) continue;
-            if (recipeOutput.isItemEnchanted()) {
-                EnchantmentBlacklist.add(recipeOutput);
-            }
+			if (recipeOutput.isItemEnchanted()) {
+				EnchantmentBlacklist.add(recipeOutput);
+			}
 			NormalizedSimpleStack outNSS = NormalizedSimpleStack.forItem(recipeOutput);
 			boolean handled = false;
 			for (IRecipeMapper recipeMapper : recipeMappers) {
 				if (!recipeMapper.isEnabled() || !recipeMapper.canHandle(recipe)) continue;
-                handled = true;
-                CraftingIngredients ingredients = recipeMapper.getIngredientsFor(recipe);
-                if (ingredients == null) {
-                    PELogger.logError("RecipeMapper %s failed to map Recipe %s", recipeMapper, recipe);
-                    break;
-                }
+				handled = true;
+				CraftingIngredients ingredients = recipeMapper.getIngredientsFor(recipe);
+				if (ingredients == null) {
+					PELogger.logError("RecipeMapper %s failed to map Recipe %s", recipeMapper, recipe);
+					break;
+				}
 
-                IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
+				IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
 
-                for (ItemStack stack : ingredients.fixedIngredients) {
+				for (ItemStack stack : ingredients.fixedIngredients) {
 					Item item;
 					if (stack == null || (item = stack.getItem()) == null) continue;
 
 					NormalizedSimpleStack.NSSItem nss = NormalizedSimpleStack.forItem(stack);
-                    if (nss.damage == OreDictionary.WILDCARD_VALUE) {
-                        //Don't check ContainerItem for WILDCARD-ItemStacks
-                        ingredientMap.addIngredient(nss, 1);
-                        continue;
-                    }
-                    //stack does not have a wildcard damage value
+					if (nss.damage == OreDictionary.WILDCARD_VALUE) {
+						//Don't check ContainerItem for WILDCARD-ItemStacks
+						ingredientMap.addIngredient(nss, 1);
+						continue;
+					}
+					//stack does not have a wildcard damage value
 					if (GTItemHelper.isNullGTtool(stack)) {
 						mapper.setValueBefore(nss, -Double.MAX_VALUE);
 						ingredientMap.addIngredient(nss, 0);
@@ -91,42 +90,41 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 						ingredientMap.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
 					ingredientMap.addIngredient(nss, 1);
-                }
+				}
 
-                for (Iterable<ItemStack> multiIngredient : ingredients.multiIngredients) {
-                    NormalizedSimpleStack fake = NormalizedSimpleStack.forFake(multiIngredient.toString());
-                    ingredientMap.addIngredient(fake, 1);
-                    for (ItemStack is : multiIngredient) {
+				for (Iterable<ItemStack> multiIngredient : ingredients.multiIngredients) {
+					NormalizedSimpleStack fake = NormalizedSimpleStack.forFake(multiIngredient.toString());
+					ingredientMap.addIngredient(fake, 1);
+					for (ItemStack is : multiIngredient) {
 						Item item;
-                        if (is == null || (item = is.getItem()) == null) continue;
+						if (is == null || (item = is.getItem()) == null) continue;
 						NormalizedSimpleStack nss = NormalizedSimpleStack.forItem(is);
-                        IngredientMap<NormalizedSimpleStack> fakeIngredients = new IngredientMap<>();
+						IngredientMap<NormalizedSimpleStack> fakeIngredients = new IngredientMap<>();
 
-                        if (GTItemHelper.isNullGTtool(is)) {
-                            mapper.setValueBefore(nss, -Double.MAX_VALUE);
-                            fakeIngredients.addIngredient(nss, 0);
-                            mapper.addConversion(1, fake, fakeIngredients.getMap());
-                            continue;
-                        }
+						if (GTItemHelper.isNullGTtool(is)) {
+							mapper.setValueBefore(nss, -Double.MAX_VALUE);
+							fakeIngredients.addIngredient(nss, 0);
+							mapper.addConversion(1, fake, fakeIngredients.getMap());
+							continue;
+						}
 
-                        ItemStack container = item.getContainerItem(is);
-                        if (container != null && container.getItem() != null)
-                            fakeIngredients.addIngredient(NormalizedSimpleStack.forItem(container), -1);
+						ItemStack container = item.getContainerItem(is);
+						if (container != null && container.getItem() != null)
+							fakeIngredients.addIngredient(NormalizedSimpleStack.forItem(container), -1);
 
-                        fakeIngredients.addIngredient(nss, 1);
-                        mapper.addConversion(1, fake, fakeIngredients.getMap());
-                    }
-                }
+						fakeIngredients.addIngredient(nss, 1);
+						mapper.addConversion(1, fake, fakeIngredients.getMap());
+					}
+				}
 
-                mapper.addConversion(recipeOutput.stackSize, outNSS, ingredientMap.getMap());
-                break;
-            }
+				mapper.addConversion(recipeOutput.stackSize, outNSS, ingredientMap.getMap());
+				break;
+			}
 			if (!handled) {
 				canNotMap.add(clazz);
 				PELogger.logWarn("Can not map Crafting Recipes with Type: %s", clazz.getName());
 			}
-            else
-				recipeCount.put(clazz, recipeCount.getOrDefault(clazz, 0) + 1);
+			else recipeCount.merge(clazz, 1, Integer::sum); // 减少装箱和二次哈希寻址
 		}
 
 		PELogger.logInfo("CraftingMapper Statistics:");
@@ -151,26 +149,26 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 	public interface IRecipeMapper {
 		String getName();
 		String getDescription();
-        boolean isEnabled();
-        void setEnabled(boolean flag);
+		boolean isEnabled();
+		void setEnabled(boolean flag);
 		boolean canHandle(IRecipe recipe);
 
 		CraftingIngredients getIngredientsFor(IRecipe recipe);
 	}
 
-    public abstract static class AbstractRecipeMapper implements IRecipeMapper {
-        private boolean enabled = true;
+	public abstract static class AbstractRecipeMapper implements IRecipeMapper {
+		private boolean enabled = true;
 
-        @Override
-        public boolean isEnabled() {
-            return enabled;
-        }
+		@Override
+		public boolean isEnabled() {
+			return enabled;
+		}
 
-        @Override
-        public void setEnabled(boolean flag) {
-            enabled = flag;
-        }
-    }
+		@Override
+		public void setEnabled(boolean flag) {
+			enabled = flag;
+		}
+	}
 
 	public static class CraftingIngredients {
 		public Iterable<ItemStack> fixedIngredients;
@@ -206,18 +204,20 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 			} else if (recipe instanceof ShapelessRecipes sr) {
 				recipeItems = sr.recipeItems;
 			}
-            if (recipeItems == null) return null;
-			List<ItemStack> inputs = new LinkedList<>();
+			if (recipeItems == null) return null;
+
+			List<ItemStack> inputs = new ArrayList<>();
 			for (Object o : recipeItems) {
 				if (o == null) continue;
 				if (o instanceof ItemStack recipeItem) {
-                    inputs.add(recipeItem.copy());
+					// 移除 .copy() 方法调用，只做读取引用
+					inputs.add(recipeItem);
 				}
-                else {
+				else {
 					PELogger.logWarn("Illegal Ingredient in Crafting Recipe: " + o);
 				}
 			}
-			return new CraftingIngredients(inputs, new LinkedList<>());
+			return new CraftingIngredients(inputs, new ArrayList<>());
 		}
 
 	}
@@ -241,39 +241,42 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 		@Override
 		public CraftingIngredients getIngredientsFor(IRecipe recipe) {
-            Iterable<Object> recipeItems = null;
+			Iterable<Object> recipeItems = null;
 			if (recipe instanceof ShapedOreRecipe sor) {
 				recipeItems = Arrays.asList(sor.getInput());
 			}
-            else if (recipe instanceof ShapelessOreRecipe sor) {
+			else if (recipe instanceof ShapelessOreRecipe sor) {
 				recipeItems = sor.getInput();
 			}
 			if (recipeItems == null) return null;
+
+			// 预设容量
 			ArrayList<Iterable<ItemStack>> variableInputs = Lists.newArrayList();
 			ArrayList<ItemStack> fixedInputs = Lists.newArrayList();
+
 			for (Object recipeItem : recipeItems) {
 				if (recipeItem instanceof ItemStack is) {
-					fixedInputs.add(is);
+					fixedInputs.add(is); // 移除 copy()
 				}
-                else if (recipeItem instanceof Collection<?> recipeItemCollection) {
-                    if (recipeItemCollection.size() == 1) {
+				else if (recipeItem instanceof Collection<?> recipeItemCollection) {
+					if (recipeItemCollection.size() == 1) {
 						Object element = recipeItemCollection.iterator().next();
 						if (element instanceof ItemStack is) {
-							fixedInputs.add(is.copy());
+							fixedInputs.add(is); // 移除 copy()
 						}
-                        else {
+						else {
 							PELogger.logWarn("Can not map recipe " + recipe + " because found " + element.toString() + " instead of ItemStack");
 							return null;
 						}
 						continue;
 					}
 
-                    List<ItemStack> recipeItemOptions = new LinkedList<>();
+					List<ItemStack> recipeItemOptions = new ArrayList<>(recipeItemCollection.size());
 					for (Object option : recipeItemCollection) {
 						if (option instanceof ItemStack is) {
-							recipeItemOptions.add(is.copy());
+							recipeItemOptions.add(is); // 移除 copy()
 						}
-                        else {
+						else {
 							PELogger.logWarn("Can not map recipe " + recipe + " because found " + option.toString() + " instead of ItemStack");
 							return null;
 						}
@@ -300,7 +303,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 		@Override
 		public boolean canHandle(IRecipe recipe) {
 			return recipe instanceof RecipeShapedKleinStar || recipe instanceof RecipeShapelessHidden
-                || recipe instanceof RecipeAlchemyBag;
+				|| recipe instanceof RecipeAlchemyBag;
 		}
 
 		@Override
@@ -311,20 +314,21 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 			} else if (recipe instanceof RecipeShapelessHidden rsh) {
 				recipeItems = rsh.getInput();
 			} else if (recipe instanceof RecipeAlchemyBag bag) {
-                recipeItems = Arrays.asList(bag.getRecipeInputBag(), bag.getRecipeInputDye());
-            }
-            if (recipeItems == null) return null;
-			List<ItemStack> inputs = new LinkedList<>();
+				recipeItems = Arrays.asList(bag.getRecipeInputBag(), bag.getRecipeInputDye());
+			}
+			if (recipeItems == null) return null;
+
+			List<ItemStack> inputs = new ArrayList<>();
 			for (Object obj : recipeItems) {
 				if (obj == null) continue;
 				if (obj instanceof ItemStack recipeItem) {
-                    inputs.add(recipeItem);
+					inputs.add(recipeItem); // 这里原本没有 copy，保持不变，使用 ArrayList 提升性能
 				}
-                else {
+				else {
 					PELogger.logWarn("Illegal Ingredient in Crafting Recipe: " + obj);
 				}
 			}
-			return new CraftingIngredients(inputs, new LinkedList<>());
+			return new CraftingIngredients(inputs, new ArrayList<>());
 		}
 	}
 }

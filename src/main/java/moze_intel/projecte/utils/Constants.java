@@ -70,7 +70,7 @@ public final class Constants
 	public static final int PEDESTAL_RENDER_ID = RenderingRegistry.getNextAvailableRenderId();
 	public static final ResourceLocation PEDESTAL_MODELTEX_LOCATION = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/models/pedestaltexmap.png");
 
-	public static final int MAX_VEIN_SIZE = 250;
+	public static final int MAX_VEIN_SIZE = 256;
 
 	public static final int ENCH_EMC_BONUS = 5000;
 
