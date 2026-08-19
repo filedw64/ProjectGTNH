@@ -53,7 +53,7 @@ public class StackMap {
 	}
 
 	public StackMap() {
-		this(DEFAULT_CAPACITY, DEFAULT_CAPACITY);
+		this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
 	}
 
 	// 对 ItemStack 实现的 hashCode
