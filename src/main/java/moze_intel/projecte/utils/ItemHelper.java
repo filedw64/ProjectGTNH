@@ -59,7 +59,6 @@ public final class ItemHelper {
 				}
 			}
 		}
-
 		list.sort(Comparators.ITEMSTACK_ASCENDING);
 		trimItemList(list);
 	}
