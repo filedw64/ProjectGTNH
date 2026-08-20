@@ -1,0 +1,86 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 3450564774159666185,
+      "questIDLow:4": -7878966379968294110
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "看哪，这便是“挖掘”与“拆卸”概念的实体化身。红物质钉头锤是一件代表着绝对钝器创伤的武器，它致密且强大到了天文数字的级别，只需一次充能挥击，便能直接砸穿维度的壁垒。但纯粹的蛮力并非它唯一的特质。得益于一项极其精密的 NBT 矩阵升级，这件万能工具能无缝改变自身的分子结构，化作任何你所渴望的工具。\n\n在实用性上，这绝对是你需要制作的最后一把采矿工具。它集成了镐、锹和锤子的功能，完全充能后能瞬间湮灭大片的岩石、泥土与矿石。\n\n但真正的魔法在于公司给它装配的固件！这把钉头锤能完美充当格雷科技扳手与线钳！你现在既能狂暴地改造大地形貌，又能精细地拆卸你复杂的机器阵列与 AE2 线缆，而这一切用的都是同一件神级神器。等价交换已经彻底征服了格雷科技！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_rm_morning_star",
+        "tag:10": {
+          "Charge:1": 4
+        }
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "大地的哀鸣",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -3913095524481677138,
+  "questIDLow:4": -6193608156820947764,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_rm_morning_star",
+          "tag:10": {
+            "Charge:1": 0
+          }
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

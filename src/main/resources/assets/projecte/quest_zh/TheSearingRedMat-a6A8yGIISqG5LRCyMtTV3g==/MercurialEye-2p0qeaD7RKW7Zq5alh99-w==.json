@@ -1,0 +1,82 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 1925151964740472710,
+      "questIDLow:4": -6334161518365682770
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "建造一座庞大蔓延的巨型基地需要成百上千甚至几十万个建筑方块。频繁地往返于 ME 系统来补给背包，是对工业生产时间的极大浪费。这便是墨丘利之眼大显身手的时候了。这件深奥的神器能让你彻底跳过实体背包管理，直接将纯粹的能量具象化为坚固的建筑。它是终极的包工头助手，旨在让你宏伟的建筑愿景在短短几秒钟内化为现实。\n\n它就相当于一根终极的炼金建筑法杖。它能将 EMC 直接转化为你所指向的方块，让你无缝地投影并建造出巨大的墙壁、地板与建筑结构。\n\n\u003c\u003c 正在接收加密传输... \u003e\u003e\n\u003c\u003c 发件人：泛银河格雷科技集团 \u003e\u003e\n\n“请注意，首席工程师！我们已为墨丘利之眼发布了一项万众瞩目且强制更新的固件！在过去，仅仅是为了建一个简单的工厂大厅，这件工具就需要您不断地携带、消耗并重新充能高阶卡莱恩能量之星。我们认为这种电池管理方式实在低效得令人发指。\n\n多亏了我们专有的网络桥接技术，墨丘利之眼现在再也不需要卡莱恩能量之星了！它现在具有直接连接到您个人 EMC 网络的无线直连功能。只要您的转化系统中还有 EMC，您就能进行无限且无缝的建造。彻底告别能量焦虑。”",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_mercurial_eye",
+        "tag:10": {}
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "建造的答案",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -2693950300217457499,
+  "questIDLow:4": -4943071836903604741,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_mercurial_eye",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

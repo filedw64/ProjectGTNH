@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 1925151964740472710,
+      "questIDLow:4": -6334161518365682770
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "乍看之下，你可能会把它误认为某种满足虚荣心的建筑工程——一个用来向访客炫耀你那闪闪发光的炼金小玩意儿的、华丽且超致密的展示台。但千万别被它优雅的外表所欺骗。暗物质台座是一个能扭曲局部现实的焦点。只需将魔器置于其顶端，台座便能将其潜藏的能量放大，并投射至周遭区域。\n\n在实用性上，这是你终极的基地自动化站！正如物品提示所明确指出的那样，将特定的戒指或护符放在台座上，将解锁并投射出强大且持续的范围效果。需要一个自动化农场？把丰收女神指环拍上去。需要一个坚不可摧的防御网？看看装上攻击性指环会发生什么。仔细阅读那些提示，放上你的神器，看着你的工厂焕发生机吧！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:dm_pedestal"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "小巧玲珑的展示台",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -649154576900470449,
+  "questIDLow:4": -6659568453034500568,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:dm_pedestal"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

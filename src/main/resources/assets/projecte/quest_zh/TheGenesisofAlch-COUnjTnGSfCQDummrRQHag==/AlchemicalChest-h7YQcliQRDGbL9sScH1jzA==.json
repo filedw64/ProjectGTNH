@@ -1,0 +1,84 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 4037001023084972502,
+      "questIDLow:4": -8913671314410677897
+    },
+    "1:10": {
+      "questIDHigh:4": -2018742214988053737,
+      "questIDLow:4": -7595362891627420215
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "随着你对等价交换的掌控日益精进，普通的木箱——甚至格雷科技的压缩箱子——在存放你那些极其致密的魔器时，都开始显得捉襟见肘。通过将空间扩展符文与密集的炼金阵列编织进一个加固的容器中，你锻造出了炼金术箱子。这绝不是一个普通的盒子；它的内部空间已被扭曲，化作了一个嗡嗡作响、与魔法产生共鸣的局部异次元口袋。\n\n这个箱子提供了多达 104 格的庞大存储空间。然而，它真正的力量在于其魔法共鸣：特定的炼金饰品、戒指和护身符（如以太密度宝石或修复护符）在被放入箱子时会自动生效。丢进去一些受损的工具和一个修复护符，看着它们自动复原吧！也许，只需一点小小的聪明才智，你就能为这种独特的机制发掘出更多自动化的用途？",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:alchemical_chest"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "你会爱上这个箱子的",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -8667722349529775055,
+  "questIDLow:4": -7264346801682160692,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:alchemical_chest"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

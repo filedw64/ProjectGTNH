@@ -42,13 +42,36 @@ public class QuestLoader {
 			return;
 		}
 
-		PELogger.logInfo("Injecting ProjectE Quests and QuestLines natively...");
-		injectQuests(questDB, lineDB);
+		// 动态判断语言并选择数据文件夹
+		String questDir = isChinese() ? "quest_zh" : "quest";
+		PELogger.logInfo("Injecting ProjectE Quests natively using language folder: " + questDir);
+
+		injectQuests(questDB, lineDB, questDir);
 	}
 
-	private void injectQuests(IQuestDatabase questDB, IQuestLineDatabase lineDB) {
+	/**
+	 * 判断当前环境是否为中文 (兼容单人客户端与独立服务端)
+	 */
+	private boolean isChinese() {
+		try {
+			// 如果是客户端，通过反射安全获取 Minecraft 的语言设置
+			if (cpw.mods.fml.common.FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+				Class<?> mcClass = Class.forName("net.minecraft.client.Minecraft");
+				Object mcInstance = mcClass.getMethod("getMinecraft").invoke(null);
+				Object gameSettings = mcClass.getField("gameSettings").get(mcInstance);
+				String lang = (String) gameSettings.getClass().getField("language").get(gameSettings);
+				return lang != null && lang.toLowerCase().startsWith("zh");
+			}
+		} catch (Throwable t) {
+			// 反射失败或处于独立服务端环境，忽略错误并降级到系统语言
+		}
+		// 服务端降级判断：读取操作系统默认语言
+		return java.util.Locale.getDefault().getLanguage().toLowerCase().startsWith("zh");
+	}
+
+	private void injectQuests(IQuestDatabase questDB, IQuestLineDatabase lineDB, String questDir) {
 		// 1. 贤者之石阶段 (The Genesis of Alch)
-		loadChapter(questDB, lineDB, "TheGenesisofAlch-COUnjTnGSfCQDummrRQHag==", new String[]{
+		loadChapter(questDB, lineDB, questDir, "TheGenesisofAlch-COUnjTnGSfCQDummrRQHag==", new String[]{
 			"AeternalisFuel-UX7OyYewTouSY16Y8alOnw==.json",
 			"AlchemicalBag-jIZKgKxXTJSHz4CYTrD2Cg==.json",
 			"AlchemicalChest-h7YQcliQRDGbL9sScH1jzA==.json",
@@ -72,7 +95,7 @@ public class QuestLoader {
 		});
 
 		// 2. 暗物质阶段 (The Mysterious Dark Matter)
-		loadChapter(questDB, lineDB, "TheMysteriousDar-0OWMJxgqQUGwjVILgtXx4Q==", new String[]{
+		loadChapter(questDB, lineDB, questDir, "TheMysteriousDar-0OWMJxgqQUGwjVILgtXx4Q==", new String[]{
 			"AntiMatterRelayM-4_R6PhrhSAqpS3qTu3QOUA==.json",
 			"ArchangelsSmite--3qD0EXDSfOe18QpM7MqcA==.json",
 			"BlackHoleBand-06s2ZveVTk2FXX6yJ3GHoA==.json",
@@ -97,7 +120,7 @@ public class QuestLoader {
 		});
 
 		// 3. 红物质阶段 (The Searing Red Matter)
-		loadChapter(questDB, lineDB, "TheSearingRedMat-a6A8yGIISqG5LRCyMtTV3g==", new String[]{
+		loadChapter(questDB, lineDB, questDir, "TheSearingRedMat-a6A8yGIISqG5LRCyMtTV3g==", new String[]{
 			"AnInfinityGemNoM-Yc1DdvXiS_61kyer4oS3Gg==.json",
 			"AntiMatterRelayM-wId9hLb-SxK7WUckZGTVYg==.json",
 			"ArcaneRing-NByfLWXPS3ixHoZxK-qJbw==.json",
@@ -122,8 +145,7 @@ public class QuestLoader {
 		});
 	}
 
-	private void loadChapter(IQuestDatabase questDB, IQuestLineDatabase lineDB, String folderName, String[] files) {
-		// 修复：使用 indexOf 寻找第一个连字符，避免 UUID 内含连字符导致崩溃
+	private void loadChapter(IQuestDatabase questDB, IQuestLineDatabase lineDB, String questDir, String folderName, String[] files) {
 		int fSplitIdx = folderName.indexOf('-');
 		if (fSplitIdx == -1) return;
 
@@ -150,16 +172,13 @@ public class QuestLoader {
 		}
 
 		for (String fileName : files) {
-			// 修复：将 try-catch 放入循环内部。单个文件错误绝不影响整个章节！
 			try {
-				// 精准提取 UUID（寻找第一个连字符，并去掉末尾的 .json）
 				int splitIdx = fileName.indexOf('-');
 				if (splitIdx == -1) continue;
 				String uuidStr = fileName.substring(splitIdx + 1, fileName.length() - 5);
 				UUID questUuid = UuidConverter.decodeUuid(uuidStr);
 
-				// --- 加载任务数据 ---
-				String questPath = "/assets/projecte/quest/" + folderName + "/" + fileName;
+				String questPath = "/assets/projecte/" + questDir + "/" + folderName + "/" + fileName;
 				InputStream questIs = getClass().getResourceAsStream(questPath);
 				if (questIs != null) {
 					JsonObject json = GSON.fromJson(new InputStreamReader(questIs, StandardCharsets.UTF_8), JsonObject.class);
@@ -174,7 +193,6 @@ public class QuestLoader {
 					PELogger.logWarn("Missing quest data JSON: " + questPath);
 				}
 
-				// --- 加载排版数据 ---
 				String layoutPath = "/assets/projecte/questline/" + folderName + "/" + fileName;
 				InputStream layoutIs = getClass().getResourceAsStream(layoutPath);
 				if (layoutIs != null) {
