@@ -1,0 +1,66 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 2976311433177090384,
+      "questIDLow:4": -7626042785456266255
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "\u003c\u003c INCOMING SECURE TRANSMISSION... \u003e\u003e\r\n\u003c\u003c SENDER: Pan-Galactic GregTech Corporation\u003e\u003e\r\n\r\n\"Greetings, Chief Engineer. We are incredibly proud to announce a monumental breakthrough in quantum-alchemical integration. Historically, the arcane logic of the Transmutation Table struggled to comprehend the sheer complexity of our proprietary industrial components. But today, that limitation is a thing of the past.\r\n\r\nWelcome to Project Void Re-enactment.\r\n\r\nThrough highly classified research, our engineers have forcefully synchronized ancient alchemy with hyper-advanced industrial logistics. We have radically upgraded the Transmutation Table\u0027s core matrix. It now seamlessly parses and comprehends complex GregTech recipe structures, intricate NBT data, and multi-layered assembly line components.\r\n\r\nWhat does this mean for you? It means those terrifying, multi-step GT recipe trees are no longer a concern. The table can now synthesize our most advanced industrial materials with flawless precision. The void has been mathematically mapped, and reality itself is now fully compatible with your factory. Glory to the Corporation, and happy replicating!\"",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "SGCraft:stargateBase"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Project Void Re-enactment",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 1697199659846421725,
+  "questIDLow:4": -7278212060983391590,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "index:3": 0,
+      "taskID:8": "bq_standard:checkbox"
+    }
+  }
+}

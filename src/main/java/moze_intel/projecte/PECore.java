@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -33,6 +34,7 @@ import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.handlers.TileEntityHandler;
 import moze_intel.projecte.impl.IMCHandler;
 import moze_intel.projecte.integration.Integration;
+import moze_intel.projecte.integration.QuestLoader;
 import moze_intel.projecte.network.PacketHandler;
 import moze_intel.projecte.network.ThreadCheckUUID;
 import moze_intel.projecte.network.ThreadCheckUpdate;
@@ -55,7 +57,6 @@ public class PECore
 	public static final String MODID = "ProjectE";
 	public static final GameProfile FAKEPLAYER_GAMEPROFILE = new GameProfile(UUID.fromString("590e39c7-9fb6-471b-a4c2-c0e539b2423d"), "[ProjectE]");
 	public static File CONFIG_DIR;
-	public static File PREGENERATED_EMC_FILE;
 
 	@Instance(MODID)
 	public static PECore instance;
@@ -72,12 +73,15 @@ public class PECore
 
 		if (!CONFIG_DIR.exists())
 		{
-            if(!CONFIG_DIR.mkdirs())
-                PELogger.logWarn("Cannot create dir \"config/ProjectE\"!");
+			if (!CONFIG_DIR.mkdirs())
+				PELogger.logWarn("Cannot create dir \"config/ProjectE\"!");
 		}
 
-		PREGENERATED_EMC_FILE = new File(CONFIG_DIR, "pregenerated_emc.json");
 		ProjectEConfig.init(new File(CONFIG_DIR, "ProjectE.cfg"));
+
+		// 修改点：使用 Forge Event Bus 注册原生 BetterQuesting 事件监听器
+		if (Loader.isModLoaded("betterquesting"))
+			MinecraftForge.EVENT_BUS.register(new QuestLoader());
 
 		CustomEMCParser.init();
 
@@ -110,7 +114,6 @@ public class PECore
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		proxy.initializeManual();
-
 		Integration.init();
 	}
 
@@ -127,29 +130,20 @@ public class PECore
 		event.registerServerCommand(new ProjectECMD());
 
 		if (!ThreadCheckUpdate.hasRunServer())
-		{
 			new ThreadCheckUpdate(true).start();
-		}
 
 		if (!ThreadCheckUUID.hasRunServer())
-		{
 			new ThreadCheckUUID(true).start();
-		}
 
 		long start = System.currentTimeMillis();
-
 		CustomEMCParser.readUserData();
-
 		PELogger.logInfo("Starting server-side EMC mapping.");
-
 		EMCMapper.map();
-
-        PELogger.logInfo("Registered %d EMC values. (took %.3fs)", EMCMapper.emc.size(), (System.currentTimeMillis() - start) / 1e3);
+		PELogger.logInfo("Registered %d EMC values. (took %.3fs)", EMCMapper.emc.size(), (System.currentTimeMillis() - start) / 1e3);
 	}
 
 	@EventHandler
-	public void serverStopping(FMLServerStoppingEvent event)
-	{
+	public void serverStopping(FMLServerStoppingEvent event) {
 		TransmutationOffline.cleanAll();
 	}
 
@@ -166,7 +160,7 @@ public class PECore
 		PELogger.logDebug("Cleared player check-lists: server stopping.");
 
 		EMCMapper.clearMaps();
-        PELogger.logDebug("Cleared emc value map.");
+		PELogger.logDebug("Cleared emc value map.");
 		PELogger.logInfo("Completed server-stop actions.");
 	}
 

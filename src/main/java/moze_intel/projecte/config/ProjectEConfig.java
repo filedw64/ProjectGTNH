@@ -1,6 +1,7 @@
 package moze_intel.projecte.config;
 
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
@@ -57,9 +58,12 @@ public final class ProjectEConfig {
 	public static String[] nbtWhitelistConfig;
 	public static String[] dynamicEmcNbtConfig;
 
-	// 解析后的 nbt 配置
-	public static Map<String, List<String>> nbtDistinctlist = new HashMap<>();
+	// 消除 Item.itemRegistry.getNameForObject() 开销
+	public static Map<Item, List<String>> nbtDistinctlist = new HashMap<>();
 	public static Map<String, Double> dynamicEmcNbt = new HashMap<>();
+
+	// 提取常量
+	private static final String[] GT_STATS_KEYS = {"PrimaryMaterial", "SecondaryMaterial", "MaxDamage"};
 
 	public static void init(File configFile) {
 
@@ -116,7 +120,6 @@ public final class ProjectEConfig {
 
 			zeroPedCooldown = config.getInt("zeroPedCooldown", "pedestalcooldown", 40, -1, Integer.MAX_VALUE, "Delay between Zero Ring trying to extinguish entities and freezing ground while in the pedestal.");
 
-
 			timePedBonus = config.getInt("timePedBonus", "effects", 18, 0, 256, "Bonus ticks given by the Watch of Flowing Time while in the pedestal. 0 = effectively no bonus.");
 			timePedMobSlowness = config.getFloat("timePedMobSlowness", "effects", 0.10F, 0.0F, 1.0F, "Factor the Watch of Flowing Time slows down mobs by while in the pedestal. Set to 1.0 for no slowdown.");
 			interdictionMode = config.getBoolean("interdictionMode", "effects", true, "If true the Interdiction Torch only affects hostile mobs. If false it affects all non blacklisted living entities.");
@@ -152,9 +155,11 @@ public final class ProjectEConfig {
 		nbtDistinctlist.clear();
 		for (String entry : nbtWhitelistConfig) {
 			String[] split = entry.split("\\|");
-			if (split.length == 2) {
-				nbtDistinctlist.computeIfAbsent(split[0], k -> new ArrayList<>()).add(split[1]);
-			}
+			if (split.length != 2) continue;
+			// 启动时直接解析出 Item
+			Object obj = Item.itemRegistry.getObject(split[0]);
+			if (obj instanceof Item item)
+				nbtDistinctlist.computeIfAbsent(item, k -> new ArrayList<>()).add(split[1]);
 		}
 
 		dynamicEmcNbt.clear();

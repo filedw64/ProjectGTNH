@@ -1,0 +1,88 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 4037001023084972502,
+      "questIDLow:4": -8913671314410677897
+    },
+    "1:10": {
+      "questIDHigh:4": -2018742214988053737,
+      "questIDLow:4": -7595362891627420215
+    },
+    "2:10": {
+      "questIDHigh:4": -8667722349529775055,
+      "questIDLow:4": -7264346801682160692
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "如果说炼金术箱子是对空间扩展的完美驾驭，那炼金术之袋便是空间压缩的绝对杰作。通过将超高密度的炼金纤维与异次元阵列编织成一块便携的布料，你实际上创造了一个手持版的炼金术箱子。你绝对会爱死这个神器的——这是一个强大到离谱的背包，它将瞬间让你那些普通的编织背包和沉重的板条箱彻底沦为时代的眼泪！是时候把一整个工厂的资源塞进你的口袋里了。\n\n在实用性上，这个袋子提供了庞大的便携式物品栏。然而，它的运作基于一种非常特殊的量子纠缠原理：§l同色的袋子共享完全相同的物品栏空间，就像末影箱一样。§r\n\n因为这种颜色编码网络，袋子就相当于一个集成的分页系统。只需记住，由于这种共享颜色的机制，你在默认情况下实际上§l最多只有 48 个不同的存储“页面”（或网络）§r可用。明智地运用你的颜色，来统筹你庞大的工业资源吧！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 32767,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_alchemical_bag"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "比便携式末影箱更好？",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -8320881345012740972,
+  "questIDLow:4": -8660562166766569974,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 32767,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_alchemical_bag"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

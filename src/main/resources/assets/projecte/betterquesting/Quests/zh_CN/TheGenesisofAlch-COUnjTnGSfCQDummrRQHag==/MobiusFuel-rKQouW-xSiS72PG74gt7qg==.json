@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -6799538551282578327,
+      "questIDLow:4": -9198230419598064702
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "追寻无限能源的过程注定需要极端的手段。通过将大量炼金煤炭强行聚拢，将其压缩成由碳与纯粹魔法交织而成的超致密奇点，你合成了莫比乌斯燃料。它脉动着神秘的循环能量特征，仿佛在微观层面上不断地自我吞噬与重塑。尽管其燃烧效率高得令人咋舌，但若只是将其丢进普通的熔炉中，简直是对其潜能的极大暴殄。像这样拥有独特无尽能量循环的物质，理应有着比单纯燃烧更伟大的使命，不是吗？\n\n莫比乌斯燃料拥有惊人的 25,600 tick（1,280 秒）燃烧时间。然而，它的真正价值远在熔炉之外——它是制造更高级炼金装置与解锁更高阶物质转化的关键合成材料。",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 1,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_fuel"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "莫比乌斯燃料",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -6006631226097448412,
+  "questIDLow:4": -4910909604393944150,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 4,
+          "Damage:2": 1,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_fuel"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

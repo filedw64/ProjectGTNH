@@ -8,15 +8,13 @@ import moze_intel.projecte.PECore;
 
 public class CreativeTab extends CreativeTabs
 {
-	public CreativeTab()
-	{
+	public CreativeTab() {
 		super(PECore.MODID);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Item getTabIconItem()
-	{
+	public Item getTabIconItem() {
 		return ObjHandler.philosStone;
 	}
 }

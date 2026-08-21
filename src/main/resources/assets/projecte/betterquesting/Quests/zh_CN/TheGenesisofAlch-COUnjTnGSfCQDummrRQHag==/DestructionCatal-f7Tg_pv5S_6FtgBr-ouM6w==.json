@@ -1,0 +1,82 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -2018742214988053737,
+      "questIDLow:4": -7595362891627420215
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "通过将莫比乌斯燃料的循环能量与爆破新星的爆炸威力紧密结合，你锻造出了一件极其致密的小巧饰品。这件小神器中蕴藏的纯粹动能，足以听凭你的号令引发局部的地脉断层。尽管在它那些更古老、更狂暴的晶体兄弟中，它或许是最孱弱的一个，但也绝不要低估它的实用性。它是一件兼具精准与惊天伟力的工具，能完美地撕裂地壳，展露深藏其中的丰厚财富。\n\n这件工具能通过消耗炼金燃料，让你毫不费力地开凿出完美的隧道，并精准挖掘特定的矿脉。它能将爆炸威力沿直线定向释放，为你省去用镐子手动敲碎成千上万个方块的烦恼。它绝对是你进行地下勘探的新晋挚友。",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_destruction_catalyst",
+        "tag:10": {}
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "地脉断层发生器",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 9202227322767887358,
+  "questIDLow:4": -8811855157138846485,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_destruction_catalyst",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

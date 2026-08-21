@@ -3,18 +3,6 @@ package moze_intel.projecte.gameObjs;
 import cpw.mods.fml.common.IFuelHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.RecipeSorter;
-import net.minecraftforge.oredict.RecipeSorter.Category;
-import net.minecraftforge.oredict.ShapedOreRecipe;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.blocks.AlchemicalChest;
@@ -31,9 +19,8 @@ import moze_intel.projecte.gameObjs.blocks.Pedestal;
 import moze_intel.projecte.gameObjs.blocks.Relay;
 import moze_intel.projecte.gameObjs.blocks.TransmutationStone;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
-import moze_intel.projecte.gameObjs.customRecipes.RecipesCovalenceRepair;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeCovalenceRepair;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityHomingArrow;
 import moze_intel.projecte.gameObjs.entity.EntityLavaProjectile;
@@ -131,6 +118,18 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EnumArmorType;
+import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
+import net.minecraftforge.oredict.RecipeSorter.Category;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import java.util.Map.Entry;
 
@@ -521,9 +520,7 @@ public class ObjHandler
 
 		//Tome
 		if (ProjectEConfig.craftableTome)
-		{
 			GameRegistry.addRecipe(new ItemStack(tome), "HML", "KBK", "LMH", 'L', new ItemStack(covalence, 1, 0), 'M', new ItemStack(covalence, 1, 1), 'H', new ItemStack(covalence, 1, 2), 'B', Items.book, 'K', new ItemStack(kleinStars, 1, 5));
-		}
 
 		//Manual
 		//GameRegistry.addShapelessRecipe(new ItemStack(manual, 1, 0), Items.book, new ItemStack(covalence, 1, 0));
@@ -558,8 +555,7 @@ public class ObjHandler
 		GameRegistry.addShapelessRecipe(new ItemStack(covalence, 40, 2), Items.diamond, Items.coal);
 
 		//Klein Stars
-		for (int i = 1; i < 6; i++)
-		{
+		for (int i = 1; i < 6; i++) {
 			ItemStack input = new ItemStack(kleinStars, 1, i - 1);
 			ItemStack output = new ItemStack(kleinStars, 1, i);
 			GameRegistry.addRecipe(new RecipeShapelessHidden(output, input, input, input, input));
@@ -600,11 +596,10 @@ public class ObjHandler
 			GameRegistry.addRecipe(new RecipeAlchemyBag(new ItemStack(alchBag, 1, 15 - i), new ItemStack(alchBag, 1, 0), new ItemStack(Items.dye, 1, i)));
 			GameRegistry.addRecipe(new RecipeAlchemyBag(new ItemStack(alchBag, 1, 0), new ItemStack(alchBag, 1, i), new ItemStack(Items.dye, 1, 15)));
 		}
-		GameRegistry.addRecipe(new RecipesCovalenceRepair());
-		RecipeSorter.register("Alchemical Bags Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
-		RecipeSorter.register("Covalence Repair Recipes", RecipesCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
-		RecipeSorter.register("", RecipeShapedKleinStar.class, Category.SHAPED, "after:minecraft:shaped before:minecraft:shapeless");
-		RecipeSorter.register("", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
+		GameRegistry.addRecipe(new RecipeCovalenceRepair());
+		RecipeSorter.register("Alchemical Bag Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
+		RecipeSorter.register("Covalence Repair Recipes", RecipeCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
+		RecipeSorter.register("Klein Star Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
 
 		//Fuel Values
 		GameRegistry.registerFuelHandler(new FuelHandler());
@@ -616,14 +611,13 @@ public class ObjHandler
 	public static void registerPhiloStoneSmelting()
 	{
 		for (Entry<ItemStack, ItemStack> entry : FurnaceRecipes.smelting().getSmeltingList().entrySet()) {
-			if (entry.getKey() == null || entry.getValue() == null) {
+			ItemStack input, output;
+			if ((input = entry.getKey()) == null || (output = entry.getValue()) == null) {
 				continue;
 			}
 
-			ItemStack input = entry.getKey();
-			ItemStack output = entry.getValue().copy();
+			output = output.copy();
 			output.stackSize *= 7;
-
 			GameRegistry.addRecipe(new RecipeShapelessHidden(output, philosStone, input, input, input, input, input, input, input, new ItemStack(Items.coal, 1, OreDictionary.WILDCARD_VALUE)));
 		}
 		RecipeSorter.register("Philosopher's Smelting Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");

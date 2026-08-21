@@ -5,7 +5,6 @@ import moze_intel.projecte.emc.IngredientMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
 import moze_intel.projecte.integration.helpers.GTItemHelper;
 import moze_intel.projecte.utils.EnchantmentBlacklist;
@@ -302,16 +301,13 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 
 		@Override
 		public boolean canHandle(IRecipe recipe) {
-			return recipe instanceof RecipeShapedKleinStar || recipe instanceof RecipeShapelessHidden
-				|| recipe instanceof RecipeAlchemyBag;
+			return recipe instanceof RecipeShapelessHidden || recipe instanceof RecipeAlchemyBag;
 		}
 
 		@Override
 		public CraftingIngredients getIngredientsFor(IRecipe recipe) {
 			Iterable<?> recipeItems = null;
-			if (recipe instanceof RecipeShapedKleinStar rsk) {
-				recipeItems = Arrays.asList(rsk.recipeItems);
-			} else if (recipe instanceof RecipeShapelessHidden rsh) {
+			if (recipe instanceof RecipeShapelessHidden rsh) {
 				recipeItems = rsh.getInput();
 			} else if (recipe instanceof RecipeAlchemyBag bag) {
 				recipeItems = Arrays.asList(bag.getRecipeInputBag(), bag.getRecipeInputDye());

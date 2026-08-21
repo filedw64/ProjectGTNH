@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 6475555099883751932,
+      "questIDLow:4": -8603760781057842920
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "看哪，这便是传说中的武林绝学“熔岩水上漂”！……好像有哪里不对？\n\n既然能直接在沸腾的熔岩表面漫步，又何必在下界大费周章地搭桥呢？通过将地幔那原初且炽热的高温束缚于局部的炼金矩阵中，你让自己对极端高温彻底免疫。你喜欢这能力吗？反正你工厂的安全检查员快要心脏病发作了。\n\n它是潮汐护符的烈焰对应物。它赋予你绝对且永久的防火效果，并允许你在液态熔岩的表面安全行走。此外，它还能作为无限的熔岩源，这对于为你前中期的格雷科技地热锅炉提供燃料来说，绝对是能颠覆游戏体验的神器。",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_volcanite_amulet"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Volcanite Amulet",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 2659442880752405973,
+  "questIDLow:4": -5431518220958284952,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_volcanite_amulet"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

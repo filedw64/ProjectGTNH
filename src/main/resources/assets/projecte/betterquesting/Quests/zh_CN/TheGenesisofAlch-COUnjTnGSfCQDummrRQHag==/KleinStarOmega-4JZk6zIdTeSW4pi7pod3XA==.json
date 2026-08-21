@@ -1,0 +1,86 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -3892493892380832283,
+      "questIDLow:4": -6112583830008568187
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "噢……你居然真的做到了。通过煞费苦心地合成、压缩，并将一千多个低级能量之星剧烈融合在一起，你锻造出了六级卡莱恩能量之星。这块晶体的密度令人匪夷所思；它轻轻嗡鸣，其中蕴含着一颗小型恒星的力量。这已经不再仅仅是一块电池了。毫无疑问，它是已知宇宙中绝对最重量级的充电宝。\n\n这个堪称性能怪兽的晶体容纳了惊人的 51,200,000 EMC。只要把六级能量之星安稳地放在背包里，你所使用的任何消耗 EMC 的工具、戒指或地形改造透镜，都将拥有深不见底的能源供应。更重要的是，这个极其致密的能量核心，是你最终迈入游戏后期炼金术的一项强制性且极其昂贵的合成组件。恭喜你，从这棵合成树中成功的幸存了下来！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 5,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_klein_star",
+        "tag:10": {
+          "StoredEMC:6": 5.12E7
+        }
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "最胖的充电宝！",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -2263510801386222108,
+  "questIDLow:4": -7574323691563550884,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 0,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 5,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_klein_star",
+          "tag:10": {
+            "StoredEMC:6": 5.12E7
+          }
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}
