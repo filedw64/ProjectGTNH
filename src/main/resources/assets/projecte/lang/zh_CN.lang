@@ -76,6 +76,8 @@ item.pe_tome.name=炼金术秘卷
 item.pe_transmutation_tablet.name=便携式转化桌
 item.pe_manual.name=炼金术士之书[WIP]
 
+item.emc_builders_wand.name=EMC建筑之杖
+
 pe.manual.tooltip1=卷二
 
 tile.pe_alchemy_chest.name=炼金术箱子

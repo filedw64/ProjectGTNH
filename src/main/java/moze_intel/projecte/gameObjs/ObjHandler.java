@@ -42,6 +42,7 @@ import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
 import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
+import moze_intel.projecte.gameObjs.items.ItemBuildersWand;
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.items.Matter;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
@@ -237,6 +238,8 @@ public class ObjHandler
 	public static Item transmutationTablet = new TransmutationTablet();
 	public static Item manual = new PEManual();
 
+	public static Item builderswand = new ItemBuildersWand();
+
 	public static void register()
 	{
 		// Blocks without ItemBlock
@@ -344,6 +347,8 @@ public class ObjHandler
 		GameRegistry.registerItem(tome, tome.getUnlocalizedName());
 		GameRegistry.registerItem(transmutationTablet, transmutationTablet.getUnlocalizedName());
 		GameRegistry.registerItem(manual, manual.getUnlocalizedName());
+
+		GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
 
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
