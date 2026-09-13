@@ -20,7 +20,7 @@ public class InfiniteSteak extends ItemFood
 	{
 		super(8, 0.8F, true);
 		this.setUnlocalizedName("pe_infinite_steak");
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setMaxStackSize(1);
 		this.setAlwaysEdible();
 	}
@@ -55,7 +55,7 @@ public class InfiniteSteak extends ItemFood
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced) {
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
 		if (stack.hasTagCompound() && stack.stackTagCompound.hasKey("OwnerName")) {
 			list.add("§7已绑定: §b" + stack.stackTagCompound.getString("OwnerName"));
 			list.add("§7食用时扣除绑定者 64 EMC");

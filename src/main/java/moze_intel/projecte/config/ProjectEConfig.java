@@ -1,6 +1,7 @@
 package moze_intel.projecte.config;
 
 import moze_intel.projecte.utils.PELogger;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;

@@ -55,7 +55,7 @@ public class InfiniteFuel extends ItemPE
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List list, boolean advanced) {
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
 		if (stack.hasTagCompound() && stack.stackTagCompound.hasKey("OwnerName")) {
 			list.add("§7已绑定: §b" + stack.stackTagCompound.getString("OwnerName"));
 			list.add("§7燃烧时扣除绑定者 32 EMC");
@@ -67,6 +67,6 @@ public class InfiniteFuel extends ItemPE
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register)
 	{
-		this.itemIcon = register.registerIcon(this.getTexture("infinite_fuel"));
+		this.itemIcon = register.registerIcon(getTexture("infinite_fuel"));
 	}
 }
