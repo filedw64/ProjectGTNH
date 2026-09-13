@@ -5,6 +5,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
+import moze_intel.projecte.gameObjs.items.tools.PEToolBase;
 import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.playerData.AlchBagProps;
 import moze_intel.projecte.playerData.AlchemicalBags;
@@ -29,8 +30,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class PlayerEvents {
 	// Handles playerData props from being wiped on death
@@ -141,4 +144,81 @@ public class PlayerEvents {
 			}
 		}
 	}
+
+	@SubscribeEvent
+	public void onItemToss(ItemTossEvent event) {
+		EntityPlayer player = event.player;
+		ItemStack stack = event.entityItem.getEntityItem();
+
+		// 判断丢出的物品是否为我们需要保护的工具/武器
+		if (stack != null && stack.getItem() instanceof PEToolBase) {
+
+			// 如果没有打开额外的GUI，openContainer 就是玩家自身的 inventoryContainer
+			if (player.openContainer == player.inventoryContainer) {
+
+				// 取消抛出事件
+				event.setCanceled(true);
+				event.entityItem.setDead();
+
+				// 将物品重新塞回玩家背包
+				player.inventory.addItemStackToInventory(stack);
+
+				// 在服务端强制同步玩家背包
+				if (!player.worldObj.isRemote && player instanceof EntityPlayerMP) {
+					((EntityPlayerMP) player).inventoryContainer.detectAndSendChanges();
+				}
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onAEGUInteract(PlayerInteractEvent event)
+	{
+		if (event.world.isRemote || event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
+
+		net.minecraft.entity.player.EntityPlayer player = event.entityPlayer;
+		net.minecraft.item.ItemStack heldItem = player.getHeldItem();
+
+		if (heldItem != null && heldItem.getItem() == moze_intel.projecte.gameObjs.ObjHandler.philosStone && heldItem.hasTagCompound() && heldItem.stackTagCompound.hasKey("aegu_bind_x"))
+		{
+			net.minecraft.tileentity.TileEntity targetTile = event.world.getTileEntity(event.x, event.y, event.z);
+
+			if (targetTile instanceof moze_intel.projecte.gameObjs.tiles.CondenserTile)
+			{
+				int aeguX = heldItem.stackTagCompound.getInteger("aegu_bind_x");
+				int aeguY = heldItem.stackTagCompound.getInteger("aegu_bind_y");
+				int aeguZ = heldItem.stackTagCompound.getInteger("aegu_bind_z");
+				int aeguDim = heldItem.stackTagCompound.getInteger("aegu_bind_dim");
+
+				if (aeguDim != event.world.provider.dimensionId)
+				{
+					player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.aegu.wrongdim"));
+					event.setCanceled(true);
+					return;
+				}
+
+				double distSq = Math.pow(aeguX - event.x, 2) + Math.pow(aeguY - event.y, 2) + Math.pow(aeguZ - event.z, 2);
+				if (distSq > 64.0)
+				{
+					player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.aegu.toofar"));
+					event.setCanceled(true);
+					return;
+				}
+
+				net.minecraft.tileentity.TileEntity aeguTile = event.world.getTileEntity(aeguX, aeguY, aeguZ);
+				if (aeguTile instanceof moze_intel.projecte.gameObjs.tiles.TileAEGU)
+				{
+					boolean success = ((moze_intel.projecte.gameObjs.tiles.TileAEGU) aeguTile).bindCondenser(event.x, event.y, event.z);
+					if (success) {
+						player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.aegu.bindsuccess"));
+					} else {
+						player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.aegu.bindfull"));
+					}
+				}
+
+				event.setCanceled(true);
+			}
+		}
+	}
+
 }
