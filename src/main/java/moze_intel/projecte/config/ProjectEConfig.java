@@ -1,7 +1,6 @@
 package moze_intel.projecte.config;
 
 import moze_intel.projecte.utils.PELogger;
-import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
@@ -21,6 +20,8 @@ public final class ProjectEConfig {
 	public static boolean enableTimeWatch;
 	public static boolean enableArcaneTablet;
 	public static boolean enableExpansionStar;
+	public static boolean enableInfiniteFuel;
+	public static boolean enableInfiniteSteak;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;

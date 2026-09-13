@@ -3,6 +3,17 @@ package moze_intel.projecte.gameObjs;
 import cpw.mods.fml.common.IFuelHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
+import net.minecraftforge.oredict.RecipeSorter.Category;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.blocks.AlchemicalChest;
@@ -33,7 +44,6 @@ import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.AlchemicalFuel;
-import moze_intel.projecte.gameObjs.items.ArcaneTransmutationTablet;
 import moze_intel.projecte.gameObjs.items.CataliticLens;
 import moze_intel.projecte.gameObjs.items.CovalenceDust;
 import moze_intel.projecte.gameObjs.items.DestructionCatalyst;
@@ -43,7 +53,6 @@ import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
 import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
-import moze_intel.projecte.gameObjs.items.ItemExpansionStar;
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.items.Matter;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
@@ -120,18 +129,6 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EnumArmorType;
-import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.RecipeSorter;
-import net.minecraftforge.oredict.RecipeSorter.Category;
-import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import java.util.Map.Entry;
 
@@ -237,6 +234,9 @@ public class ObjHandler
 	public static Item lifeStone = new LifeStone();
 
 	public static Item tome = new Tome();
+
+	public static Item infiniteFuel = new InfiniteFuel();
+	public static Item infiniteSteak = new InfiniteSteak();
 
 	public static Item waterOrb = new WaterOrb();
 	public static Item lavaOrb = new LavaOrb();
@@ -382,6 +382,12 @@ public class ObjHandler
 		if (ProjectEConfig.enableArcaneTablet)
 			GameRegistry.registerItem(arcaneTablet, "arcane_transmutation_tablet");
 
+		if (ProjectEConfig.enableInfiniteFuel)
+			GameRegistry.registerItem(infiniteFuel, "infinite_fuel");
+
+		if (ProjectEConfig.enableInfiniteSteak)
+			GameRegistry.registerItem(infiniteSteak, "infinite_steak");
+
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
 		GameRegistry.registerTileEntityWithAlternatives(InterdictionTile.class, "InterdictionTile", "Interdiction Torch Tile");
@@ -419,6 +425,24 @@ public class ObjHandler
 			diamondReplacement = new ItemStack(Items.nether_star);
 			diamondBlockReplacement = new ItemStack(Items.nether_star);
 		}
+
+		// 无限燃料：转化桌 外面一圈木炭
+		GameRegistry.addRecipe(new ItemStack(infiniteFuel),
+			"CCC",
+			"CTC",
+			"CCC",
+			'C', new ItemStack(Items.coal, 1, 1),
+			'T', transmutationTablet
+		);
+
+		// 无限牛排：转化桌 外面一圈牛排
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak),
+			"MMM",
+			"MTM",
+			"MMM",
+			'M', Items.cooked_beef,
+			'T', transmutationTablet
+		));
 
 		//Shaped Recipes
 		//Philos Stone
