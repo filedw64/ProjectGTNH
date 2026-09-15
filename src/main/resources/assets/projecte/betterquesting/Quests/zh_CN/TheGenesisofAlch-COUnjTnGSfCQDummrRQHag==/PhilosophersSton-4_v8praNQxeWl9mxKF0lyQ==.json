@@ -1,0 +1,77 @@
+{
+  "preRequisites:9": {},
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "看哪，炼金大业由此开始！你终于铸就了传说中的贤者之石，这毫无疑问是伟大炼金术的起点。\n\n拥有了这件神秘的神器，刻板的自然法则必须屈从于你的意志。它使你能够进行基础的物质转化，将随处可见的日常材料转化为你扩张工业帝国所急需的资源。\n\n但它的力量远不止于此。这块石头蕴含着巨大的热力学潜能。通过引导煤炭等可燃燃料的潜在能量，你能将极高的热量注入需要煅烧的物质中，无需放置熔炉便能随时随地熔炼物品。不仅如此，它还赋予了你直接在物理世界操纵物质的能力，只需一个简单的媒介，便能重塑你脚下的泥土与岩石等大地元素。\n\n古代炼金术士将凡石化作闪耀黄金的梦想不再是神话——它已在你的掌心化为现实。明智地使用它吧，因为这仅仅是你迈入等价交换无垠领域的第一步！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_philosophers_stone",
+        "tag:10": {}
+      },
+      "isMain:1": 1,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "炼金术师的挚友",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -2018742214988053737,
+  "questIDLow:4": -7595362891627420215,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_philosophers_stone",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

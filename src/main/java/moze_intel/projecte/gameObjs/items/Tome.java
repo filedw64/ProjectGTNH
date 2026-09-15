@@ -15,7 +15,7 @@ public class Tome extends ItemPE
 	public Tome()
 	{
 		this.setUnlocalizedName("tome");
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setMaxStackSize(1);
 		this.setMaxDamage(0);
 	}

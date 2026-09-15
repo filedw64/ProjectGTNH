@@ -61,6 +61,7 @@ public final class Constants
 	public static final int CONDENSER_MK2_GUI = 16;
 	public static final int PEDESTAL_GUI = 17;
 	public static final int TRANSMUTATION_PORTABLE_GUI = 18;
+	public static final int ARCANE_TABLET_GUI = 19;
 
 	public static final int MAX_CONDENSER_PROGRESS = 102;
 
@@ -70,7 +71,7 @@ public final class Constants
 	public static final int PEDESTAL_RENDER_ID = RenderingRegistry.getNextAvailableRenderId();
 	public static final ResourceLocation PEDESTAL_MODELTEX_LOCATION = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/models/pedestaltexmap.png");
 
-	public static final int MAX_VEIN_SIZE = 250;
+	public static final int MAX_VEIN_SIZE = 256;
 
 	public static final int ENCH_EMC_BONUS = 5000;
 

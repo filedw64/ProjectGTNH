@@ -1,0 +1,98 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 7210552392414415754,
+      "questIDLow:4": -8519682214445146549
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "通过将红物质那原始、原初的力量与你炼金戒指和护符中浓缩的元素概念剧烈融合，你已然超越了凡人的工程学。这套盔甲不仅仅是在保护你的肉体；它从根本上改写了你与物理学、魔法以及引力之间的关系。\n\n在实用性上，这套护甲保留了红物质的无限耐久与基本无敌，但如今它还集成了一系列离谱的能力。务必检查你的按键绑定，以开启这些神明般的力量！\n\n深渊头盔：\n对心智与深海的绝对掌控。它赋予你无限的水下呼吸能力，以及一个能让你近乎不死的超加速生命恢复矩阵。\n神秘学集成：最棒的是，它集成了揭示之护目镜的功能，并提供高达 50% 的惊人源质（Vis）减免！你现在可以大摇大摆地走进炼金构装体（Thaumatorium），肆无忌惮地进行那些最黑暗、最昂贵且极易引发扭曲的仪式，并尽情嘲笑那些花了许久才做出单薄布袍的神秘使们。\n\n炼狱胸甲：\n对火焰与动能推力的绝对掌控。它赋予你绝对的火焰免疫，以及一套激进的主动飞行加速系统，能以骇人的速度将你推向远处。\n悬停功能：通过模拟量子/重力胸甲的结构数据，它集成了一个完美无瑕的悬停模式。在半空中建造庞大的格雷装配线从未如此轻松！\n\n重力护腿：\n对局部质量的绝对掌控。这些护腿能让你操纵自身的引力。按下 Shift 键即可进行快速下降，像流星一样从天而降，且不会受到哪怕一点掉落伤害。不仅如此，它还赋予你虚空漫步的能力——将你脚下的虚空凝化为实体，让你能在无底深渊上空如履平地。\n\n飓风长靴：\n对狂风的绝对掌控。这双靴子永久赋予你创造模式般的飞行能力，并在下降时提供平滑的滑翔能力。即便你脚踏实地，它也能大幅提升你的基础移动速度，让你能在极短的时间内冲刺穿过你那不断蔓延的巨型基地。",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_gem_armor_1"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "完成了",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -7042657483422019636,
+  "questIDLow:4": -8592893025193134602,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_0"
+        },
+        "1:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_1"
+        },
+        "2:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_2"
+        },
+        "3:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_gem_armor_3"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

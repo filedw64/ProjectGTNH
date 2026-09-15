@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -3070927935217579634,
+      "questIDLow:4": -8850462115044478429
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "This is the ultimate expression of molecular restoration. Forged from the flawless, high-pressure lattice of a Diamond and the dense carbon of standard Coal, High Covalence Dust is a miracle of alchemical engineering. It contains enough latent reconstructive energy to repair the hardest substances known to man. Historically, ancient alchemists could only use this precious powder to restore standard diamond gear. However, through rigorous modern industrial research, you have unlocked its true, game-changing potential!\n\nFunctionally, while it still repairs Diamond tools, its greatest feature is that it now §lfully supports Tinkers\u0027 Construct (TiC) and GregTech (GT) tools!§r You will never again have to abandon a deep-vein mining expedition to sprint all the way back to your base\u0027s Tool Forge or GT maintenance station. Simply carry a stack of this dust in your inventory, and you can keep your complex, custom-built hammers, drills, and pickaxes running indefinitely in the field!",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 2,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_covalence_dust"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "High Covalence Dust",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 4037001023084972502,
+  "questIDLow:4": -8913671314410677897,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 40,
+          "Damage:2": 2,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_covalence_dust"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

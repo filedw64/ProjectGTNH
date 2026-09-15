@@ -18,8 +18,7 @@ public class CollectorMK2Container extends Container
 	private final CollectorMK2Tile tile;
 	private int sunLevel;
 
-	public CollectorMK2Container(InventoryPlayer invPlayer, CollectorMK2Tile collector)
-	{
+	public CollectorMK2Container(InventoryPlayer invPlayer, CollectorMK2Tile collector) {
 		this.tile = collector;
 		tile.openInventory();
 
@@ -55,15 +54,12 @@ public class CollectorMK2Container extends Container
 	}
 
 	@Override
-	public void detectAndSendChanges()
-	{
+	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
 
-		for (int i = 0; i < this.crafters.size(); ++i)
-		{
-			ICrafting icrafting = (ICrafting)this.crafters.get(i);
-
-			if(sunLevel != tile.getSunLevel())
+		for (int i = 0; i < this.crafters.size(); ++i) {
+			ICrafting icrafting = this.crafters.get(i);
+			if (sunLevel != tile.getSunLevel())
 				icrafting.sendProgressBarUpdate(this, 1, tile.getSunLevel());
 		}
 
@@ -71,14 +67,12 @@ public class CollectorMK2Container extends Container
 	}
 
 	@SideOnly(Side.CLIENT)
-	public void updateProgressBar(int par1, int par2)
-	{
+	public void updateProgressBar(int par1, int par2) {
 		tile.displaySunLevel = par2;
 	}
 
 	@Override
-	public void onContainerClosed(EntityPlayer player)
-	{
+	public void onContainerClosed(EntityPlayer player) {
 		super.onContainerClosed(player);
 		tile.closeInventory();
 	}
@@ -89,9 +83,7 @@ public class CollectorMK2Container extends Container
 		Slot slot = this.getSlot(slotIndex);
 
 		if (slot == null || !slot.getHasStack())
-		{
 			return null;
-		}
 
 		ItemStack stack = slot.getStack();
 		ItemStack newStack = stack.copy();
@@ -103,7 +95,7 @@ public class CollectorMK2Container extends Container
 				return null;
 			}
 		}
-		else if (slotIndex >= 15 && slotIndex <= 50)
+		else if (slotIndex <= 50)
 		{
 			if (!FuelMapper.isStackFuel(stack) || FuelMapper.isStackMaxFuel(stack) || !this.mergeItemStack(stack, 1, 12, false))
 			{

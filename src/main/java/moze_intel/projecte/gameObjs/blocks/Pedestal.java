@@ -25,7 +25,7 @@ public class Pedestal extends Block {
 
     public Pedestal() {
         super(Material.rock);
-        this.setCreativeTab(ObjHandler.cTab);
+        this.setCreativeTab(ObjHandler.tab);
         this.setHardness(1.0F);
         this.setBlockBounds(0.1875F, 0.0F, 0.1875F, 0.8125F, 0.75F, 0.8125F);
         this.setBlockTextureName(PECore.MODID.toLowerCase() + ":dm");

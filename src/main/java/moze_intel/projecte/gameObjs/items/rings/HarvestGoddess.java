@@ -1,6 +1,10 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
-import com.google.common.collect.Lists;
+import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
+import moze_intel.projecte.utils.MathUtils;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.IGrowable;
 import net.minecraft.entity.Entity;
@@ -14,18 +18,13 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.util.ForgeDirection;
-import moze_intel.projecte.api.item.IPedestalItem;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
-import moze_intel.projecte.utils.MathUtils;
-import moze_intel.projecte.utils.WorldHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HarvestGoddess extends RingToggle implements IPedestalItem
 {
-	public HarvestGoddess()
-	{
+	public HarvestGoddess() {
 		super("harvest_god");
 		this.setNoRepair();
 	}
@@ -33,10 +32,7 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	@Override
 	public void onUpdate(ItemStack stack, World world, Entity entity, int par4, boolean par5)
 	{
-		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player))
-		{
-			return;
-		}
+		if (world.isRemote || par4 > 8 || !(entity instanceof EntityPlayer player)) return;
 
 		super.onUpdate(stack, world, entity, par4, par5);
 
@@ -45,41 +41,30 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 			double storedEmc = getEmc(stack);
 
 			if (storedEmc == 0 && !consumeFuel(player, stack, 64, true))
-			{
 				stack.setItemDamage(0);
-			}
-			else
-			{
+			else {
 				WorldHelper.growNearbyRandomly(true, world, player.posX, player.posY, player.posZ, player);
 				removeEmc(stack, 0.32F);
 			}
 		}
-		else
-		{
-			WorldHelper.growNearbyRandomly(false, world, player.posX, player.posY, player.posZ, player);
-		}
+		else WorldHelper.growNearbyRandomly(false, world, player.posX, player.posY, player.posZ, player);
 	}
 
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int par7, float par8, float par9, float par10)
 	{
 		if (world.isRemote || !player.canPlayerEdit(x, y, z, par7, stack))
-		{
 			return false;
-		}
 
 		if (player.isSneaking())
 		{
 			Object[] obj = getStackFromInventory(player.inventory.mainInventory, Items.dye, 15, 4);
 
 			if (obj == null)
-			{
 				return false;
-			}
 
 			ItemStack boneMeal = (ItemStack) obj[1];
 
-			if (boneMeal != null && useBoneMeal(world, x, y, z))
-			{
+			if (boneMeal != null && useBoneMeal(world, x, y, z)) {
 				player.inventory.decrStackSize((Integer) obj[0], 4);
 				player.inventoryContainer.detectAndSendChanges();
 				return true;
@@ -96,24 +81,23 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 		boolean result = false;
 
 		for (int x = xCoord - 15; x <= xCoord + 15; x++)
+		{
 			for (int z = zCoord - 15; z <= zCoord + 15; z++)
 			{
+				// 防御性区块检测
+				if (!world.blockExists(x, yCoord, z)) continue;
+
 				Block crop = world.getBlock(x, yCoord, z);
 
-				if (crop instanceof IGrowable growable)
-				{
-
-					if (growable.func_149852_a(world, world.rand, x, yCoord, z))
-					{
+				if (crop instanceof IGrowable growable) {
+					if (growable.func_149852_a(world, world.rand, x, yCoord, z)) {
 						if (!result)
-						{
 							result = true;
-						}
-
 						growable.func_149853_b(world, world.rand, x, yCoord, z);
 					}
 				}
 			}
+		}
 
 		return result;
 	}
@@ -121,171 +105,133 @@ public class HarvestGoddess extends RingToggle implements IPedestalItem
 	private boolean plantSeeds(World world, EntityPlayer player, int xCoord, int yCoord, int zCoord)
 	{
 		boolean result = false;
+		boolean inventoryChanged = false;
 
 		List<StackWithSlot> seeds = getAllSeeds(player.inventory.mainInventory);
 
 		if (seeds.isEmpty())
-		{
 			return false;
-		}
 
-		for (int x = xCoord - 8; x <= xCoord + 8; x++)
-			for (int z = zCoord - 8; z <= zCoord + 8; z++)
-			{
+		for (int x = xCoord - 8; x <= xCoord + 8; x++) {
+			for (int z = zCoord - 8; z <= zCoord + 8; z++) {
+				// 防御性区块检测
+				if (!world.blockExists(x, yCoord, z)) continue;
+
 				Block block = player.worldObj.getBlock(x, yCoord, z);
 
 				if (block == null || block == Blocks.air)
-				{
 					continue;
-				}
 
-				for (int i = 0; i < seeds.size(); i++)
-				{
+				for (int i = 0, length = seeds.size(); i < length; i++) {
 					StackWithSlot s = seeds.get(i);
-					IPlantable plant;
+					IPlantable plant = s.plantable; // 使用缓存
 
-					if (s.stack.getItem() instanceof IPlantable)
-					{
-						plant = (IPlantable) s.stack.getItem();
-					}
-					else
-					{
-						plant = (IPlantable) Block.getBlockFromItem(s.stack.getItem());
-					}
+					if (!block.canSustainPlant(world, x, yCoord, z, ForgeDirection.UP, plant)
+						|| !world.isAirBlock(x, yCoord + 1, z)) continue;
 
-					if (block.canSustainPlant(world, x, yCoord, z, ForgeDirection.UP, plant) && world.isAirBlock(x, yCoord + 1, z))
-					{
-						world.setBlock(x, yCoord + 1, z, plant.getPlant(world, x, yCoord + 1, z));
-						player.inventory.decrStackSize(s.slot, 1);
-						player.inventoryContainer.detectAndSendChanges();
+					world.setBlock(x, yCoord + 1, z, plant.getPlant(world, x, yCoord + 1, z));
+					player.inventory.decrStackSize(s.slot, 1);
+					inventoryChanged = true;
 
-						s.stack.stackSize--;
+					s.stack.stackSize--;
 
-						if (s.stack.stackSize <= 0)
-						{
-							seeds.remove(i);
-						}
+					if (s.stack.stackSize <= 0)
+						seeds.remove(i);
 
-						if (!result)
-						{
-							result = true;
-						}
-					}
+					if (!result)
+						result = true;
+
+					// 跳出内层种子循环
+					break;
 				}
 			}
+		}
+
+		// 将网络发包移出循环外
+		if (inventoryChanged)
+			player.inventoryContainer.detectAndSendChanges();
 
 		return result;
 	}
 
 	private List<StackWithSlot> getAllSeeds(ItemStack[] inv)
 	{
-		List<StackWithSlot> result = Lists.newArrayList();
-
-		for (int i = 0; i < inv.length; i++)
-		{
+		List<StackWithSlot> result = new ArrayList<>();
+		for (int i = 0; i < inv.length; i++) {
 			ItemStack stack = inv[i];
 
-			if (stack != null)
-			{
-				if (stack.getItem() instanceof IPlantable)
-				{
-					result.add(new StackWithSlot(stack, i));
-					continue;
-				}
+			if (stack == null) continue;
 
-				Block block = Block.getBlockFromItem(stack.getItem());
-
-				if (block != null && block instanceof IPlantable)
-				{
-					result.add(new StackWithSlot(stack, i));
-				}
+			if (stack.getItem() instanceof IPlantable plantable) {
+				result.add(new StackWithSlot(stack, i, plantable));
+				continue;
 			}
-		}
 
+			Block block = Block.getBlockFromItem(stack.getItem());
+			if (block instanceof IPlantable plantable)
+				result.add(new StackWithSlot(stack, i, plantable));
+		}
 		return result;
 	}
 
 	private Object[] getStackFromInventory(ItemStack[] inv, Item item, int meta, int minAmount)
 	{
 		Object[] obj = new Object[2];
-
-		for (int i = 0; i < inv.length;i++)
-		{
+		for (int i = 0; i < inv.length;i++) {
 			ItemStack stack = inv[i];
-
-			if (stack != null && stack.stackSize >= minAmount && stack.getItem() == item && stack.getItemDamage() == meta)
-			{
+			if (stack != null && stack.stackSize >= minAmount && stack.getItem() == item && stack.getItemDamage() == meta) {
 				obj[0] = i;
 				obj[1] = stack;
 				return obj;
 			}
 		}
-
 		return null;
 	}
-
 
 	@Override
 	public void changeMode(EntityPlayer player, ItemStack stack)
 	{
-		if (stack.getItemDamage() == 0)
-		{
-			if (getEmc(stack) == 0 && !consumeFuel(player, stack, 64, true))
-			{
-				//NOOP (used to be sounds)
-			}
-			else
-			{
-				stack.setItemDamage(1);
-			}
-		}
-		else
-		{
+		if (stack.getItemDamage() != 0)
 			stack.setItemDamage(0);
-		}
+		else if (getEmc(stack) != 0 || consumeFuel(player, stack, 64, true))
+			stack.setItemDamage(1);
 	}
 
 	@Override
 	public void updateInPedestal(World world, int x, int y, int z)
 	{
-		if (!world.isRemote && ProjectEConfig.harvestPedCooldown != -1)
-		{
-			DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
-			if (tile.getActivityCooldown() == 0)
-			{
-				WorldHelper.growNearbyRandomly(true, world, x, y, z, null);
-				tile.setActivityCooldown(ProjectEConfig.harvestPedCooldown);
-			}
-			else
-			{
-				tile.decrementActivityCooldown();
-			}
+		if (world.isRemote || ProjectEConfig.harvestPedCooldown == -1) return;
+		DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
+		if (tile.getActivityCooldown() == 0) {
+			WorldHelper.growNearbyRandomly(true, world, x, y, z, null);
+			tile.setActivityCooldown(ProjectEConfig.harvestPedCooldown);
 		}
+		else tile.decrementActivityCooldown();
 	}
 
 	@Override
 	public List<String> getPedestalDescription()
 	{
-		List<String> list = Lists.newArrayList();
-		if (ProjectEConfig.harvestPedCooldown != -1)
-		{
+		List<String> list = new ArrayList<>();
+		if (ProjectEConfig.harvestPedCooldown != -1) {
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.harvestgod.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.harvestgod.pedestal2"));
-			list.add(EnumChatFormatting.BLUE + String.format(
-					StatCollector.translateToLocal("pe.harvestgod.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.harvestPedCooldown)));
+			list.add(EnumChatFormatting.BLUE + String.format(StatCollector.translateToLocal("pe.harvestgod.pedestal3"),
+				MathUtils.tickToSecFormatted(ProjectEConfig.harvestPedCooldown)));
 		}
 		return list;
 	}
 
-	private class StackWithSlot
+	private static class StackWithSlot
 	{
 		public final int slot;
 		public final ItemStack stack;
+		public final IPlantable plantable; // 提前缓存植物接口
 
-		public StackWithSlot(ItemStack stack, int slot)
-		{
+		public StackWithSlot(ItemStack stack, int slot, IPlantable plantable) {
 			this.stack = stack.copy();
 			this.slot = slot;
+			this.plantable = plantable;
 		}
 	}
 }

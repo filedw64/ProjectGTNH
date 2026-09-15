@@ -1,0 +1,82 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 1925151964740472710,
+      "questIDLow:4": -6334161518365682770
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "Why juggle four different rings when you can forcefully compress the fundamental concepts of Ice, Fire, Earth, and Wind into a single, terrifyingly unstable band? The Arcane Ring is the supreme mastery of the elements. It is an apocalyptic weapon and the ultimate survival tool all rolled into one glowing loop. When you wear this, you are no longer just an engineer; you are a cataclysmic event waiting to happen.\n\nFunctionally, this super-fusion ring unleashes a suite of devastating, game-breaking abilities that scale perfectly into GTNH\u0027s endgame:\r\n\r\nAbsolute Zero:\nInflicts the InnerIce debuff on targets, freezing their very essence and permanently shaving off 1% of their Maximum Health every second.\r\n\nAbsolute Ignition:\nInflicts the InnerFire debuff, ignoring all armor and resistances to deal terrifying True Fire Damage equal to 33% of the target\u0027s Maximum Health per second.\r\n\nThermodynamic Annihilation:\nIf a monster is unfortunate enough to be afflicted by both InnerIce and InnerFire simultaneously, the resulting thermodynamic paradox causes them to instantly shatter into oblivion. Instant Death.\n\nSupreme Harvest:\nWith a single activation, it instantly and completely fills both your visible Hunger bar and your hidden Saturation values. You will never need to chew on another piece of bread again.\n\nRending Tempest:\nUnleashes a massive, highly precise AoE thunderstorm. It calls down targeted lightning strikes on all hostile mobs in the vicinity while violently launching them high into the stratosphere, leaving your factory floor completely clear!",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 32767,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_arcana_ring",
+        "tag:10": {}
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Arcane Ring",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 3755051206650579832,
+  "questIDLow:4": -5683957859068769937,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_arcana_ring",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

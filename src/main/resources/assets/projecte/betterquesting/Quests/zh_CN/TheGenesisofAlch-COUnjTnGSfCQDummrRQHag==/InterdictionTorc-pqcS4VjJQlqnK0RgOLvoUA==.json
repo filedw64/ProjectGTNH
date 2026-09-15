@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -2018742214988053737,
+      "questIDLow:4": -7595362891627420215
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "源源不断的怪物大军是不是总在打断你复杂的格雷化学产线？是时候建立起严格的防御结界了。通过将纯粹的炼金能量注入简单的光源中，你便能制作出禁止火把。这件装置可不仅仅是驱散黑暗；它还能投射出一层持续的、隐形的动能力场，强横地击退任何企图靠近的敌对生物。它是让你高枕无忧的终极手段——对于任何正儿八经的工厂车间来说，这都是一项强制性的安防设施，毕竟一只溜进来的苦力怕一旦爆炸，就意味着无数个小时的心血付诸东流。\n\n放置这根火把会生成一个局部的禁区，在物理层面上推开敌对生物，确保你的工作区域绝对安全。但其防御性能还要远超于此：这股斥力场极其强劲，甚至能毫不费力地将半空中的抛射物直接弹开。只要这根火把稳稳地插在你身旁，绝对没有任何骷髅狙击手能暗杀我们伟大的“大总统”。昂首挺胸，无视那些从你力场上弹开的冷箭，在绝对的安全中继续构筑你的工业帝国吧！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:interdiction_torch"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "此方禁行",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -6438156383236308390,
+  "questIDLow:4": -6400947265317640112,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:interdiction_torch"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

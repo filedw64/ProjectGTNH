@@ -2,20 +2,9 @@ package moze_intel.projecte.gameObjs.items.rings;
 
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
-import com.google.common.collect.Lists;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IIconRegister;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.StatCollector;
-import net.minecraft.world.World;
 import moze_intel.projecte.api.item.IModeChanger;
 import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
@@ -23,7 +12,21 @@ import moze_intel.projecte.gameObjs.items.ItemCharge;
 import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.StatCollector;
+import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Optional.Interface(iface = "baubles.api.IBauble", modid = "Baubles")
@@ -34,8 +37,7 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 	@SideOnly(Side.CLIENT)
 	private IIcon ringOn;
 
-	public Zero()
-	{
+	public Zero() {
 		super("zero_ring", (byte)4);
 		this.setContainerItem(this);
 		this.setNoRepair();
@@ -46,74 +48,73 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 	{
 		super.onUpdate(stack, world, entity, par4, par5);
 
-		if (world.isRemote || !(entity instanceof EntityPlayer) || par4 > 8 || stack.getItemDamage() == 0)
-		{
+		if (world.isRemote || !(entity instanceof EntityPlayer player) || par4 > 8 || stack.getItemDamage() == 0)
 			return;
-		}
 
-		AxisAlignedBB box = AxisAlignedBB.getBoundingBox(entity.posX - 3, entity.posY - 3, entity.posZ - 3, entity.posX + 3, entity.posY + 3, entity.posZ + 3);
-		WorldHelper.freezeInBoundingBox(world, box, ((EntityPlayer) entity), true);
+		AxisAlignedBB box = AxisAlignedBB.getBoundingBox(player.posX - 3, player.posY - 3, player.posZ - 3, player.posX + 3, player.posY + 3, player.posZ + 3);
+
+		// 根据 Config 决定是否在周围铺雪
+		if (ProjectEConfig.zeroRingPlaceSnow)
+			WorldHelper.freezeInBoundingBox(world, box, player, true);
+
+		// 给周围敌对生物附加缓慢 III
+		List<EntityLivingBase> entities = world.getEntitiesWithinAABB(EntityLivingBase.class, box);
+		for (EntityLivingBase ent : entities)
+		{
+			if (!(ent instanceof IMob)) continue;
+			// 只有当没有缓慢效果或剩余时间小于 10 ticks 时才重新添加
+			if (!ent.isPotionActive(Potion.moveSlowdown) || ent.getActivePotionEffect(Potion.moveSlowdown).getDuration() < 10)
+				ent.addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 60, 2));
+		}
 	}
 
-
-
 	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
-	{
-		if (!world.isRemote)
-		{
+	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+		if (!world.isRemote) {
 			int offset = 3 + this.getCharge(stack);
 			AxisAlignedBB box = player.boundingBox.expand(offset, offset, offset);
 			world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
 			WorldHelper.freezeInBoundingBox(world, box, player, false);
 		}
-
 		return stack;
 	}
 
 	@Override
-	public boolean doesContainerItemLeaveCraftingGrid(ItemStack stack)
-	{
+	public boolean doesContainerItemLeaveCraftingGrid(ItemStack stack) {
 		return false;
 	}
 
 	@Override
-	public byte getMode(ItemStack stack)
-	{
+	public byte getMode(ItemStack stack) {
 		return (byte) stack.getItemDamage();
 	}
 
 	@Override
-	public void changeMode(EntityPlayer player, ItemStack stack)
-	{
+	public void changeMode(EntityPlayer player, ItemStack stack) {
 		stack.setItemDamage(stack.getItemDamage() == 0 ? 1 : 0);
 	}
 
 	@SideOnly(Side.CLIENT)
-	public IIcon getIconFromDamage(int dmg)
-	{
+	public IIcon getIconFromDamage(int dmg) {
 		return dmg == 0 ? ringOff : ringOn;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister register)
-	{
-		ringOn = register.registerIcon(this.getTexture("rings", "zero_on"));
-		ringOff = register.registerIcon(this.getTexture("rings", "zero_off"));
+	public void registerIcons(IIconRegister register) {
+		ringOn = register.registerIcon(getTexture("rings", "zero_on"));
+		ringOff = register.registerIcon(getTexture("rings", "zero_off"));
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public baubles.api.BaubleType getBaubleType(ItemStack itemstack)
-	{
+	public baubles.api.BaubleType getBaubleType(ItemStack itemstack) {
 		return BaubleType.RING;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public void onWornTick(ItemStack stack, EntityLivingBase player)
-	{
+	public void onWornTick(ItemStack stack, EntityLivingBase player) {
 		this.onUpdate(stack, player.worldObj, player, 0, false);
 	}
 
@@ -127,53 +128,41 @@ public class Zero extends ItemCharge implements IModeChanger, IBauble, IPedestal
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canEquip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canEquip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
 	@Optional.Method(modid = "Baubles")
-	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player)
-	{
+	public boolean canUnequip(ItemStack itemstack, EntityLivingBase player) {
 		return true;
 	}
 
 	@Override
-	public void updateInPedestal(World world, int x, int y, int z)
-	{
-		if (!world.isRemote && ProjectEConfig.zeroPedCooldown != -1)
-		{
-			DMPedestalTile tile = ((DMPedestalTile) world.getTileEntity(x, y, z));
-			if (tile.getActivityCooldown() == 0) {
-				AxisAlignedBB aabb = tile.getEffectBounds();
-				WorldHelper.freezeInBoundingBox(world, aabb, null, false);
-				List<Entity> list = world.getEntitiesWithinAABB(Entity.class, aabb);
-				for (Entity ent : list)
-				{
-					if (ent.isBurning())
-					{
-						ent.extinguish();
-					}
-				}
-				tile.setActivityCooldown(ProjectEConfig.zeroPedCooldown);
-			}
-			else
-			{
-				tile.decrementActivityCooldown();
-			}
+	public void updateInPedestal(World world, int x, int y, int z) {
+		if (world.isRemote || ProjectEConfig.zeroPedCooldown == -1) return;
+		DMPedestalTile tile = (DMPedestalTile) world.getTileEntity(x, y, z);
+		if (tile.getActivityCooldown() == 0) {
+			AxisAlignedBB aabb = tile.getEffectBounds();
+			WorldHelper.freezeInBoundingBox(world, aabb, null, false);
+			List<Entity> list = world.getEntitiesWithinAABB(Entity.class, aabb);
+			for (Entity ent : list)
+				if (ent.isBurning())
+					ent.extinguish();
+			tile.setActivityCooldown(ProjectEConfig.zeroPedCooldown);
 		}
+		else tile.decrementActivityCooldown();
 	}
 
 	@Override
 	public List<String> getPedestalDescription()
 	{
-		List<String> list = Lists.newArrayList();
+		List<String> list = new ArrayList<>();
 		if (ProjectEConfig.zeroPedCooldown != -1) {
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.zero.pedestal1"));
 			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.zero.pedestal2"));
 			list.add(EnumChatFormatting.BLUE + String.format(
-					StatCollector.translateToLocal("pe.zero.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.zeroPedCooldown)));
+				StatCollector.translateToLocal("pe.zero.pedestal3"), MathUtils.tickToSecFormatted(ProjectEConfig.zeroPedCooldown)));
 		}
 		return list;
 	}

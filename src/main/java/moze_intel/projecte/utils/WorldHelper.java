@@ -2,7 +2,8 @@ package moze_intel.projecte.utils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.IGrowable;
@@ -41,25 +42,24 @@ import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.IShearable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.world.ExplosionEvent;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -69,62 +69,39 @@ import java.util.Set;
 public final class WorldHelper
 {
 	public static final ImmutableList<Class<? extends EntityLiving>> peacefuls = ImmutableList.of(
-			EntitySheep.class, EntityPig.class, EntityCow.class,
-			EntityMooshroom.class, EntityChicken.class, EntityBat.class,
-			EntityVillager.class, EntitySquid.class, EntityOcelot.class,
-			EntityWolf.class, EntityHorse.class
+		EntitySheep.class, EntityPig.class, EntityCow.class,
+		EntityMooshroom.class, EntityChicken.class, EntityBat.class,
+		EntityVillager.class, EntitySquid.class, EntityOcelot.class,
+		EntityWolf.class, EntityHorse.class
 	);
 	public static final ImmutableList<Class<? extends EntityLiving>> mobs = ImmutableList.of(
-			EntityZombie.class, EntitySkeleton.class, EntityCreeper.class,
-			EntitySpider.class, EntityEnderman.class, EntitySilverfish.class,
-			EntityPigZombie.class, EntityGhast.class, EntityBlaze.class,
-			EntitySlime.class, EntityWitch.class
+		EntityZombie.class, EntitySkeleton.class, EntityCreeper.class,
+		EntitySpider.class, EntityEnderman.class, EntitySilverfish.class,
+		EntityPigZombie.class, EntityGhast.class, EntityBlaze.class,
+		EntitySlime.class, EntityWitch.class
 	);
 
-	public static Set<Class<? extends Entity>> interdictionBlacklist = Sets.newHashSet();
+	public static Set<Class<? extends Entity>> interdictionBlacklist = new HashSet<>();
 
-	public static Set<Class<? extends Entity>> swrgBlacklist = Sets.newHashSet();
+	public static Set<Class<? extends Entity>> swrgBlacklist = new HashSet<>();
 
-	public static boolean blacklistInterdiction(Class<? extends Entity> clazz)
-	{
-		if (!interdictionBlacklist.contains(clazz))
-		{
-			interdictionBlacklist.add(clazz);
-			return true;
-		}
-		return false;
+	public static boolean blacklistInterdiction(Class<? extends Entity> clazz) {
+		return interdictionBlacklist.add(clazz);
 	}
 
-	public static boolean blacklistSwrg(Class<? extends Entity> clazz)
-	{
-		if (!interdictionBlacklist.contains(clazz))
-		{
-			interdictionBlacklist.add(clazz);
-			return true;
-		}
-		return false;
+	public static boolean blacklistSwrg(Class<? extends Entity> clazz) {
+		// 原版这里错误地判断和添加到了 interdictionBlacklist
+		return swrgBlacklist.add(clazz);
 	}
 
-	public static void createLootDrop(List<ItemStack> drops, World world, double x, double y, double z)
-	{
-		if (drops.isEmpty())
-		{
+	public static void createLootDrop(List<ItemStack> drops, World world, double x, double y, double z) {
+		if (drops == null || drops.isEmpty())
 			return;
-		}
-
 		ItemHelper.compactItemList(drops);
-
-		if (ProjectEConfig.useLootBalls)
-		{
-			world.spawnEntityInWorld(new EntityLootBall(world, drops, x, y, z));
-		}
-		else
-		{
+		if (!ProjectEConfig.useLootBalls)
 			for (ItemStack drop : drops)
-			{
 				spawnEntityItem(world, drop, x, y, z);
-			}
-		}
+		else world.spawnEntityInWorld(new EntityLootBall(world, drops, x, y, z));
 	}
 
 	/**
@@ -142,50 +119,46 @@ public final class WorldHelper
 
 	public static void extinguishNearby(World world, EntityPlayer player)
 	{
-		for (int x = (int) (player.posX - 1); x <= player.posX + 1; x++)
-			for (int y = (int) (player.posY - 1); y <= player.posY + 1; y++)
-				for (int z = (int) (player.posZ - 1); z <= player.posZ + 1; z++)
-					if (world.getBlock(x, y, z) == Blocks.fire && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-					{
+		if (!(player instanceof EntityPlayerMP entityPlayerMP))
+			return;
+
+		final int minX = (int) (player.posX - 1), maxX = (int) (player.posX + 1);
+		final int minY = (int) (player.posY - 1), maxY = (int) (player.posY + 1);
+		final int minZ = (int) (player.posZ - 1), maxZ = (int) (player.posZ + 1);
+
+		for (int x = minX; x <= maxX; x++)
+			for (int z = minZ; z <= maxZ; z++)
+				for (int y = minY; y <= maxY; y++)
+					if (world.getBlock(x, y, z) == Blocks.fire && PlayerHelper.hasBreakPermission(entityPlayerMP, x, y, z))
 						world.setBlockToAir(x, y, z);
-					}
 	}
 
 	public static void freezeInBoundingBox(World world, AxisAlignedBB box, EntityPlayer player, boolean random)
 	{
-		for (int x = (int) box.minX; x <= box.maxX; x++)
-		{
-			for (int y = (int) box.minY; y <= box.maxY; y++)
-			{
-				for (int z = (int) box.minZ; z <= box.maxZ; z++)
-				{
-					Block b = world.getBlock(x, y, z);
+		final int minX = (int) box.minX, maxX = (int) box.maxX;
+		final int minY = (int) box.minY, maxY = (int) box.maxY;
+		final int minZ = (int) box.minZ, maxZ = (int) box.maxZ;
 
+		final boolean flag = player instanceof EntityPlayerMP;
+
+		for (int x = minX; x <= maxX; x++) {
+			for (int z = minZ; z <= maxZ; z++) {
+				for (int y = minY; y <= maxY; y++) {
+					Block b = world.getBlock(x, y, z);
 					if ((b == Blocks.water || b == Blocks.flowing_water) && (!random || world.rand.nextInt(128) == 0))
 					{
-						if (player != null)
-						{
-							PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.ice, 0);
-						}
-						else
-						{
-							world.setBlock(x, y, z, Blocks.ice);
-						}
+						if (flag)
+							PlayerHelper.checkedReplaceBlock((EntityPlayerMP) player, x, y, z, Blocks.ice, 0);
+						else world.setBlock(x, y, z, Blocks.ice);
 					}
 					else if (b.isSideSolid(world, x, y, z, ForgeDirection.UP))
 					{
 						Block b2 = world.getBlock(x, y + 1, z);
-
 						if (b2 == Blocks.air && (!random || world.rand.nextInt(128) == 0))
 						{
-							if (player != null)
-							{
-								PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y + 1, z, Blocks.snow_layer, 0);
-							}
-							else
-							{
-								world.setBlock(x, y + 1, z, Blocks.snow_layer);
-							}
+							if (flag)
+								PlayerHelper.checkedReplaceBlock((EntityPlayerMP) player, x, y + 1, z, Blocks.snow_layer, 0);
+							else world.setBlock(x, y + 1, z, Blocks.snow_layer);
 						}
 					}
 				}
@@ -343,30 +316,23 @@ public final class WorldHelper
 		{
 			return getNewEntityInstance(CollectionHelper.getRandomListEntry(mobs, entClass), world);
 		}
-		/*else if (world.rand.nextInt(2) == 0)
-		{
-			return new EntitySlime(world);
-		}
-		else
-		{
-			return new EntitySheep(world);
-		}*/
 		return null;
 	}
 
 	public static List<TileEntity> getTileEntitiesWithinAABB(World world, AxisAlignedBB bBox)
 	{
-		List<TileEntity> list = Lists.newArrayList();
+		List<TileEntity> list = new ArrayList<>();
 
-		for (int i = (int) bBox.minX; i <= bBox.maxX; i++)
-			for (int j = (int) bBox.minY; j <= bBox.maxY; j++)
-				for (int k = (int) bBox.minZ; k <= bBox.maxZ; k++)
-				{
-					TileEntity tile = world.getTileEntity(i, j, k);
+		final int minX = (int) bBox.minX, maxX = (int) bBox.maxX;
+		final int minY = (int) bBox.minY, maxY = (int) bBox.maxY;
+		final int minZ = (int) bBox.minZ, maxZ = (int) bBox.maxZ;
+
+		for (int x = minX; x <= maxX; x++)
+			for (int z = minZ; z <= maxZ; z++)
+				for (int y = minY; y <= maxY; y++) {
+					TileEntity tile = world.getTileEntity(x, y, z);
 					if (tile != null)
-					{
 						list.add(tile);
-					}
 				}
 
 		return list;
@@ -397,117 +363,68 @@ public final class WorldHelper
 	public static void growNearbyRandomly(boolean harvest, World world, double xCoord, double yCoord, double zCoord, EntityPlayer player)
 	{
 		int chance = harvest ? 16 : 32;
+		// 提前计算整型边界，避免在三层循环内做重复的浮点转整型计算
+		final int minX = (int) (xCoord - 5), maxX = (int) (xCoord + 5);
+		final int minY = (int) (yCoord - 3), maxY = (int) (yCoord + 3);
+		final int minZ = (int) (zCoord - 5), maxZ = (int) (zCoord + 5);
 
-		for (int x = (int) (xCoord - 5); x <= xCoord + 5; x++)
-			for (int y = (int) (yCoord - 3); y <= yCoord + 3; y++)
-				for (int z = (int) (zCoord - 5); z <= zCoord + 5; z++)
-				{
+		for (int x = minX; x <= maxX; x++) {
+			for (int z = minZ; z <= maxZ; z++) {
+				for (int y = minY; y <= maxY; y++) {
 					Block crop = world.getBlock(x, y, z);
 
 					// Vines, leaves, tallgrass, deadbush, doubleplants
-					if (crop instanceof IShearable)
-					{
-						if (harvest)
-						{
-							if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-							{
-								world.func_147480_a(x, y, z, true);
-							} else if (player == null)
-							{
-								world.func_147480_a(x, y, z, true);
-							}
-						}
+					if (crop instanceof IShearable) {
+						if (!harvest) continue;
+						if (player == null || PlayerHelper.hasBreakPermission((EntityPlayerMP) player, x, y, z))
+							world.func_147480_a(x, y, z, true);
 					}
 					// Carrot, cocoa, wheat, grass (creates flowers and tall grass in vicinity),
 					// Mushroom, potato, sapling, stems, tallgrass
-					else if (crop instanceof IGrowable growable)
-					{
-						if(harvest && !growable.func_149851_a(world, x, y, z, false))
-						{
-							if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-							{
+					else if (crop instanceof IGrowable growable) {
+						if (harvest && !growable.func_149851_a(world, x, y, z, false)) {
+							if (player == null || PlayerHelper.hasBreakPermission((EntityPlayerMP) player, x, y, z))
 								world.func_147480_a(x, y, z, true);
-							} else if (player == null)
-							{
-								world.func_147480_a(x, y, z, true);
-							}
 						}
-						else if (world.rand.nextInt(chance) == 0)
-						{
+						else if (world.rand.nextInt(chance) == 0) {
 							if (ProjectEConfig.harvBandGrass || !crop.getUnlocalizedName().toLowerCase(Locale.ROOT).contains("grass"))
-							{
 								growable.func_149853_b(world, world.rand, x, y, z);
-							}
 						}
 					}
 					// All modded
 					// Cactus, Reeds, Netherwart, Flower
-					else if (crop instanceof IPlantable)
-					{
+					else if (crop instanceof IPlantable plantable) {
 						if (world.rand.nextInt(chance / 4) == 0)
-						{
 							for (int i = 0; i < (harvest ? 8 : 4); i++)
-							{
 								crop.updateTick(world, x, y, z, world.rand);
+						if (!harvest) continue;
+
+						if (crop instanceof BlockFlower)
+							if (player == null || PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
+								world.func_147480_a(x, y, z, true);
+						if (crop == Blocks.reeds || crop == Blocks.cactus) {
+							boolean shouldHarvest = true;
+							for (int i = 1; i < 3; i++) {
+								if (world.getBlock(x, y + i, z) != crop) {
+									shouldHarvest = false;
+									break;
+								}
+							}
+							if (shouldHarvest) {
+								for (int i = crop == Blocks.reeds ? 1 : 0; i < 3; i++)
+									if (player == null || PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y + i, z))
+										world.func_147480_a(x, y + i, z, true);
 							}
 						}
-
-						if (harvest)
-						{
-							if (crop instanceof BlockFlower)
-							{
-								if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-								{
-									world.func_147480_a(x, y, z, true);
-								} else if (player == null)
-								{
-									world.func_147480_a(x, y, z, true);
-								}
-							}
-							if (crop == Blocks.reeds || crop == Blocks.cactus)
-							{
-								boolean shouldHarvest = true;
-
-								for (int i = 1; i < 3; i++)
-								{
-									if (world.getBlock(x, y + i, z) != crop)
-									{
-										shouldHarvest = false;
-										break;
-									}
-								}
-
-								if (shouldHarvest)
-								{
-									for (int i = crop == Blocks.reeds ? 1 : 0; i < 3; i++)
-									{
-										if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y + i, z))
-										{
-											world.func_147480_a(x, y + i, z, true);
-										} else if (player == null)
-										{
-											world.func_147480_a(x, y + i, z, true);
-										}
-									}
-								}
-							}
-							if (crop == Blocks.nether_wart)
-							{
-								int meta = ((IPlantable) crop).getPlantMetadata(world, x, y, z);
-								if (meta == 3)
-								{
-									if (player != null && PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-									{
-										world.func_147480_a(x, y, z, true);
-									} else if (player == null)
-									{
-										world.func_147480_a(x, y, z, true);
-									}
-								}
-							}
+						if (crop == Blocks.nether_wart) {
+							int meta = plantable.getPlantMetadata(world, x, y, z);
+							if (meta == 3 && (player == null || PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z)))
+								world.func_147480_a(x, y, z, true);
 						}
 					}
 				}
+			}
+		}
 	}
 
 	/**
@@ -515,45 +432,64 @@ public final class WorldHelper
 	 */
 	public static void harvestVein(World world, EntityPlayer player, ItemStack stack, Coordinates coords, Block target, List<ItemStack> currentDrops, int numMined)
 	{
-		if (numMined >= Constants.MAX_VEIN_SIZE)
+		Queue<Coordinates> queue = new ArrayDeque<>(Constants.MAX_VEIN_SIZE);
+		Set<Coordinates> visited = new HashSet<>();
+
+		// 将初始坐标加入队列
+		queue.add(coords);
+
+		while (!queue.isEmpty())
 		{
-			return;
-		}
+			Coordinates current = queue.poll();
 
-		AxisAlignedBB b = AxisAlignedBB.getBoundingBox(coords.x - 1, coords.y - 1, coords.z - 1, coords.x + 1, coords.y + 1, coords.z + 1);
+			// 直接遍历 3x3x3 的区域
+			for (int x = current.x - 1; x <= current.x + 1; x++) {
+				for (int z = current.z - 1; z <= current.z + 1; z++) {
+					for (int y = current.y - 1; y <= current.y + 1; y++) {
+						Coordinates nextCoords = new Coordinates(x, y, z);
 
-		for (int x = (int) b.minX; x <= b.maxX; x++)
-			for (int y = (int) b.minY; y <= b.maxY; y++)
-				for (int z = (int) b.minZ; z <= b.maxZ; z++)
-				{
-					Block block = world.getBlock(x, y, z);
+						// 避免重复检查和死循环
+						if (!visited.add(nextCoords))
+							continue;
 
-					if (block == target || (target == Blocks.lit_redstone_ore && block == Blocks.redstone_ore))
-					{
+						Block block = world.getBlock(x, y, z);
+
+						if (block != target && (target != Blocks.lit_redstone_ore || block != Blocks.redstone_ore))
+							continue;
+
+						if (!PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
+							continue;
+
+						currentDrops.addAll(getBlockDrops(world, player, block, stack, x, y, z));
+						world.setBlockToAir(x, y, z);
 						numMined++;
-						if (PlayerHelper.hasBreakPermission(((EntityPlayerMP) player), x, y, z))
-						{
-							currentDrops.addAll(getBlockDrops(world, player, block, stack, x, y, z));
-							world.setBlockToAir(x, y, z);
-							harvestVein(world, player, stack, new Coordinates(x, y, z), target, currentDrops, numMined);
-						}
+						queue.add(nextCoords);
+
+						if (numMined >= Constants.MAX_VEIN_SIZE)
+							return;
 					}
 				}
+			}
+		}
 	}
 
 	public static void igniteNearby(World world, EntityPlayer player)
 	{
-		for (int x = (int) (player.posX - 8); x <= player.posX + 8; x++)
-			for (int y = (int) (player.posY - 5); y <= player.posY + 5; y++)
-				for (int z = (int) (player.posZ - 8); z <= player.posZ + 8; z++)
+		if (!(player instanceof EntityPlayerMP entityPlayerMP))
+			return;
+
+		final int minX = (int) (player.posX - 8), maxX = (int) (player.posX + 8);
+		final int minY = (int) (player.posY - 5), maxY = (int) (player.posY + 5);
+		final int minZ = (int) (player.posZ - 8), maxZ = (int) (player.posZ + 8);
+
+		for (int x = minX; x <= maxX; x++)
+			for (int z = minZ; z <= maxZ; z++)
+				for (int y = minY; y <= maxY; y++)
 					if (world.rand.nextInt(128) == 0 && world.isAirBlock(x, y, z))
-					{
-						PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, Blocks.fire, 0);
-					}
+						PlayerHelper.checkedPlaceBlock(entityPlayerMP, x, y, z, Blocks.fire, 0);
 	}
 
-	public static boolean isArrowInGround(EntityArrow arrow)
-	{
+	public static boolean isArrowInGround(EntityArrow arrow) {
 		return ReflectionHelper.getArrowInGround(arrow);
 	}
 
@@ -564,32 +500,26 @@ public final class WorldHelper
 	{
 		List<Entity> list = world.getEntitiesWithinAABB(Entity.class, effectBounds);
 
-		for (Entity ent : list)
-		{
+		for (int i = 0, listSize = list.size(); i < listSize; i++) {
+			Entity ent = list.get(i);
 			if ((isSWRG && !swrgBlacklist.contains(ent.getClass()))
-					|| (!isSWRG && !interdictionBlacklist.contains(ent.getClass()))) {
-				if ((ent instanceof EntityLiving) || (ent instanceof IProjectile))
-				{
+				|| (!isSWRG && !interdictionBlacklist.contains(ent.getClass()))) {
+				if ((ent instanceof EntityLiving) || (ent instanceof IProjectile)) {
 					if (!isSWRG && ProjectEConfig.interdictionMode && !(ent instanceof IMob || ent instanceof IProjectile))
-					{
 						continue;
-					}
-					else
-					{
-						if (ent instanceof EntityArrow && ent.onGround)
-						{
-							continue;
-						}
-						Vec3 p = Vec3.createVectorHelper(x, y, z);
-						Vec3 t = Vec3.createVectorHelper(ent.posX, ent.posY, ent.posZ);
-						double distance = p.distanceTo(t) + 0.1D;
 
-						Vec3 r = Vec3.createVectorHelper(t.xCoord - p.xCoord, t.yCoord - p.yCoord, t.zCoord - p.zCoord);
+					if (ent instanceof EntityArrow && ent.onGround)
+						continue;
 
-						ent.motionX += r.xCoord / 1.5D / distance;
-						ent.motionY += r.yCoord / 1.5D / distance;
-						ent.motionZ += r.zCoord / 1.5D / distance;
-					}
+					// 废弃 Vec3 对象分配，禁止火把和 SWRG 每 tick 都会执行这个操作，避免大量创建 Vec3 对象
+					final double dX = ent.posX - x;
+					final double dY = ent.posY - y;
+					final double dZ = ent.posZ - z;
+					final double distance = Math.sqrt(dX * dX + dY * dY + dZ * dZ) + 0.1D;
+
+					ent.motionX += dX / 1.5D / distance;
+					ent.motionY += dY / 1.5D / distance;
+					ent.motionZ += dZ / 1.5D / distance;
 				}
 			}
 		}
@@ -597,29 +527,13 @@ public final class WorldHelper
 
 	public static void spawnEntityItem(World world, ItemStack stack, double x, double y, double z)
 	{
-		float f = world.rand.nextFloat() * 0.8F + 0.1F;
-		float f1 = world.rand.nextFloat() * 0.8F + 0.1F;
-		EntityItem entityitem;
-
-		for (float f2 = world.rand.nextFloat() * 0.8F + 0.1F; stack.stackSize > 0; world.spawnEntityInWorld(entityitem))
-		{
-			int j1 = world.rand.nextInt(21) + 10;
-
-			if (j1 > stack.stackSize)
-				j1 = stack.stackSize;
-
-			stack.stackSize -= j1;
-			entityitem = new EntityItem(world, x + f, y + f1, z + f2, new ItemStack(stack.getItem(), j1, stack.getItemDamage()));
-			float f3 = 0.05F;
-			entityitem.motionX = world.rand.nextGaussian() * f3;
-			entityitem.motionY = world.rand.nextGaussian() * f3 + 0.2F;
-			entityitem.motionZ = world.rand.nextGaussian() * f3;
-
-			if (stack.hasTagCompound())
-			{
-				entityitem.getEntityItem().setTagCompound((NBTTagCompound)stack.getTagCompound().copy());
-			}
-		}
-
+		final double dx = world.rand.nextDouble() * 0.8D;
+		final double dy = world.rand.nextDouble() * 0.8D;
+		final double dz = world.rand.nextDouble() * 0.8D;
+		EntityItem entityitem = new EntityItem(world, x + dx, y + dy, z + dz, stack);
+		entityitem.motionX = world.rand.nextGaussian() * 0.05D;
+		entityitem.motionY = world.rand.nextGaussian() * 0.05D + 0.2F;
+		entityitem.motionZ = world.rand.nextGaussian() * 0.05D;
+		world.spawnEntityInWorld(entityitem);
 	}
 }

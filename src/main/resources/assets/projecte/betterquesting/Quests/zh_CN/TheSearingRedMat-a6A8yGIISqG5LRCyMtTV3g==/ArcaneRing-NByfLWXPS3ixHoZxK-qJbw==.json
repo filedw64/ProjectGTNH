@@ -1,0 +1,82 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 1925151964740472710,
+      "questIDLow:4": -6334161518365682770
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "既然能将冰、火、地、风的基础概念强行压缩进一枚极度不稳定、令人胆寒的指环中，又何必在四枚不同的指环间手忙脚乱地切换呢？奥法指环代表着对元素的完全掌控。它将末日级的武器与终极的生存工具融于这一个闪耀的圆环之中。当你戴上它时，你便不再仅仅是个工程师。\n\n这枚超级融合指环能释放一系列毁灭性的能力：\n\n零度：\n对目标施加“极冰”减益，冻结其本质，每秒永久削减其 1% 的最大生命值。\n\n焚烧：\n对目标施加“极炎”减益，无视所有护甲与抗性，每秒造成相当于目标最大生命值 33% 的恐怖真实火焰伤害。\n\n湮灭：\n如果有怪物倒霉到同时被“极冰”与“极炎”折磨，由此引发的热力学悖论会令它们瞬间碎裂于虚无。（即死机制。）\n\n丰收：\n只需一次激活，便能瞬间且完全填满你可见的饥饿槽与隐藏的饱和度。你这辈子都不用再啃东西了。\n\n风暴：\n释放一场规模宏大且极其精准的范围雷暴。它会精准地向附近所有敌对生物召唤落雷，同时将它们猛烈地抛向平流层，还你一个干干净净的工厂车间！（记得灭火！）",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 32767,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_arcana_ring",
+        "tag:10": {}
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "元素之主",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 3755051206650579832,
+  "questIDLow:4": -5683957859068769937,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_arcana_ring",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

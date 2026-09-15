@@ -25,7 +25,7 @@ public class RMArmor extends ItemArmor implements ISpecialArmor, IRevealer, IGog
 	public RMArmor(EnumArmorType armorType)
 	{
 		super(ArmorMaterial.DIAMOND, 0, armorType.ordinal());
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setUnlocalizedName("pe_rm_armor_" + armorType.ordinal());
 		this.setHasSubtypes(false);
 		this.setMaxDamage(0);

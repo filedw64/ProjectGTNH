@@ -25,7 +25,7 @@ public class MatterBlock extends Block
 	public MatterBlock()
 	{
 		super(Material.iron);
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setBlockName("pe_matter_block");
 	}
 

@@ -1,0 +1,82 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": 6475555099883751932,
+      "questIDLow:4": -8603760781057842920
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "这本应是共价粉宏大而终极的愿景。通过将海量的修复炼金能量压缩进一枚小小的护符中，理论上你创造出了一件能被动治愈装备的神器。但当你看着它运作，修复着……呃……每秒精确恢复 1 点耐久度……你忍不住感到极度失望。对于一位重工业巨头来说，这玩意儿也太废了吧？\n\n等等，先别急，你的 PDA 响了……\n\n\u003c\u003c 正在接收加密传输... \u003e\u003e\n\u003c\u003c 发件人：泛银河格雷科技集团 \u003e\u003e\n\n“向您致敬，首席工程师！我们听到了您对标准炼金术那令人抓狂的缓慢修复与重重限制的抱怨。我们无比激动地向您发布一份公开声明：通过严谨的逆向工程与复杂的 NBT 数据解析，我们已经彻底掌握了 NBT 修复技术！\n\n多亏了集团的补丁，修复护符现在能完全解析并无缝修复您背包中那些结构复杂的匠魂（TiC）武器与格雷科技（GT）采矿工具了！再也不会有断柄的锤子了！愿荣光归于集团！”",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_repair_talisman",
+        "tag:10": {}
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "公司的修复技术",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": -2409001129265904461,
+  "questIDLow:4": -6314181635782270980,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_repair_talisman",
+          "tag:10": {}
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

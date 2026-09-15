@@ -13,7 +13,7 @@ public class NovaCataclysm extends NovaCatalyst
 	public NovaCataclysm()
 	{
 		this.setBlockName("pe_nova_cataclysm");
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 	}
 
 	@Override

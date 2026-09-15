@@ -74,7 +74,7 @@ public class PlayerEvents {
 	@SubscribeEvent
 	public void onHighAlchemistJoin(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent evt) {
 		EntityPlayer player = evt.player;
-		if (PECore.uuids.contains((player.getUniqueID().toString()))) {
+		if (PECore.AUTHOR_UUID.contains(player.getUniqueID().toString())) {
 			IChatComponent prior = ChatHelper.modifyColor(new ChatComponentTranslation("pe.server.high_alchemist"), EnumChatFormatting.BLUE);
 			IChatComponent playername = ChatHelper.modifyColor(new ChatComponentText(" " + player.getCommandSenderName() + " "), EnumChatFormatting.GOLD);
 			IChatComponent latter = ChatHelper.modifyColor(new ChatComponentTranslation("pe.server.has_joined"), EnumChatFormatting.BLUE);

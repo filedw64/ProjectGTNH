@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -3745430324119385518,
+      "questIDLow:4": -7096655400939434531
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "尽管初代的能量凝聚器堪称科学与魔法的奇迹，但对于工业工程师而言，它却有着一个致命的缺陷：其单一的物品栏空间让复杂的 AE2（应用能源2）与格雷科技自动化变成了一场物流上的噩梦。为了解决这个问题，你将固态的暗物质方块与红物质方块强行嵌入了这台机器的外壳之中。这些方块那纯粹的引力与反应力，完美地将凝聚器的内部空间划分开来。\n\n在实用性上，MK2 的运作方式与 MK1 完全一致，但它巧妙地将其物品栏划分为了独立且专用的输入与输出区域。这让物品的导入与导出变得万无一失。然而，这种物流上的完美代价也是绝对的天文数字——它需要极其昂贵的暗物质与红物质方块来合成。备好你的资源缓冲池吧；这玩意儿可不便宜！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:condenser_mk2"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "更更更好的能量凝聚器",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 5154930929488840380,
+  "questIDLow:4": -4964451088743472216,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:condenser_mk2"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

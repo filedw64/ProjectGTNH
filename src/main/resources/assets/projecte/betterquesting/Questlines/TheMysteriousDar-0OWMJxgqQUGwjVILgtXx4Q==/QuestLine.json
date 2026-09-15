@@ -1,0 +1,19 @@
+{
+  "properties:10": {
+    "betterquesting:10": {
+      "bg_image:8": "",
+      "bg_size:3": 256,
+      "desc:8": "\"You have mastered the foundational laws of Equivalent Exchange. Turning dirt into diamonds and stockpiling raw stellar energy were impressive feats, but in the grand cosmic scale, they were mere parlor tricks. You have now reached the boundaries of conventional physics, and it is time to step into the abyss.\r\n\r\nWelcome to the era of Dark Matter.\r\n\r\nIn this stage, you are no longer just an industrial engineer managing steam valves and copper wires; you are becoming a localized force of nature. By compressing unimaginable amounts of alchemical energy, you will synthesize Dark Matter—a hyper-dense, gravity-warping substance that most astrophysicists believe shouldn\u0027t even exist in a stable form.\r\n\r\nWith this enigmatic material in your grasp, the world becomes your sandbox. You will forge armor that ignores the kinetic impact of explosions, craft tools that shatter the earth with a single swing, and bind the very elements of fire, ice, and hurricanes into rings that sit lightly on your fingers. You will walk on water, stroll across boiling magma, and carry the infinite power of the Transmutation Table right in your pocket.\r\n\r\nAnd fear not the chaotic instability of these ancient artifacts! Thanks to the relentless reverse-engineering efforts of the Pan-Galactic GregTech Corporation, these reality-bending tools have been heavily patched, optimized, and strictly regulated to ensure they assist your factory rather than accidentally erasing it from existence.\r\n\r\nEmbrace the darkness, Chief Engineer. Bend gravity to your will, conquer the skies, and prepare your infrastructure. The mysteries of the universe are unraveling before you, and they are leading you straight toward the primordial, searing heat of the final epoch.\"",
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_matter"
+      },
+      "name:8": "The Mysterious Dark Matter",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questLineIDHigh:4": -3394152644616765119,
+  "questLineIDLow:4": -5724829341924855327
+}

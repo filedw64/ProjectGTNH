@@ -28,12 +28,7 @@ public class OreDictionaryMapper implements IEMCMapper<NormalizedSimpleStack, Do
 			return;
 		//Black-list all ores
 		for (String s : OreDictionary.getOreNames()) {
-			if (s == null) continue;
-
-			if (!s.startsWith("ore") && !s.startsWith("rawOre") && !s.startsWith("crushed") &&
-				!s.startsWith("dustPure") && !s.startsWith("dustImpure")) continue;
-
-			if (s.startsWith("oreberry")) continue;
+			if (!ItemHelper.isOreOD(s)) continue;
 
 			//Some exceptions in the black-listing
 			if (BLACKLIST_EXCEPTIONS.contains(s)) continue;

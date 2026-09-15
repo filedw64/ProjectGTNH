@@ -15,7 +15,7 @@ public class InterdictionTorch extends BlockTorch
 {
 	public InterdictionTorch()
 	{
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setBlockName("pe_interdiction_torch");
 		this.setLightLevel(0.9F);
 		this.setTickRandomly(true);

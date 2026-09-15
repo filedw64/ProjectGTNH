@@ -11,26 +11,21 @@ import moze_intel.projecte.gameObjs.gui.GUIManual;
 
 public class PEManual extends ItemPE
 {
-    public PEManual()
-    {
+    public PEManual() {
         this.setUnlocalizedName("manual");
         this.setMaxStackSize(1);
     }
 
     @Override
-    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
-    {
+    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
         if (world.isRemote)
-        {
-            FMLCommonHandler.instance().showGuiScreen(new GUIManual());
-        }
+			FMLCommonHandler.instance().showGuiScreen(new GUIManual());
         return stack;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void registerIcons(IIconRegister register)
-    {
+    public void registerIcons(IIconRegister register) {
         this.itemIcon = register.registerIcon(this.getTexture("book"));
     }
 }

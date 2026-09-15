@@ -3,17 +3,16 @@ package moze_intel.projecte.integration.NEI;
 import codechicken.nei.NEIServerUtils;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.ShapelessRecipeHandler;
+import moze_intel.projecte.gameObjs.ObjHandler;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.oredict.OreDictionary;
-import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class NEIAlchBagHandler extends ShapelessRecipeHandler
 {

@@ -6,34 +6,32 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 public class FluidSimpleStack extends SimpleStack {
-	public FluidSimpleStack(int id, int qnty) {
-		super(id, qnty, 0);
+	public FluidSimpleStack(int id) {
+		super(id, 0);
 	}
-	
+
 	public FluidSimpleStack(FluidStack fs) {
-		this(-1, 0);
-		if (fs != null && fs.getFluid() != null) {
+		this(-1);
+		if (fs != null && fs.getFluid() != null)
 			id = fs.getFluidID();
-			qnty = fs.amount;
-		}
 	}
 
 	@Override
 	public ItemStack toItemStack() {
 		return null;
 	}
-	
+
 	public FluidStack toFluidStack() {
 		Fluid fluid = FluidRegistry.getFluid(id);
 		if (fluid == null) return null;
-		return new FluidStack(fluid, qnty);
+		return new FluidStack(fluid, 1);
 	}
-	
+
 	@Override
 	public SimpleStack copy() {
-		return new FluidSimpleStack(id, qnty);
+		return new FluidSimpleStack(id);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return -id;
@@ -41,19 +39,18 @@ public class FluidSimpleStack extends SimpleStack {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof FluidSimpleStack other) {
-			return this.id == other.id && this.qnty == other.qnty;
-		}
+		if (obj instanceof FluidSimpleStack other)
+			return this.id == other.id;
 		return false;
 	}
-	
+
 	@Override
 	public String toString() {
 		Fluid fluid = FluidRegistry.getFluid(id);
-		
-		if (fluid == null)
-			return "Fluid id:" + id + " amount:" + qnty;
 
-		return FluidRegistry.getFluidName(fluid) + " " + qnty;
+		if (fluid == null)
+			return "Fluid id:" + id;
+
+		return FluidRegistry.getFluidName(fluid);
 	}
 }

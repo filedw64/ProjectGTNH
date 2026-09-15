@@ -19,7 +19,7 @@ public abstract class BlockDirection extends Block
 	public BlockDirection(Material material)
 	{
 		super(material);
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 	}
 
 	@Override

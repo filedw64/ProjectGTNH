@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -7564918890571543727,
+      "questIDLow:4": -8297910006700515867
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "泛银河格雷科技集团的工程部再一次出手，将古老的炼金术强行优化以适应现代工业。一台标准的暗物质熔炉本就很快，但在集团的精心重设计下，它已然化作一个热力学奇迹。它通过扭曲局部时间与极限高温来处理原材料，其速度足以让标准的蒸汽熔炉羞愧落泪。\n\n在实用性上，这台升级后的熔炉就是一个性能怪物。它不再是一次熔炼一个物品；它能在眨眼间同时处理整整一组物品。更棒的是，它的炼金特性提供了慷慨的额外产出，在熔炼时如魔法般成倍增加你的产量！\n\n然而，在你兴奋过头、试图以此绕过格雷科技树之前……不，这不是“暗物质工业高炉”。它不消耗 EU，没有加热线圈温度，也绝对烧不了你的钨粉或钛粉。要想进行真正硬核的冶金作业，你还是得乖乖去建造那些庞大的格雷多方块机器！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:dm_furnace"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "闪耀的暗物质熔炉",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 6820235309082099762,
+  "questIDLow:4": -4897278239697265119,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:dm_furnace"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

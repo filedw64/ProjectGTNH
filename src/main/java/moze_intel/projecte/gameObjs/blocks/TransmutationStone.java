@@ -27,7 +27,7 @@ public class TransmutationStone extends Block
 	public TransmutationStone()
 	{
 		super(Material.rock);
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 		this.setBlockName("pe_transmutation_stone");
 		this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
 		this.setHardness(10.0f);

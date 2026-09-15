@@ -88,15 +88,15 @@ public class SyncEmcPKT implements IMessage {
                 SimpleStack stack;
 
 				if (array.length == 2) {
-					stack = new FluidSimpleStack((int) array[0], 1);
+					stack = new FluidSimpleStack((int) array[0]);
 					if (stack.isValid())
 						EMCMapper.emc.put(stack, (double) array[1]);
 					continue;
 				}
 
 				if (array.length == 4)
-					stack = new NBTSimpleStack((int) array[0], 1, (int) array[1], (NBTTagCompound) array[3]);
-                else stack = new SimpleStack((int) array[0], 1, (int) array[1]);
+					stack = new NBTSimpleStack((int) array[0], (int) array[1], (NBTTagCompound) array[3]);
+                else stack = new SimpleStack((int) array[0], (int) array[1]);
 
 				if (stack.isValid())
 					EMCMapper.emc.put(stack, (double) array[2]);

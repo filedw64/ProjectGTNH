@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -3070927935217579634,
+      "questIDLow:4": -8850462115044478429
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "这便是分子级修复的终极体现。由钻石完美无瑕的高压晶格与标准煤炭的致密碳元素锻造而成，高等共价粉堪称炼金工程的奇迹。它蕴含着足以修复人类已知最坚硬物质的潜在重构能量。在历史上，古代炼金术士只能用这种珍贵的粉末来修复普通的钻石装备。然而，通过严谨的现代工业研究，泛银河格雷科技有限公司解锁了它真正颠覆性的潜能！\n\n尽管它依然能修复钻石工具，但其最大的亮点在于现在它 §l完全支持匠魂（TiC）与格雷科技（GT）工具！§r 你再也不必为了修理装备而中断深层矿脉的探险，一路狂奔回基地的工具锻造台或工作台了。只需在背包里备上一组这种粉尘，你就能让那些结构复杂、量身定制的锤子、钻头和镐子在野外永不罢工！",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 2,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_covalence_dust"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "最有用的共价粉",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 4037001023084972502,
+  "questIDLow:4": -8913671314410677897,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 40,
+          "Damage:2": 2,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_covalence_dust"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

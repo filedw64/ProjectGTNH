@@ -1,0 +1,80 @@
+{
+  "preRequisites:9": {
+    "0:10": {
+      "questIDHigh:4": -7564918890571543727,
+      "questIDLow:4": -8297910006700515867
+    }
+  },
+  "properties:10": {
+    "betterquesting:10": {
+      "autoClaim:1": 0,
+      "completion_animation:8": "default",
+      "completion_particle:8": "default",
+      "confetti_icon:10": {
+        "Count:3": 0,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "minecraft:stick"
+      },
+      "countAsQuest:1": 1,
+      "desc:8": "§oTransmutation never stops!§r\nFor centuries, arcane Thaumaturges have dedicated their entire lives to this very concept—sacrificing their sanity to Warp, drowning their towers in purple Flux, and studying forbidden eldritch geometries just to achieve a fraction of this power. Yet, through the sheer, unyielding brilliance of industrial alchemy, you have bypassed their life\u0027s work entirely. You have successfully miniaturized the ultimate matrix of Equivalent Exchange into a sleek, handheld slate. This is the absolute zenith of magical convenience.\n\nFunctionally, this tablet is exactly what it sounds like: a completely portable version of the Transmutation Table. It links directly to your personal EMC network, allowing you to perform matter conversion anytime, anywhere. You no longer need to interrupt your deep-vein mining expeditions, interdimensional travels, or intense base-building sessions to teleport back home. Whether you suddenly need a stack of building blocks, a replacement tool, or just a quick way to dump excess cobblestone for EMC, the power to rewrite reality now permanently rests in your pocket.",
+      "globalShare:1": 0,
+      "icon:10": {
+        "Count:3": 1,
+        "Damage:2": 0,
+        "OreDict:8": "",
+        "id:8": "ProjectE:item.pe_transmutation_tablet"
+      },
+      "isMain:1": 0,
+      "isSilent:1": 0,
+      "lockedProgress:1": 0,
+      "name:8": "Transmutation Tablet",
+      "notification_duration:5": -1.0,
+      "notification_effect:3": -1,
+      "notification_fade_in:5": -1.0,
+      "notification_fade_out:5": -1.0,
+      "notification_icon_offset_y:3": -2147483648,
+      "notification_icon_scale:5": -1.0,
+      "notification_pos_x:3": -2147483648,
+      "notification_pos_y:3": -2147483648,
+      "notification_show_icon:8": "default",
+      "notification_style:8": "default",
+      "notification_subtitle:8": "",
+      "notification_subtitle_scale:5": -1.0,
+      "notification_title:8": "",
+      "notification_title_scale:5": -1.0,
+      "particle_count:3": -1,
+      "questLogic:8": "AND",
+      "repeatTime:3": -1,
+      "repeat_relative:1": 1,
+      "simultaneous:1": 0,
+      "snd_complete:8": "random.levelup",
+      "snd_update:8": "random.levelup",
+      "taskLogic:8": "AND",
+      "visibility:8": "NORMAL"
+    }
+  },
+  "questIDHigh:4": 8512239968646218861,
+  "questIDLow:4": -6824698623743870108,
+  "rewards:9": {},
+  "tasks:9": {
+    "0:10": {
+      "autoConsume:1": 0,
+      "consume:1": 0,
+      "groupDetect:1": 0,
+      "ignoreNBT:1": 1,
+      "index:3": 0,
+      "partialMatch:1": 1,
+      "requireOnlyOneItem:1": 0,
+      "requiredItems:9": {
+        "0:10": {
+          "Count:3": 1,
+          "Damage:2": 0,
+          "OreDict:8": "",
+          "id:8": "ProjectE:item.pe_transmutation_tablet"
+        }
+      },
+      "taskID:8": "bq_standard:retrieval"
+    }
+  }
+}

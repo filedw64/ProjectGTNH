@@ -79,7 +79,7 @@ public class Collector extends BlockDirection
 	{
 		this.blockIcon = register.registerIcon("projecte:collectors/other");
 		this.front = register.registerIcon("projecte:collectors/front");
-		this.top = register.registerIcon("projecte:collectors/top_"+ tier);
+		this.top = register.registerIcon("projecte:collectors/top_" + tier);
 	}
 
 	@Override
