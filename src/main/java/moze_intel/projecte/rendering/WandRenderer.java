@@ -1,7 +1,7 @@
 package moze_intel.projecte.rendering;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import moze_intel.projecte.gameObjs.items.ItemBuildersWand;
+import moze_intel.projecte.gameObjs.items.BuildersWand;
 import moze_intel.projecte.utils.WandHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,7 +21,7 @@ public class WandRenderer {
 		EntityPlayer player = event.player;
 		ItemStack heldItem = player.getHeldItem();
 
-		if (heldItem == null || !(heldItem.getItem() instanceof ItemBuildersWand)) return;
+		if (heldItem == null || !(heldItem.getItem() instanceof BuildersWand)) return;
 		if (event.target.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) return;
 
 		List<ChunkCoordinates> blocks = WandHelper.getBlocksToPlace(player.worldObj,

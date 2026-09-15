@@ -23,6 +23,7 @@ public final class ProjectEConfig {
 	public static boolean enableExpansionStar;
 	public static boolean enableInfiniteFuel;
 	public static boolean enableInfiniteSteak;
+	public static boolean enableBuildersWand;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;

@@ -14,9 +14,9 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class ItemBuildersWand extends Item {
+public class BuildersWand extends Item {
 
-	public ItemBuildersWand() {
+	public BuildersWand() {
 		this.setUnlocalizedName("emc_builders_wand");
 		this.setTextureName("projecte:builders_wand");
 		this.setMaxStackSize(1);

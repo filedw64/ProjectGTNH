@@ -45,8 +45,8 @@ import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
 import moze_intel.projecte.gameObjs.items.InfiniteFuel;
 import moze_intel.projecte.gameObjs.items.InfiniteSteak;
-import moze_intel.projecte.gameObjs.items.ItemBuildersWand;
-import moze_intel.projecte.gameObjs.items.ItemExpansionStar;
+import moze_intel.projecte.gameObjs.items.BuildersWand;
+import moze_intel.projecte.gameObjs.items.ExpansionStar;
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.items.Matter;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
@@ -255,7 +255,7 @@ public class ObjHandler
 	public static Item manual = new PEManual();
 
 	public static Item arcaneTablet = new ArcaneTransmutationTablet();
-	public static Item builderswand = new ItemBuildersWand();
+	public static Item builderswand = new BuildersWand();
 
 	public static void register() {
 		// Blocks without ItemBlock
@@ -293,19 +293,19 @@ public class ObjHandler
 		if (ProjectEConfig.enableExpansionStar) {
 			// 1级马格南 = 4 * 6级卡莱恩
 			double magnumT1Max = kleinTier6Max * 4;
-			magnumStar = new ItemExpansionStar("magnum_star", 4, magnumT1Max);
+			magnumStar = new ExpansionStar("magnum_star", 4, magnumT1Max);
 			GameRegistry.registerItem(magnumStar, magnumStar.getUnlocalizedName());
 
 			// 1级葛甘图 = 9 * 6级马格南 (6级马格南容量 = magnumT1Max * 9^5)
 			double magnumT6Max = magnumT1Max * Math.pow(4, 5);
 			double gargantuanT1Max = magnumT6Max * 9;
-			gargantuanStar = new ItemExpansionStar("gargantuan_star", 9, gargantuanT1Max);
+			gargantuanStar = new ExpansionStar("gargantuan_star", 9, gargantuanT1Max);
 			GameRegistry.registerItem(gargantuanStar, gargantuanStar.getUnlocalizedName());
 
 			// 1级终焉 = 9 * 6级葛甘图 (6级葛甘图容量 = gargantuanT1Max * 9^5)
 			double gargantuanT6Max = gargantuanT1Max * Math.pow(9, 5);
 			double colossalT1Max = gargantuanT6Max * 9;
-			colossalStar = new ItemExpansionStar("colossal_star", 9, colossalT1Max);
+			colossalStar = new ExpansionStar("colossal_star", 9, colossalT1Max);
 			GameRegistry.registerItem(colossalStar, colossalStar.getUnlocalizedName());
 		}
 

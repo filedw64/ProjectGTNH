@@ -15,7 +15,7 @@ import moze_intel.projecte.api.item.IItemEmc;
 
 import java.util.List;
 
-public class ItemExpansionStar extends ItemPE implements IItemEmc {
+public class ExpansionStar extends ItemPE implements IItemEmc {
 	@SideOnly(Side.CLIENT)
 	private IIcon[] icons;
 
@@ -23,7 +23,7 @@ public class ItemExpansionStar extends ItemPE implements IItemEmc {
 	private final int recipeMultiplier;
 	private final double baseEmcCapacity;
 
-	public ItemExpansionStar(String name, int recipeMultiplier, double baseEmcCapacity) {
+	public ExpansionStar(String name, int recipeMultiplier, double baseEmcCapacity) {
 		this.starName = name;
 		this.recipeMultiplier = recipeMultiplier;
 		this.baseEmcCapacity = baseEmcCapacity;
@@ -83,7 +83,7 @@ public class ItemExpansionStar extends ItemPE implements IItemEmc {
 		icons = new IIcon[6];
 		for (int i = 0; i < 6; i++) {
 			// 材质路径映射
-			icons[i] = register.registerIcon(this.getTexture("stars", starName + "_" + (i + 1)));
+			icons[i] = register.registerIcon(getTexture("stars", starName + "_" + (i + 1)));
 		}
 	}
 
