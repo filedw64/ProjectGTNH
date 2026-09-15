@@ -3,6 +3,17 @@ package moze_intel.projecte.gameObjs;
 import cpw.mods.fml.common.IFuelHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.RecipeSorter;
+import net.minecraftforge.oredict.RecipeSorter.Category;
+import net.minecraftforge.oredict.ShapedOreRecipe;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.blocks.AlchemicalChest;
@@ -19,6 +30,7 @@ import moze_intel.projecte.gameObjs.blocks.Pedestal;
 import moze_intel.projecte.gameObjs.blocks.Relay;
 import moze_intel.projecte.gameObjs.blocks.TransmutationStone;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeShapedKleinStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeCovalenceRepair;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
@@ -43,6 +55,7 @@ import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
 import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
+import moze_intel.projecte.gameObjs.items.ItemBuildersWand;
 import moze_intel.projecte.gameObjs.items.InfiniteFuel;
 import moze_intel.projecte.gameObjs.items.InfiniteSteak;
 import moze_intel.projecte.gameObjs.items.ItemExpansionStar;
@@ -122,18 +135,6 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EnumArmorType;
-import net.minecraft.block.Block;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraftforge.oredict.OreDictionary;
-import net.minecraftforge.oredict.RecipeSorter;
-import net.minecraftforge.oredict.RecipeSorter.Category;
-import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import java.util.Map.Entry;
 
@@ -254,6 +255,7 @@ public class ObjHandler
 	public static Item manual = new PEManual();
 
 	public static Item arcaneTablet = new ArcaneTransmutationTablet();
+	public static Item builderswand = new ItemBuildersWand();
 
 	public static void register() {
 		// Blocks without ItemBlock
@@ -392,6 +394,8 @@ public class ObjHandler
 
 		if (ProjectEConfig.enableInfiniteSteak)
 			GameRegistry.registerItem(infiniteSteak, "infinite_steak");
+
+		GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
 
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
