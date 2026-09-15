@@ -20,7 +20,7 @@ public class ItemBuildersWand extends Item {
 		this.setUnlocalizedName("emc_builders_wand");
 		this.setTextureName("projecte:builders_wand");
 		this.setMaxStackSize(1);
-		this.setCreativeTab(ObjHandler.cTab);
+		this.setCreativeTab(ObjHandler.tab);
 	}
 
 	@Override
