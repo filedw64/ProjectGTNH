@@ -20,6 +20,7 @@ import moze_intel.projecte.gameObjs.blocks.Relay;
 import moze_intel.projecte.gameObjs.blocks.TransmutationStone;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeCovalenceRepair;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessExpansionStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityHomingArrow;
@@ -663,6 +664,11 @@ public class ObjHandler
 		}
 
 		GameRegistry.addRecipe(new RecipeCovalenceRepair());
+
+		if (ProjectEConfig.enableExpansionStar) {
+			RecipeShapelessExpansionStar.registerRecipes();
+			RecipeSorter.register("Expansion Star Recipes", RecipeShapelessExpansionStar.class, Category.SHAPELESS, "before:minecraft:shaped");
+		}
 		RecipeSorter.register("Alchemical Bag Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Covalence Repair Recipes", RecipeCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Klein Star Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
