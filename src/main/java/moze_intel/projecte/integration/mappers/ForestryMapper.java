@@ -24,7 +24,7 @@ import java.util.Arrays;
  * Add emc value for Forestry Items, and process Forestry recipes.
  *
  * @author filedw64
- * @author WindyBye
+ * @author Windy-Bye
  */
 public class ForestryMapper extends AbstractIntegrationMapper {
     @Override
