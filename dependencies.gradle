@@ -44,4 +44,5 @@ dependencies {
 	compileOnly("com.github.GTNewHorizons:Avaritia:1.77:dev")
 	compileOnly("com.github.GTNewHorizons:BloodMagic:1.7.52:dev")
 	compileOnly("com.github.GTNewHorizons:BetterQuesting:3.7.15-GTNH:dev")
+	compileOnly("com.github.GTNewHorizons:Botania:1.12.28-GTNH:api")
 }
