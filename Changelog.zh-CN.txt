@@ -8,6 +8,7 @@
 * 新内容: 添加了对 Pam's Harvestcraft 物品的支持
 * 新内容: 添加了对 Pam's Harvest the Nether 物品的支持
 * 新内容: 添加了对 Natura 物品的支持
+* 新内容: 添加了对 Botania 物品和配方的支持
 * 新内容: 加载 DuraDisplay 时，物质工具仍会显示原版的充能条
 * 新内容: 流体的 EMC 会一并发包至客户端
 * 新内容: 单个时间洪流怀表每 tick 更新耗时被限制在 1 ms 以内
