@@ -3,6 +3,7 @@ package moze_intel.projecte.emc.mappers;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.integration.mappers.AvaritiaMapper;
+import moze_intel.projecte.integration.mappers.BotaniaMapper;
 import moze_intel.projecte.integration.mappers.ChiselMapper;
 import moze_intel.projecte.integration.mappers.EFRMapper;
 import moze_intel.projecte.integration.mappers.ForestryMapper;
@@ -33,6 +34,8 @@ public class IntegrationMapper implements IEMCMapper<NormalizedSimpleStack, Doub
 			new AvaritiaMapper().addMappings(mapper);
 		if (Integration.gregtech)
 			new GTMapper().addMappings(mapper);
+		if (Integration.botania)
+			new BotaniaMapper().addMappings(mapper);
 	}
 
 	@Override
