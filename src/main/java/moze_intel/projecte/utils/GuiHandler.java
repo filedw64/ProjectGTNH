@@ -1,6 +1,8 @@
 package moze_intel.projecte.utils;
 
 import cpw.mods.fml.common.network.IGuiHandler;
+import moze_intel.projecte.gameObjs.container.ArcaneTransmutationContainer;
+import moze_intel.projecte.gameObjs.gui.GUIArcaneTransmutation;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
@@ -128,6 +130,8 @@ public class GuiHandler implements IGuiHandler {
 				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
+			case Constants.ARCANE_TABLET_GUI:
+				return new ArcaneTransmutationContainer(player.inventory, player);
 		}
 
 		return null;
@@ -206,6 +210,8 @@ public class GuiHandler implements IGuiHandler {
 				break;
 			case Constants.TRANSMUTATION_PORTABLE_GUI:
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
+			case Constants.ARCANE_TABLET_GUI:
+				return new GUIArcaneTransmutation(player.inventory, player);
 		}
 
 		return null;

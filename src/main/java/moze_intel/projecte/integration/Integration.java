@@ -11,7 +11,8 @@ public final class Integration
 {
 	public static boolean NEI = false, PHC = false, PHN = false, CCC = false,
 		EFR = false, natura = false, gregtech = false, forestry = false,
-		chisel = false, duraDisplay = false, avaritia = false;
+		chisel = false, duraDisplay = false, avaritia = false,
+		botania = false;
 
 	public static void modChecks()
 	{
@@ -26,6 +27,7 @@ public final class Integration
 		chisel = Loader.isModLoaded("chisel");
 		duraDisplay = Loader.isModLoaded("duradisplay");
 		avaritia = Loader.isModLoaded("Avaritia");
+		botania = Loader.isModLoaded("Botania");
 	}
 
 	public static void init()

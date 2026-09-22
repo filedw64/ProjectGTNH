@@ -19,7 +19,7 @@ import java.util.ArrayList;
 /**
  * Add emc value for Avaritia items, and process Avaritia recipes.
  *
- * @author WindyBye
+ * @author Windy-Bye
  * @author filedw64
  */
 public class AvaritiaMapper extends AbstractIntegrationMapper {

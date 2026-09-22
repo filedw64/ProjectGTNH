@@ -9,9 +9,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-public class ItemArcaneTransmutationTablet extends ItemPE {
+public class ArcaneTransmutationTablet extends ItemPE {
 
-	public ItemArcaneTransmutationTablet() {
+	public ArcaneTransmutationTablet() {
 		this.setUnlocalizedName("arcane_transmutation_tablet");
 		this.setMaxStackSize(1);
 	}

@@ -12,38 +12,28 @@ import moze_intel.projecte.utils.Constants;
 
 public class TransmutationTablet extends ItemPE
 {
-	public TransmutationTablet()
-	{
+	public TransmutationTablet() {
 		this.setUnlocalizedName("transmutation_tablet");
 		this.setMaxStackSize(1);
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player)
-	{
+	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
 		if (!world.isRemote)
-		{
 			player.openGui(PECore.instance, Constants.TRANSMUTATION_PORTABLE_GUI, world, (int) player.posX, (int) player.posY, (int) player.posZ);
-		}
-
 		return stack;
 	}
 
 	@Override
-	public void onCreated(ItemStack stack, World world, EntityPlayer player)
-	{
+	public void onCreated(ItemStack stack, World world, EntityPlayer player) {
 		super.onCreated(stack, world, player);
-
 		if (!world.isRemote)
-		{
 			player.addStat(AchievementHandler.PORTABLE_TRANSMUTATION, 1);
-		}
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void registerIcons(IIconRegister register)
-	{
-		this.itemIcon = register.registerIcon(this.getTexture("transmute_tablet"));
+	public void registerIcons(IIconRegister register) {
+		this.itemIcon = register.registerIcon(getTexture("transmute_tablet"));
 	}
 }

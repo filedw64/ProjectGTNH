@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * Restores the original charge bar rendering for ProjectE items ({@link ItemCharge} and {@link KleinStar})
  * when DuraDisplay is loaded.
  *
- * @author WindyBye
+ * @author Windy-Bye
  * @author filedw64
  */
 public class OverlayPECharge extends Overlay<ConfigPECharge> {

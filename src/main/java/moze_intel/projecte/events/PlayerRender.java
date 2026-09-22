@@ -22,8 +22,8 @@ public class PlayerRender
 	private static final String SIN_UUID = "5f86012c-ca4b-451a-989c-8fab167af647";
 	private static final String CLAR_UUID = "e5c59746-9cf7-4940-a849-d09e1f1efc13";
 
-	private static final String PIONEER_1_UUID = "f8afe105-6f53-4f95-bb79-efb4662005ab";
-	private static final String PIONEER_2_UUID = "a2449286-6fed-4d1f-9fe7-d75df67b5a76";
+	private static final String WINDY_UUID = "f8afe105-6f53-4f95-bb79-efb4662005ab";
+	private static final String FILEDW_UUID = "a2449286-6fed-4d1f-9fe7-d75df67b5a76";
 
 	private static final ResourceLocation TEX_HEART = new ResourceLocation("projecte:textures/models/heartcircle.png");
 	private static final ResourceLocation TEX_YUE = new ResourceLocation("projecte:textures/models/yuecircle.png");
@@ -34,10 +34,10 @@ public class PlayerRender
 
 		final boolean isSin = currentUUID.equals(SIN_UUID);
 		final boolean isClar = currentUUID.equals(CLAR_UUID);
-		final boolean isPioneer1 = currentUUID.equals(PIONEER_1_UUID);
-		final boolean isPioneer2 = currentUUID.equals(PIONEER_2_UUID);
+		final boolean isWindy = currentUUID.equals(WINDY_UUID);
+		final boolean isFiledw = currentUUID.equals(FILEDW_UUID);
 
-		if (!isSin && !isClar && !isPioneer1 && !isPioneer2)
+		if (!isSin && !isClar && !isWindy && !isFiledw)
 			return;
 
 		GL11.glPushMatrix();
@@ -67,15 +67,15 @@ public class PlayerRender
 			Minecraft.getMinecraft().renderEngine.bindTexture(TEX_YUE);
 		}
 		else {
-			final float hue = (System.currentTimeMillis() % 21000L) / 21000.0f;
-			final int color = Color.HSBtoRGB(hue, 1.0f, 1.0f);
+			final float hue = (System.currentTimeMillis() & 16383L) / 16384.0F;
+			final int color = Color.HSBtoRGB(hue, 1.0F, 1.0F);
 
-			final float r = ((color >> 16) & 0xFF) / 255.0f;
-			final float g = ((color >> 8) & 0xFF) / 255.0f;
-			final float b = (color & 0xFF) / 255.0f;
+			final float r = ((color >> 16) & 255) / 255.0F;
+			final float g = ((color >> 8) & 255) / 255.0F;
+			final float b = (color & 255) / 255.0F;
 
 			GL11.glColor4f(r, g, b, 0.5F);
-			if (isPioneer1)
+			if (isWindy)
 				Minecraft.getMinecraft().renderEngine.bindTexture(TEX_YUE);
 			else Minecraft.getMinecraft().renderEngine.bindTexture(TEX_HEART);
 		}

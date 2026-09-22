@@ -42,14 +42,13 @@ public class ChiselMapper extends AbstractIntegrationMapper {
 
 	private void handleCarvingGroup(ICarvingGroup group) {
 		List<NormalizedSimpleStack> stacks = new ArrayList<>();
-		for (ICarvingVariation v : group.getVariations()) {
+		for (ICarvingVariation v : group.getVariations())
 			stacks.add(NormalizedSimpleStack.forItem(v.getBlock(), v.getBlockMeta()));
-		}
-		if (group.getOreName() != null) {
-			for (ItemStack ore : OreDictionary.getOres(group.getOreName())) {
+
+		if (group.getOreName() != null)
+			for (ItemStack ore : OreDictionary.getOres(group.getOreName()))
 				stacks.add(NormalizedSimpleStack.forItem(ore));
-			}
-		}
+
 		for (int i = 1; i < stacks.size(); i++) {
 			mapper.addConversion(1, stacks.get(0), Collections.singletonList(stacks.get(i)));
 			mapper.addConversion(1, stacks.get(i), Collections.singletonList(stacks.get(0)));

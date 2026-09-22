@@ -20,6 +20,10 @@ public final class ProjectEConfig {
 
 	public static boolean enableTimeWatch;
 	public static boolean enableArcaneTablet;
+	public static boolean enableExpansionStar;
+	public static boolean enableInfiniteFuel;
+	public static boolean enableInfiniteSteak;
+	public static boolean enableBuildersWand;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;
@@ -89,7 +93,11 @@ public final class ProjectEConfig {
 			sciFormat = config.getString("sciFormat", "misc", "e", "The string used as a separator for scientific notation in tooltips");
 
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
-			enableArcaneTablet = config.getBoolean("enableArcaneTablet", "items", false, "Enable Arcane Transmutation Tablet");
+			enableArcaneTablet = config.getBoolean("enableArcaneTablet", "items", true, "Enable Arcane Transmutation Tablet");
+			enableExpansionStar = config.getBoolean("enableExpansionStar", "items", true, "Enable Stars backported from Project Expansion");
+			enableInfiniteFuel = config.getBoolean("enableInfiniteFuel", "items", true, "Enable Infinite Fuel backported from Project Expansion");
+			enableInfiniteSteak = config.getBoolean("enableInfiniteSteak", "items", true, "Enable Infinite Steak backported from Project Expansion");
+			enableBuildersWand = config.getBoolean("enableBuildersWand", "items", true, "Enable EMC Builders Wand");
 
 			ignitionRingIgniteBlocks = config.getBoolean("ignitionRingIgniteBlocks", "items", false, "If true, the Ignition Ring will passively ignite surrounding blocks.");
 			zeroRingPlaceSnow = config.getBoolean("zeroRingPlaceSnow", "items", false, "If true, the Zero Ring will passively freeze water and place snow around the player.");

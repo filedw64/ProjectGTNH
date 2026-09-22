@@ -42,6 +42,7 @@ import moze_intel.projecte.rendering.NovaCatalystRenderer;
 import moze_intel.projecte.rendering.PedestalItemRenderer;
 import moze_intel.projecte.rendering.PedestalRenderer;
 import moze_intel.projecte.utils.ClientKeyHelper;
+import moze_intel.projecte.rendering.WandRenderer;
 
 public class ClientProxy implements IProxy
 {
@@ -109,6 +110,8 @@ public class ClientProxy implements IProxy
 		PlayerRender pr = new PlayerRender();
 		MinecraftForge.EVENT_BUS.register(pr);
 		FMLCommonHandler.instance().bus().register(pr);
+
+		MinecraftForge.EVENT_BUS.register(new WandRenderer());
 	}
 
 	@Override

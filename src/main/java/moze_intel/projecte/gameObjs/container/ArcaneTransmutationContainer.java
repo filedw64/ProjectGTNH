@@ -22,7 +22,7 @@ import net.minecraft.item.crafting.CraftingManager;
 public class ArcaneTransmutationContainer extends TransmutationContainer {
 	public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
 	public IInventory craftResult = new InventoryCraftResult();
-	private EntityPlayer player;
+	private final EntityPlayer player;
 
 	private static final int[] ROTATION_SLOTS = {0, 1, 2, 5, 8, 7, 6, 3};
 
@@ -30,48 +30,132 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 		super(invPlayer, new TransmutationInventory(player), true);
 		this.player = player;
 
-		for (Object obj : this.inventorySlots) {
-			Slot slot = (Slot) obj;
+		for (Slot slot : this.inventorySlots) {
 			if (slot instanceof SlotInput) {
 				int id = slot.getSlotIndex();
-				if (id == 0) { slot.xDisplayPosition = 106; slot.yDisplayPosition = 21; }
-				else if (id == 1) { slot.xDisplayPosition = 206; slot.yDisplayPosition = 21; }
-				else if (id == 2) { slot.xDisplayPosition = 84; slot.yDisplayPosition = 43; }
-				else if (id == 3) { slot.xDisplayPosition = 228; slot.yDisplayPosition = 43; }
-				else if (id == 4) { slot.xDisplayPosition = 84; slot.yDisplayPosition = 94; }
-				else if (id == 5) { slot.xDisplayPosition = 228; slot.yDisplayPosition = 94; }
-				else if (id == 6) { slot.xDisplayPosition = 106; slot.yDisplayPosition = 115; }
-				else if (id == 7) { slot.xDisplayPosition = 206; slot.yDisplayPosition = 115; }
-			} else if (slot instanceof SlotOutput) {
+				switch (id) {
+					case 0 -> {
+						slot.xDisplayPosition = 106;
+						slot.yDisplayPosition = 21;
+					}
+					case 1 -> {
+						slot.xDisplayPosition = 206;
+						slot.yDisplayPosition = 21;
+					}
+					case 2 -> {
+						slot.xDisplayPosition = 84;
+						slot.yDisplayPosition = 43;
+					}
+					case 3 -> {
+						slot.xDisplayPosition = 228;
+						slot.yDisplayPosition = 43;
+					}
+					case 4 -> {
+						slot.xDisplayPosition = 84;
+						slot.yDisplayPosition = 94;
+					}
+					case 5 -> {
+						slot.xDisplayPosition = 228;
+						slot.yDisplayPosition = 94;
+					}
+					case 6 -> {
+						slot.xDisplayPosition = 106;
+						slot.yDisplayPosition = 115;
+					}
+					case 7 -> {
+						slot.xDisplayPosition = 206;
+						slot.yDisplayPosition = 115;
+					}
+				}
+			}
+			else if (slot instanceof SlotOutput) {
 				int id = slot.getSlotIndex();
-				if (id == 10) { slot.xDisplayPosition = 156; slot.yDisplayPosition = 20; }
-				else if (id == 11) { slot.xDisplayPosition = 181; slot.yDisplayPosition = 26; }
-				else if (id == 12) { slot.xDisplayPosition = 131; slot.yDisplayPosition = 26; }
-				else if (id == 13) { slot.xDisplayPosition = 199; slot.yDisplayPosition = 44; }
-				else if (id == 14) { slot.xDisplayPosition = 113; slot.yDisplayPosition = 44; }
-				else if (id == 15) { slot.xDisplayPosition = 204; slot.yDisplayPosition = 68; }
-				else if (id == 16) { slot.xDisplayPosition = 108; slot.yDisplayPosition = 68; }
-				else if (id == 17) { slot.xDisplayPosition = 199; slot.yDisplayPosition = 92; }
-				else if (id == 18) { slot.xDisplayPosition = 113; slot.yDisplayPosition = 92; }
-				else if (id == 19) { slot.xDisplayPosition = 181; slot.yDisplayPosition = 110; }
-				else if (id == 20) { slot.xDisplayPosition = 131; slot.yDisplayPosition = 110; }
-				else if (id == 21) { slot.xDisplayPosition = 156; slot.yDisplayPosition = 116; }
-				else if (id == 22) { slot.xDisplayPosition = 136; slot.yDisplayPosition = 48; }
-				else if (id == 23) { slot.xDisplayPosition = 176; slot.yDisplayPosition = 48; }
-				else if (id == 24) { slot.xDisplayPosition = 136; slot.yDisplayPosition = 88; }
-				else if (id == 25) { slot.xDisplayPosition = 176; slot.yDisplayPosition = 88; }
-			} else if (slot instanceof SlotLock) {
-				slot.xDisplayPosition = 156; slot.yDisplayPosition = 68;
-			} else if (slot instanceof SlotConsume) {
-				slot.xDisplayPosition = 228; slot.yDisplayPosition = 115;
-			} else if (slot instanceof SlotUnlearn) {
-				slot.xDisplayPosition = 84; slot.yDisplayPosition = 115;
-			} else if (slot.inventory == invPlayer) {
+				switch (id) {
+					case 10 -> {
+						slot.xDisplayPosition = 156;
+						slot.yDisplayPosition = 20;
+					}
+					case 11 -> {
+						slot.xDisplayPosition = 181;
+						slot.yDisplayPosition = 26;
+					}
+					case 12 -> {
+						slot.xDisplayPosition = 131;
+						slot.yDisplayPosition = 26;
+					}
+					case 13 -> {
+						slot.xDisplayPosition = 199;
+						slot.yDisplayPosition = 44;
+					}
+					case 14 -> {
+						slot.xDisplayPosition = 113;
+						slot.yDisplayPosition = 44;
+					}
+					case 15 -> {
+						slot.xDisplayPosition = 204;
+						slot.yDisplayPosition = 68;
+					}
+					case 16 -> {
+						slot.xDisplayPosition = 108;
+						slot.yDisplayPosition = 68;
+					}
+					case 17 -> {
+						slot.xDisplayPosition = 199;
+						slot.yDisplayPosition = 92;
+					}
+					case 18 -> {
+						slot.xDisplayPosition = 113;
+						slot.yDisplayPosition = 92;
+					}
+					case 19 -> {
+						slot.xDisplayPosition = 181;
+						slot.yDisplayPosition = 110;
+					}
+					case 20 -> {
+						slot.xDisplayPosition = 131;
+						slot.yDisplayPosition = 110;
+					}
+					case 21 -> {
+						slot.xDisplayPosition = 156;
+						slot.yDisplayPosition = 116;
+					}
+					case 22 -> {
+						slot.xDisplayPosition = 136;
+						slot.yDisplayPosition = 48;
+					}
+					case 23 -> {
+						slot.xDisplayPosition = 176;
+						slot.yDisplayPosition = 48;
+					}
+					case 24 -> {
+						slot.xDisplayPosition = 136;
+						slot.yDisplayPosition = 88;
+					}
+					case 25 -> {
+						slot.xDisplayPosition = 176;
+						slot.yDisplayPosition = 88;
+					}
+				}
+			}
+			else if (slot instanceof SlotLock) {
+				slot.xDisplayPosition = 156;
+				slot.yDisplayPosition = 68;
+			}
+			else if (slot instanceof SlotConsume) {
+				slot.xDisplayPosition = 228;
+				slot.yDisplayPosition = 115;
+			}
+			else if (slot instanceof SlotUnlearn) {
+				slot.xDisplayPosition = 84;
+				slot.yDisplayPosition = 115;
+			}
+			else if (slot.inventory == invPlayer) {
 				int id = slot.getSlotIndex();
 				if (id < 9) {
 					slot.xDisplayPosition = 84 + id * 18;
 					slot.yDisplayPosition = 193;
-				} else {
+				}
+				else {
 					int x = (id - 9) % 9;
 					int y = (id - 9) / 9;
 					slot.xDisplayPosition = 84 + x * 18;
@@ -84,11 +168,9 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 		this.addSlotToContainer(new SlotCrafting(player, this.craftMatrix, this.craftResult, 0, 53, 75));
 
 		// 添加合成网格 (ID 64-72)
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
 				this.addSlotToContainer(new Slot(this.craftMatrix, j + i * 3, 17 + j * 18, 17 + i * 18));
-			}
-		}
 
 		this.onCraftMatrixChanged(this.craftMatrix);
 	}
@@ -101,13 +183,11 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 	@Override
 	public void onContainerClosed(EntityPlayer player) {
 		super.onContainerClosed(player);
-		if (!player.worldObj.isRemote) {
-			for (int i = 0; i < 9; ++i) {
-				ItemStack itemstack = this.craftMatrix.getStackInSlotOnClosing(i);
-				if (itemstack != null) {
-					player.dropPlayerItemWithRandomChoice(itemstack, false);
-				}
-			}
+		if (player.worldObj.isRemote) return;
+		for (int i = 0; i < 9; i++) {
+			ItemStack itemstack = this.craftMatrix.getStackInSlotOnClosing(i);
+			if (itemstack != null)
+				player.dropPlayerItemWithRandomChoice(itemstack, false);
 		}
 	}
 
@@ -120,16 +200,13 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 		if (slot == 63 && result != null) {
 			ItemStack copy = result.copy();
 			copy.stackSize = 1; // 规范化数量为 1
-			if (EMCHelper.doesItemHaveEmc(copy) && !Transmutation.hasKnowledgeForStack(copy, player)) {
+			if (EMCHelper.doesItemHaveEmc(copy))
 				this.transmutationInventory.handleKnowledge(copy);
-				this.transmutationInventory.updateOutputs();
-			}
 		}
 
 		// 保险机制：只要和原版的输入/消耗槽互动过，强制刷新右侧列表
-		if (slot >= 0 && slot <= 9) {
+		if (slot >= 0 && slot <= 9)
 			this.transmutationInventory.updateOutputs();
-		}
 
 		return result;
 	}
@@ -138,48 +215,40 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
 		if (slotIndex >= 63) {
-			Slot slot = (Slot) this.inventorySlots.get(slotIndex);
-			if (slot != null && slot.getHasStack()) {
-				ItemStack itemstack1 = slot.getStack();
-				ItemStack itemstack = itemstack1.copy();
+			Slot slot = this.inventorySlots.get(slotIndex);
+			if (slot == null || !slot.getHasStack()) return null;
 
-				if (slotIndex == 63) {
-					itemstack1.getItem().onCreated(itemstack1, player.worldObj, player);
+			ItemStack itemstack1 = slot.getStack();
+			ItemStack itemstack = itemstack1.copy();
 
-					// Shift 点击时的自动学习逻辑
-					ItemStack copy = itemstack1.copy();
-					copy.stackSize = 1;
-					if (EMCHelper.doesItemHaveEmc(copy) && !Transmutation.hasKnowledgeForStack(copy, player)) {
-						this.transmutationInventory.handleKnowledge(copy);
-						this.transmutationInventory.updateOutputs();
-					}
+			if (slotIndex == 63) {
+				itemstack1.getItem().onCreated(itemstack1, player.worldObj, player);
 
-					if (!this.mergeItemStack(itemstack1, 27, 63, true)) {
-						return null;
-					}
-					slot.onSlotChange(itemstack1, itemstack);
-				} else {
-					if (!this.mergeItemStack(itemstack1, 27, 63, true)) {
-						return null;
-					}
-				}
+				// Shift 点击时的自动学习逻辑
+				if (EMCHelper.doesItemHaveEmc(itemstack1))
+					this.transmutationInventory.handleKnowledge(itemstack1);
 
-				if (itemstack1.stackSize == 0) slot.putStack(null);
-				else slot.onSlotChanged();
-
-				if (itemstack1.stackSize == itemstack.stackSize) return null;
-				slot.onPickupFromSlot(player, itemstack1);
-				return itemstack;
+				if (!this.mergeItemStack(itemstack1, 27, 63, true))
+					return null;
+				slot.onSlotChange(itemstack1, itemstack);
 			}
-			return null;
+			else if (!this.mergeItemStack(itemstack1, 27, 63, true))
+				return null;
+
+			if (itemstack1.stackSize == 0) slot.putStack(null);
+			else slot.onSlotChanged();
+
+			if (itemstack1.stackSize == itemstack.stackSize)
+				return null;
+			slot.onPickupFromSlot(player, itemstack1);
+			return itemstack;
 		}
 
 		// 原版的 Shift 点击逻辑（玩家背包 -> 转化桌）
 		ItemStack ret = super.transferStackInSlot(player, slotIndex);
 		// 强制刷新输出列表，防止假死
-		if (slotIndex >= 27 && slotIndex <= 62) {
+		if (slotIndex >= 27)
 			this.transmutationInventory.updateOutputs();
-		}
 		return ret;
 	}
 

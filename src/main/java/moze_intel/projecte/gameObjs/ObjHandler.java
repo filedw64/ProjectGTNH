@@ -20,6 +20,7 @@ import moze_intel.projecte.gameObjs.blocks.Relay;
 import moze_intel.projecte.gameObjs.blocks.TransmutationStone;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeCovalenceRepair;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessExpansionStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessHidden;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityHomingArrow;
@@ -33,6 +34,7 @@ import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.AlchemicalFuel;
+import moze_intel.projecte.gameObjs.items.ArcaneTransmutationTablet;
 import moze_intel.projecte.gameObjs.items.CataliticLens;
 import moze_intel.projecte.gameObjs.items.CovalenceDust;
 import moze_intel.projecte.gameObjs.items.DestructionCatalyst;
@@ -42,7 +44,10 @@ import moze_intel.projecte.gameObjs.items.DiviningRodMedium;
 import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
-import moze_intel.projecte.gameObjs.items.ItemArcaneTransmutationTablet;
+import moze_intel.projecte.gameObjs.items.InfiniteFuel;
+import moze_intel.projecte.gameObjs.items.InfiniteSteak;
+import moze_intel.projecte.gameObjs.items.BuildersWand;
+import moze_intel.projecte.gameObjs.items.ExpansionStar;
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.items.Matter;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
@@ -167,6 +172,10 @@ public class ObjHandler
 	public static Item alchBag = new AlchemicalBag();
 	public static Item repairTalisman = new RepairTalisman();
 	public static Item kleinStars = new KleinStar();
+	public static Item magnumStar;
+	public static Item gargantuanStar;
+	public static Item colossalStar;
+
 	public static Item fuels = new AlchemicalFuel();
 	public static Item covalence = new CovalenceDust();
 	public static Item matter = new Matter();
@@ -233,6 +242,9 @@ public class ObjHandler
 
 	public static Item tome = new Tome();
 
+	public static Item infiniteFuel = new InfiniteFuel();
+	public static Item infiniteSteak = new InfiniteSteak();
+
 	public static Item waterOrb = new WaterOrb();
 	public static Item lavaOrb = new LavaOrb();
 	public static Item lootBall = new LootBallItem();
@@ -243,7 +255,8 @@ public class ObjHandler
 	public static Item transmutationTablet = new TransmutationTablet();
 	public static Item manual = new PEManual();
 
-	public static Item arcaneTablet = new ItemArcaneTransmutationTablet();
+	public static Item arcaneTablet = new ArcaneTransmutationTablet();
+	public static Item builderswand = new BuildersWand();
 
 	public static void register() {
 		// Blocks without ItemBlock
@@ -275,6 +288,28 @@ public class ObjHandler
 		GameRegistry.registerItem(alchBag, alchBag.getUnlocalizedName());
 		GameRegistry.registerItem(repairTalisman, repairTalisman.getUnlocalizedName());
 		GameRegistry.registerItem(kleinStars, kleinStars.getUnlocalizedName());
+
+		double kleinTier6Max = 5.12e7;
+
+		if (ProjectEConfig.enableExpansionStar) {
+			// 1级马格南 = 4 * 6级卡莱恩
+			double magnumT1Max = kleinTier6Max * 4;
+			magnumStar = new ExpansionStar("magnum_star", 4, magnumT1Max);
+			GameRegistry.registerItem(magnumStar, magnumStar.getUnlocalizedName());
+
+			// 1级葛甘图 = 9 * 6级马格南 (6级马格南容量 = magnumT1Max * 9^5)
+			double magnumT6Max = magnumT1Max * Math.pow(4, 5);
+			double gargantuanT1Max = magnumT6Max * 9;
+			gargantuanStar = new ExpansionStar("gargantuan_star", 9, gargantuanT1Max);
+			GameRegistry.registerItem(gargantuanStar, gargantuanStar.getUnlocalizedName());
+
+			// 1级终焉 = 9 * 6级葛甘图 (6级葛甘图容量 = gargantuanT1Max * 9^5)
+			double gargantuanT6Max = gargantuanT1Max * Math.pow(9, 5);
+			double colossalT1Max = gargantuanT6Max * 9;
+			colossalStar = new ExpansionStar("colossal_star", 9, colossalT1Max);
+			GameRegistry.registerItem(colossalStar, colossalStar.getUnlocalizedName());
+		}
+
 		GameRegistry.registerItem(fuels, fuels.getUnlocalizedName());
 		GameRegistry.registerItem(covalence, covalence.getUnlocalizedName());
 		GameRegistry.registerItem(matter, matter.getUnlocalizedName());
@@ -355,6 +390,14 @@ public class ObjHandler
 		if (ProjectEConfig.enableArcaneTablet)
 			GameRegistry.registerItem(arcaneTablet, "arcane_transmutation_tablet");
 
+		if (ProjectEConfig.enableInfiniteFuel)
+			GameRegistry.registerItem(infiniteFuel, "infinite_fuel");
+
+		if (ProjectEConfig.enableInfiniteSteak)
+			GameRegistry.registerItem(infiniteSteak, "infinite_steak");
+
+		GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
+
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
 		GameRegistry.registerTileEntityWithAlternatives(InterdictionTile.class, "InterdictionTile", "Interdiction Torch Tile");
@@ -392,6 +435,24 @@ public class ObjHandler
 			diamondReplacement = new ItemStack(Items.nether_star);
 			diamondBlockReplacement = new ItemStack(Items.nether_star);
 		}
+
+		// 无限燃料：转化桌 外面一圈木炭
+		GameRegistry.addRecipe(new ItemStack(infiniteFuel),
+			"CCC",
+			"CTC",
+			"CCC",
+			'C', new ItemStack(Items.coal, 1, 1),
+			'T', transmutationTablet
+		);
+
+		// 无限牛排：转化桌 外面一圈牛排
+		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak),
+			"MMM",
+			"MTM",
+			"MMM",
+			'M', Items.cooked_beef,
+			'T', transmutationTablet
+		));
 
 		//Shaped Recipes
 		//Philos Stone
@@ -603,6 +664,11 @@ public class ObjHandler
 		}
 
 		GameRegistry.addRecipe(new RecipeCovalenceRepair());
+
+		if (ProjectEConfig.enableExpansionStar) {
+			RecipeShapelessExpansionStar.registerRecipes();
+			RecipeSorter.register("Expansion Star Recipes", RecipeShapelessExpansionStar.class, Category.SHAPELESS, "before:minecraft:shaped");
+		}
 		RecipeSorter.register("Alchemical Bag Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Covalence Repair Recipes", RecipeCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Klein Star Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
