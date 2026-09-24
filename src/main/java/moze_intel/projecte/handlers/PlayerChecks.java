@@ -19,7 +19,6 @@ public final class PlayerChecks
 {
 	private static final Set<EntityPlayerMP> swrgOverrides = new HashSet<>();
 	private static final Set<EntityPlayerMP> gemArmorReadyChecks = new HashSet<>();
-	private static final Set<EntityPlayerMP> hadFlightItem = new HashSet<>();
 	private static final Set<EntityPlayerMP> wearGemHelmet = new HashSet<>();
 	private static final TObjectIntHashMap<EntityPlayerMP> projectileCooldowns = new TObjectIntHashMap<>();
 	private static final TObjectIntHashMap<EntityPlayerMP> gemChestCooldowns = new TObjectIntHashMap<>();
@@ -57,16 +56,9 @@ public final class PlayerChecks
 		if (gemChestCooldowns.containsKey(player) && gemChestCooldowns.get(player) > 0)
 			gemChestCooldowns.adjustValue(player, -1);
 
-		if (!shouldPlayerFly(player) && hadFlightItem.contains(player)) {
-			if (player.capabilities.allowFlying)
-				PlayerHelper.updateClientServerFlight(player, false);
-			hadFlightItem.remove(player);
-		}
-		else if (shouldPlayerFly(player) && !hadFlightItem.contains(player)) {
-			if (!player.capabilities.allowFlying)
-				PlayerHelper.updateClientServerFlight(player, true);
-			hadFlightItem.add(player);
-		}
+		final boolean shouldFly = shouldPlayerFly(player);
+		if (shouldFly != player.capabilities.allowFlying)
+			PlayerHelper.updateClientServerFlight(player, shouldFly);
 
 		final ItemStack helmet = player.inventory.armorInventory[3];
 		if (helmet != null && helmet.getItem() == ObjHandler.gemHelmet)
@@ -214,7 +206,6 @@ public final class PlayerChecks
 	public static void clearLists() {
 		swrgOverrides.clear();
 		gemArmorReadyChecks.clear();
-		hadFlightItem.clear();
 		wearGemHelmet.clear();
 		projectileCooldowns.clear();
 		gemChestCooldowns.clear();
@@ -223,7 +214,6 @@ public final class PlayerChecks
 	public static void removePlayerFromLists(EntityPlayerMP player) {
 		swrgOverrides.remove(player);
 		gemArmorReadyChecks.remove(player);
-		hadFlightItem.remove(player);
 		wearGemHelmet.remove(player);
 		projectileCooldowns.remove(player);
 		gemChestCooldowns.remove(player);
