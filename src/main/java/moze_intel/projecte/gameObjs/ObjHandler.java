@@ -289,15 +289,15 @@ public class ObjHandler
 		GameRegistry.registerItem(repairTalisman, repairTalisman.getUnlocalizedName());
 		GameRegistry.registerItem(kleinStars, kleinStars.getUnlocalizedName());
 
-		double kleinTier6Max = 5.12e7;
-
 		if (ProjectEConfig.enableExpansionStar) {
+			double kleinTier6Max = 5.12e7;
+
 			// 1级马格南 = 4 * 6级卡莱恩
 			double magnumT1Max = kleinTier6Max * 4;
 			magnumStar = new ExpansionStar("magnum_star", 4, magnumT1Max);
 			GameRegistry.registerItem(magnumStar, magnumStar.getUnlocalizedName());
 
-			// 1级葛甘图 = 9 * 6级马格南 (6级马格南容量 = magnumT1Max * 9^5)
+			// 1级葛甘图 = 9 * 6级马格南 (6级马格南容量 = magnumT1Max * 4^5)
 			double magnumT6Max = magnumT1Max * Math.pow(4, 5);
 			double gargantuanT1Max = magnumT6Max * 9;
 			gargantuanStar = new ExpansionStar("gargantuan_star", 9, gargantuanT1Max);
@@ -388,15 +388,16 @@ public class ObjHandler
 		GameRegistry.registerItem(manual, manual.getUnlocalizedName());
 
 		if (ProjectEConfig.enableArcaneTablet)
-			GameRegistry.registerItem(arcaneTablet, "arcane_transmutation_tablet");
+			GameRegistry.registerItem(arcaneTablet, arcaneTablet.getUnlocalizedName());
 
 		if (ProjectEConfig.enableInfiniteFuel)
-			GameRegistry.registerItem(infiniteFuel, "infinite_fuel");
+			GameRegistry.registerItem(infiniteFuel, infiniteFuel.getUnlocalizedName());
 
 		if (ProjectEConfig.enableInfiniteSteak)
-			GameRegistry.registerItem(infiniteSteak, "infinite_steak");
+			GameRegistry.registerItem(infiniteSteak, infiniteSteak.getUnlocalizedName());
 
-		GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
+		if (ProjectEConfig.enableBuildersWand)
+			GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
 
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
@@ -435,24 +436,6 @@ public class ObjHandler
 			diamondReplacement = new ItemStack(Items.nether_star);
 			diamondBlockReplacement = new ItemStack(Items.nether_star);
 		}
-
-		// 无限燃料：转化桌 外面一圈木炭
-		GameRegistry.addRecipe(new ItemStack(infiniteFuel),
-			"CCC",
-			"CTC",
-			"CCC",
-			'C', new ItemStack(Items.coal, 1, 1),
-			'T', transmutationTablet
-		);
-
-		// 无限牛排：转化桌 外面一圈牛排
-		GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak),
-			"MMM",
-			"MTM",
-			"MMM",
-			'M', Items.cooked_beef,
-			'T', transmutationTablet
-		));
 
 		//Shaped Recipes
 		//Philos Stone
@@ -647,15 +630,17 @@ public class ObjHandler
 		GameRegistry.addShapelessRecipe(new ItemStack(fuels, 9, 2), new ItemStack(fuelBlock, 1, 2));
 
 		// need a recipe for each arcana mode, there's probably a better way to do this
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 0), Items.water_bucket);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 1), Items.water_bucket);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 2), Items.water_bucket);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 3), Items.water_bucket);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 0), Items.water_bucket);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 1), Items.water_bucket);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 2), Items.water_bucket);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, 3), Items.water_bucket);
+		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.ice), new ItemStack(arcana, 1, OreDictionary.WILDCARD_VALUE), Items.water_bucket);
 
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 0), Blocks.dirt);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 1), Blocks.dirt);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 2), Blocks.dirt);
-		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 3), Blocks.dirt);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 0), Blocks.dirt);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 1), Blocks.dirt);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 2), Blocks.dirt);
+//		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, 3), Blocks.dirt);
+		GameRegistry.addShapelessRecipe(new ItemStack(Blocks.grass), new ItemStack(arcana, 1, OreDictionary.WILDCARD_VALUE), Blocks.dirt);
 
 		//Custom Recipe managment
 		for (int i = 1; i <= 15; i++) {
@@ -669,6 +654,19 @@ public class ObjHandler
 			RecipeShapelessExpansionStar.registerRecipes();
 			RecipeSorter.register("Expansion Star Recipes", RecipeShapelessExpansionStar.class, Category.SHAPELESS, "before:minecraft:shaped");
 		}
+
+		if (ProjectEConfig.enableArcaneTablet)
+			GameRegistry.addShapelessRecipe(new ItemStack(arcaneTablet), transmutationTablet, Blocks.crafting_table);
+
+		if (ProjectEConfig.enableBuildersWand)
+			GameRegistry.addShapedRecipe(new ItemStack(builderswand), "XXP", "XSX", "OXX", "P", philosStone, "S", new ItemStack(kleinStars, 1, 5), "O", kleinStars);
+
+		if (ProjectEConfig.enableInfiniteFuel) // 无限燃料：转化桌外面一圈木炭/煤炭
+			GameRegistry.addShapedRecipe(new ItemStack(infiniteFuel), "CCC", "CTC", "CCC", 'C', new ItemStack(Items.coal, 1, OreDictionary.WILDCARD_VALUE), 'T', transmutationTablet);
+
+		if (ProjectEConfig.enableInfiniteSteak) // 无限牛排：转化桌外面一圈牛排
+			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak), "MMM", "MTM", "MMM", 'M', Items.cooked_beef, 'T', transmutationTablet));
+
 		RecipeSorter.register("Alchemical Bag Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Covalence Repair Recipes", RecipeCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Klein Star Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
