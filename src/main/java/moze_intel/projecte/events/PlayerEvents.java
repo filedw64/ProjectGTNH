@@ -35,7 +35,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 public class PlayerEvents {
 	// Handles playerData props from being wiped on death
 	@SubscribeEvent
-	public void cloneEvent(PlayerEvent.Clone evt) {
+	public void onPlayerClone(PlayerEvent.Clone evt) {
 		if (!evt.wasDeath) return; // Vanilla handles it for us.
 
 		NBTTagCompound bag = new NBTTagCompound();
@@ -72,7 +72,7 @@ public class PlayerEvents {
 	}
 
 	@SubscribeEvent
-	public void onHighAlchemistJoin(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent evt) {
+	public void onPlayerJoin(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent evt) {
 		EntityPlayer player = evt.player;
 		if (PECore.AUTHOR_UUID.contains(player.getUniqueID().toString())) {
 			IChatComponent prior = ChatHelper.modifyColor(new ChatComponentTranslation("pe.server.high_alchemist"), EnumChatFormatting.BLUE);
@@ -83,12 +83,12 @@ public class PlayerEvents {
 	}
 
 	@SubscribeEvent
-	public void playerChangeDimension(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent event) {
+	public void onPlayerChangeDimension(cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent event) {
 		PlayerChecks.onPlayerChangeDimension((EntityPlayerMP) event.player);
 	}
 
 	@SubscribeEvent
-	public void pickupItem(EntityItemPickupEvent event) {
+	public void onPlayerPickupItem(EntityItemPickupEvent event) {
 		EntityPlayer player = event.entityPlayer;
 		World world = player.worldObj;
 
@@ -138,6 +138,19 @@ public class PlayerEvents {
 				AlchemicalBags.syncPartial(player, bag.getItemDamage());
 
 				event.setCanceled(true);
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void onItemCrafted(cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent event) {
+		if (event.crafting == null || event.crafting.getItem() != ObjHandler.builderswand) return;
+
+		for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
+			ItemStack stack = event.craftMatrix.getStackInSlot(i);
+			if (stack != null && stack.getItem() == ObjHandler.philosStone) {
+				event.craftMatrix.setInventorySlotContents(i, null);
+				break;
 			}
 		}
 	}
