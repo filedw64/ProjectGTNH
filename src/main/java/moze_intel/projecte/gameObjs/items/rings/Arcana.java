@@ -3,12 +3,20 @@ package moze_intel.projecte.gameObjs.items.rings;
 import baubles.api.BaubleType;
 import baubles.api.IBauble;
 import cpw.mods.fml.common.Optional;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
+import moze_intel.projecte.api.item.IExtraFunction;
+import moze_intel.projecte.api.item.IModeChanger;
+import moze_intel.projecte.api.item.IProjectileShooter;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
+import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
+import moze_intel.projecte.gameObjs.items.IFireProtector;
+import moze_intel.projecte.gameObjs.items.IFlightProvider;
+import moze_intel.projecte.gameObjs.items.ItemPE;
+import moze_intel.projecte.utils.PlayerHelper;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,17 +32,6 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.api.item.IExtraFunction;
-import moze_intel.projecte.api.item.IModeChanger;
-import moze_intel.projecte.api.item.IProjectileShooter;
-import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
-import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
-import moze_intel.projecte.gameObjs.items.IFireProtector;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
-import moze_intel.projecte.gameObjs.items.ItemPE;
-import moze_intel.projecte.utils.PlayerHelper;
-import moze_intel.projecte.utils.WorldHelper;
 
 import java.util.List;
 
@@ -164,9 +161,9 @@ public class Arcana extends ItemPE implements IBauble, IModeChanger, IFlightProv
 	@Override
 	public void registerIcons(IIconRegister register) {
 		for (int i = 0; i < 4; i++)
-			icons[i] = register.registerIcon(this.getTexture("rings", "arcana_" + i));
+			icons[i] = register.registerIcon(getTexture("rings", "arcana_" + i));
 		for (int i = 0; i < 4; i++)
-			iconsOn[i] = register.registerIcon(this.getTexture("rings", "arcana_" + i + "_on"));
+			iconsOn[i] = register.registerIcon(getTexture("rings", "arcana_" + i + "_on"));
 		itemIcon = icons[0];
 	}
 

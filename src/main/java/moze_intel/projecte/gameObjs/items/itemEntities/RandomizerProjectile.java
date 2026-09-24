@@ -18,6 +18,6 @@ public class RandomizerProjectile extends ItemPE
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register)
 	{
-		this.itemIcon = register.registerIcon(this.getTexture("entities", "randomizer"));
+		this.itemIcon = register.registerIcon(getTexture("entities", "randomizer"));
 	}
 }
