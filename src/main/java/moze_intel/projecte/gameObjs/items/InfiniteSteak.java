@@ -19,7 +19,7 @@ public class InfiniteSteak extends ItemFood
 	public InfiniteSteak()
 	{
 		super(8, 0.8F, true);
-		this.setUnlocalizedName("infinite_steak");
+		this.setUnlocalizedName("pe_infinite_steak");
 		this.setCreativeTab(ObjHandler.tab);
 		this.setMaxStackSize(1);
 		this.setAlwaysEdible();

@@ -17,7 +17,7 @@ import java.util.List;
 public class BuildersWand extends Item {
 
 	public BuildersWand() {
-		this.setUnlocalizedName("emc_builders_wand");
+		this.setUnlocalizedName("pe_emc_builders_wand");
 		this.setTextureName("projecte:builders_wand");
 		this.setMaxStackSize(1);
 		this.setCreativeTab(ObjHandler.tab);
