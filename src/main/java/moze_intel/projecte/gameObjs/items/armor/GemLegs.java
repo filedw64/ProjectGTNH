@@ -2,13 +2,12 @@ package moze_intel.projecte.gameObjs.items.armor;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import moze_intel.projecte.utils.EnumArmorType;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
-import moze_intel.projecte.utils.EnumArmorType;
-import moze_intel.projecte.utils.WorldHelper;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class GemLegs extends GemArmorBase
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused) {
-		tooltips.add(StatCollector.translateToLocal("pe.gem.legs.lorename"));
+		//tooltips.add(StatCollector.translateToLocal("pe.gem.legs.lorename"));
 	}
 
 	@Override

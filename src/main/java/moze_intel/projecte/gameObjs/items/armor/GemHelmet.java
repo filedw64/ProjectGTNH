@@ -73,7 +73,7 @@ public class GemHelmet extends GemArmorBase implements IGoggles, IRevealer, IVis
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
 	{
-		tooltips.add(StatCollector.translateToLocal("pe.gem.helm.lorename"));
+		//tooltips.add(StatCollector.translateToLocal("pe.gem.helm.lorename"));
 		tooltips.add(String.format(StatCollector.translateToLocal("pe.gem.nightvision.prompt"),
 			ClientKeyHelper.getKeyName(Minecraft.getMinecraft().gameSettings.keyBindSneak),
 			ClientKeyHelper.getKeyName(PEKeybind.ARMOR_TOGGLE)));

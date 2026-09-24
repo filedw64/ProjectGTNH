@@ -13,7 +13,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -27,7 +26,7 @@ public class GemChest extends GemArmorBase implements IFireProtector
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused) {
-		tooltips.add(StatCollector.translateToLocal("pe.gem.chest.lorename"));
+		//tooltips.add(StatCollector.translateToLocal("pe.gem.chest.lorename"));
 	}
 
 	@Override

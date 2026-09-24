@@ -83,7 +83,7 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 	@SideOnly(Side.CLIENT)
 	public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltips, boolean unused)
 	{
-		tooltips.add(StatCollector.translateToLocal("pe.gem.feet.lorename"));
+		//tooltips.add(StatCollector.translateToLocal("pe.gem.feet.lorename"));
 		tooltips.add(String.format(StatCollector.translateToLocal("pe.gem.stepassist.prompt"),
 			ClientKeyHelper.getKeyName(PEKeybind.ARMOR_TOGGLE)));
 
