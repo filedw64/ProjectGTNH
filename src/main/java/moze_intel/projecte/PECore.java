@@ -17,6 +17,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import cpw.mods.fml.common.eventhandler.EventBus;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import moze_intel.projecte.config.CustomEMCParser;
@@ -86,10 +87,11 @@ public class PECore
 
 		PlayerEvents pe = new PlayerEvents();
 		MinecraftForge.EVENT_BUS.register(pe);
-		FMLCommonHandler.instance().bus().register(pe);
 
-		FMLCommonHandler.instance().bus().register(new TickEvents());
-		FMLCommonHandler.instance().bus().register(new ConnectionHandler());
+		EventBus FMLBus = FMLCommonHandler.instance().bus();
+		FMLBus.register(pe);
+		FMLBus.register(new TickEvents());
+		FMLBus.register(new ConnectionHandler());
 
 		proxy.registerClientOnlyEvents();
 
