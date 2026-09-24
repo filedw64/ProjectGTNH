@@ -149,9 +149,7 @@ public final class PlayerHelper
 		player.capabilities.allowFlying = state;
 
 		if (!state)
-		{
 			player.capabilities.isFlying = false;
-		}
 	}
 
 	public static void updateClientServerStepHeight(EntityPlayerMP player, float value)
