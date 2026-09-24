@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
 import moze_intel.projecte.events.KeyPressEvent;
-import moze_intel.projecte.events.PlayerRender;
+import moze_intel.projecte.events.RenderEvents;
 import moze_intel.projecte.events.ToolTipEvent;
 import moze_intel.projecte.events.TransmutationRenderingEvent;
 import moze_intel.projecte.gameObjs.ObjHandler;
@@ -107,7 +107,7 @@ public class ClientProxy implements IProxy
 		MinecraftForge.EVENT_BUS.register(new TransmutationRenderingEvent());
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
 
-		PlayerRender pr = new PlayerRender();
+		RenderEvents pr = new RenderEvents();
 		MinecraftForge.EVENT_BUS.register(pr);
 		FMLCommonHandler.instance().bus().register(pr);
 
