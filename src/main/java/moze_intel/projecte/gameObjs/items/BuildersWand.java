@@ -14,6 +14,11 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
+/**
+ * Consume EMC to use builders wand.
+ *
+ * @author Windy-Bye
+ */
 public class BuildersWand extends Item {
 
 	public BuildersWand() {
