@@ -96,7 +96,7 @@ item.pe_manual.name=炼金术士之书[WIP]
 item.pe_arcane_transmutation_tablet.name=奥术转化桌
 item.pe_infinite_fuel.name=“无限”燃料
 item.pe_infinite_steak.name=“无限”牛排
-item.emc_builders_wand.name=EMC建筑之杖
+item.pe_emc_builders_wand.name=EMC建筑之杖
 
 pe.manual.tooltip1=卷二
 
@@ -121,8 +121,6 @@ tile.pe_fuel_block_0.name=炼金煤炭块
 tile.pe_fuel_block_1.name=莫比乌斯燃料块
 tile.pe_fuel_block_2.name=永恒燃料块
 tile.pe_dmPedestal.name=暗物质台座
-
-# itemGroup.ProjectE=ProjectE
 
 achievement.pe_phil_stone=炼金术师的挚友
 achievement.pe_phil_stone.desc=用贤者之石开启你的炼金之旅!
@@ -345,24 +343,6 @@ pe.tome.tooltip1=放入转化桌可习得全部转化知识.(创造专属)
 
 pe.transmutation.already_using=有人正在使用这个转化桌!
 pe.transmutation.transmute=转化桌
-# pe.transmutation.learned0=L
-# pe.transmutation.learned1=e
-# pe.transmutation.learned2=a
-# pe.transmutation.learned3=r
-# pe.transmutation.learned4=n
-# pe.transmutation.learned5=e
-# pe.transmutation.learned6=d
-# pe.transmutation.learned7=!
-#
-# pe.transmutation.unlearned0=U
-# pe.transmutation.unlearned1=n
-# pe.transmutation.unlearned2=l
-# pe.transmutation.unlearned3=e
-# pe.transmutation.unlearned4=a
-# pe.transmutation.unlearned5=r
-# pe.transmutation.unlearned6=n
-# pe.transmutation.unlearned7=e
-# pe.transmutation.unlearned8=d
 
 pe.update.available=现有新版ProjectE可用！版本号：%s
 pe.update.changelog=使用指令/projecte changelog可查看更新日志。
@@ -383,14 +363,3 @@ pe.debug.metainvalid.name=metadata参数设置无效
 
 pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
-
-# Yes these empty lines are for the manual
-# Don't translate them for now.
-# You may find a copy of translated manual (Simplified Chinese, may be partial) in commit history.
-#
-# This message is left by the most recent translator. For further question(s), if any,
-# please contact the translator on GitHub.
-#
-# 根据Mod作者的请求，请暂时不要翻译手册条目。
-# 原有翻译可在提交历史中找到。
-# 本消息由最近的翻译者所留。如有疑问，请在GitHub上联系最近的翻译者。
