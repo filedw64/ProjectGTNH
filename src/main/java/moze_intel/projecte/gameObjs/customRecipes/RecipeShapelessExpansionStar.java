@@ -77,7 +77,7 @@ public class RecipeShapelessExpansionStar extends ShapelessRecipes
 	 */
 	private static void addRecipe(ItemStack output, ItemStack input, int amount)
 	{
-		List<ItemStack> inputs = new ArrayList<ItemStack>();
+		List<ItemStack> inputs = new ArrayList<>();
 		for (int i = 0; i < amount; i++)
 		{
 			inputs.add(input.copy());
