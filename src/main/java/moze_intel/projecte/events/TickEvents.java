@@ -18,6 +18,6 @@ public class TickEvents
 	@SubscribeEvent
 	public void playerTick(TickEvent.PlayerTickEvent event) {
 		if (event.phase == TickEvent.Phase.END && event.side == Side.SERVER)
-			PlayerChecks.update(((EntityPlayerMP) event.player));
+			PlayerChecks.update((EntityPlayerMP) event.player);
 	}
 }
