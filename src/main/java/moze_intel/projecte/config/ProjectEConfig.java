@@ -60,7 +60,7 @@ public final class ProjectEConfig {
 	public static boolean zeroRingPlaceSnow;
 
 	// GTNH Integration Config
-	public static String questMode;
+	public static boolean questMode;
 
 	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
@@ -77,7 +77,7 @@ public final class ProjectEConfig {
 			config.load();
 
 			// Load GTNH Integration config
-			questMode = config.getString("QuestAndRecipeMode", "integration", "vanilla", "Mode for GTNH integration. Valid values: 'vanilla' (default PE recipes but adds quests), 'true' (hardcore GTNH recipes and quests), 'false' (disable quests and integration).");
+			questMode = config.getBoolean("questMode", "integration", true, "Whether to add quest when BetterQuesting is loaded");
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
@@ -142,7 +142,7 @@ public final class ProjectEConfig {
 
 			parseNBTConfigs();
 
-			PELogger.logInfo("Configuration file loaded .");
+			PELogger.logInfo("Configuration file loaded.");
 		}
 		catch (Exception e) {
 			PELogger.logFatal("Caught exception while loading config file!");

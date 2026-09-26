@@ -33,7 +33,7 @@ public class QuestLoader {
 	@SubscribeEvent
 	@SuppressWarnings("deprecation")
 	public void onDatabaseLoad(DatabaseEvent.Load event) {
-		if ("false".equalsIgnoreCase(ProjectEConfig.questMode))
+		if (!ProjectEConfig.questMode)
 			return;
 
 		IQuestDatabase questDB = QuestingAPI.getAPI(ApiReference.QUEST_DB);
