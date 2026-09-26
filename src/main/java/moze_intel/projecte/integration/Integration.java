@@ -2,6 +2,7 @@ package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
 import moze_intel.projecte.integration.NEI.NEIInit;
+import moze_intel.projecte.integration.TConstruct.TConstructInit;
 import moze_intel.projecte.integration.mappers.ChiselMapper;
 import moze_intel.projecte.integration.mappers.GTMapper;
 import moze_intel.projecte.utils.PELogger;
@@ -12,7 +13,7 @@ public final class Integration
 	public static boolean NEI = false, PHC = false, PHN = false, CCC = false,
 		EFR = false, natura = false, gregtech = false, forestry = false,
 		chisel = false, duraDisplay = false, avaritia = false,
-		botania = false;
+		botania = false, TConstruct = false;
 
 	public static void modChecks()
 	{
@@ -28,6 +29,7 @@ public final class Integration
 		duraDisplay = Loader.isModLoaded("duradisplay");
 		avaritia = Loader.isModLoaded("Avaritia");
 		botania = Loader.isModLoaded("Botania");
+		TConstruct = Loader.isModLoaded("TConstruct");
 	}
 
 	public static void init()
@@ -91,6 +93,16 @@ public final class Integration
 				duraDisplay = false;
 				e.printStackTrace();
 				PELogger.logInfo("Cannot **hack** DuraDisplay! I hate it!");
+			}
+		}
+
+		if (TConstruct) {
+			PELogger.logInfo("Try to integrate with Tinkers' Construct");
+			try {
+				TConstructInit.init();
+			} catch (Throwable e) {
+				TConstruct = false;
+				e.printStackTrace();
 			}
 		}
 	}
