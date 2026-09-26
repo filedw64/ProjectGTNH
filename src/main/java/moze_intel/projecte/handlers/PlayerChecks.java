@@ -66,14 +66,9 @@ public final class PlayerChecks
 		else if (wearGemHelmet.remove(player))
 			player.removePotionEffect(Potion.nightVision.id);
 
-		if (!shouldPlayerResistFire(player)) {
-			if (player.isImmuneToFire())
-				PlayerHelper.setPlayerFireImmunity(player, false);
-		}
-		else {
-			if (!player.isImmuneToFire())
-				PlayerHelper.setPlayerFireImmunity(player, true);
-		}
+		final boolean shouldResistFire = shouldPlayerResistFire(player);
+		if (shouldResistFire != player.isImmuneToFire())
+			PlayerHelper.setPlayerFireImmunity(player, shouldResistFire);
 
 		if (!shouldPlayerStep(player)) {
 			if (player.stepHeight > 0.5F)

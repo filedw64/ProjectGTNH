@@ -65,14 +65,12 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 			if (stack.getItemDamage() > 0)
 				changeMode(stack, 0);
 
-			if (playerMP.capabilities.allowFlying)
-				PlayerChecks.disableSwrgFlightOverride(playerMP);
-
+			PlayerChecks.disableSwrgFlightOverride(playerMP);
 			return;
 		}
 
-		if (!playerMP.capabilities.allowFlying)
-			PlayerChecks.enableSwrgFlightOverride(playerMP);
+		// 移除了 !allowFlying 判断，只要有EMC且生效就无条件加白名单，防止多飞行物品切换时的1 tick断飞
+		PlayerChecks.enableSwrgFlightOverride(playerMP);
 
 		if (playerMP.capabilities.isFlying) {
 			if (!isFlyingEnabled(stack))
@@ -144,18 +142,18 @@ public class SWRG extends ItemPE implements IBauble, IPedestalItem, IFlightProvi
 	@SideOnly(Side.CLIENT)
 	public IIcon getIconFromDamage(int dmg) {
 		if (dmg == 0) return ringOff;
-		else return ringOn[MathHelper.clamp_int(dmg - 1, 0, 2)];
+		return ringOn[MathHelper.clamp_int(dmg - 1, 0, 2)];
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register)
 	{
-		ringOff = register.registerIcon(this.getTexture("rings", "swrg_off"));
+		ringOff = register.registerIcon(getTexture("rings", "swrg_off"));
 		ringOn = new IIcon[3];
 
 		for (int i = 0; i < 3; i++)
-			ringOn[i] = register.registerIcon(this.getTexture("rings", "swrg_on" + (i + 1)));
+			ringOn[i] = register.registerIcon(getTexture("rings", "swrg_on" + (i + 1)));
 	}
 
 	@Override
