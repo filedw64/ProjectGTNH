@@ -51,7 +51,7 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-@Mod(modid = PECore.MODID, name = "ProjectE", version = "1.11.0-GTNH")
+@Mod(modid = PECore.MODID, name = "ProjectE", version = "1.11.1-GTNH")
 public class PECore
 {
 	public static final String MODID = "ProjectE";
