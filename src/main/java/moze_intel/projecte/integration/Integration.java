@@ -3,6 +3,7 @@ package moze_intel.projecte.integration;
 import cpw.mods.fml.common.Loader;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.integration.TConstruct.TConstructInit;
+import moze_intel.projecte.integration.ae2.AE2Integration;
 import moze_intel.projecte.integration.mappers.ChiselMapper;
 import moze_intel.projecte.integration.mappers.GTMapper;
 import moze_intel.projecte.utils.PELogger;
@@ -13,7 +14,7 @@ public final class Integration
 	public static boolean NEI = false, PHC = false, PHN = false, CCC = false,
 		EFR = false, natura = false, gregtech = false, forestry = false,
 		chisel = false, duraDisplay = false, avaritia = false,
-		botania = false, TConstruct = false;
+		botania = false, TConstruct = false, ae2 = false;
 
 	public static void modChecks()
 	{
@@ -30,6 +31,7 @@ public final class Integration
 		avaritia = Loader.isModLoaded("Avaritia");
 		botania = Loader.isModLoaded("Botania");
 		TConstruct = Loader.isModLoaded("TConstruct");
+		ae2 = Loader.isModLoaded("appliedenergistics2");
 	}
 
 	public static void init()
@@ -104,6 +106,10 @@ public final class Integration
 				TConstruct = false;
 				e.printStackTrace();
 			}
+		}
+
+		if (ae2) {
+			AE2Integration.preInit();
 		}
 	}
 }

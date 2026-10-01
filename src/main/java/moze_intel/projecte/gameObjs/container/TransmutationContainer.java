@@ -135,21 +135,8 @@ public class TransmutationContainer extends Container
 		}
 	}
 
-	private boolean isCalledByNEI() {
-		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-		final int depth = Math.max(stack.length, 13);
-		// 跳过 getStackTrace(), isCalledByNEI(), slotClick()，最多检查 10 层堆栈
-		for (int i = 3; i < depth; i++)
-			if (stack[i].getClassName().startsWith("codechicken.nei"))
-				return true;
-		return false;
-	}
-
 	@Override
 	public ItemStack slotClick(int slot, int button, int clickType, EntityPlayer player) {
-		if (isCalledByNEI())
-			return null;
-
 		if (player.worldObj.isRemote && 10 <= slot && slot <= 25)
 			PacketHandler.sendToServer(new SearchUpdatePKT(slot, getSlot(slot).getStack()));
 
