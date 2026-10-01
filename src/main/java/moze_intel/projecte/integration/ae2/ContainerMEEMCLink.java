@@ -49,7 +49,7 @@ public class ContainerMEEMCLink extends Container {
 
 	@Override public ItemStack slotClick(int slotId, int clickedButton, int mode, EntityPlayer player) {
 		if (slotId >= 0 && slotId < 16) {
-			Slot slot = (Slot) inventorySlots.get(slotId);
+			Slot slot = inventorySlots.get(slotId);
 			ItemStack cursor = player.inventory.getItemStack();
 			if (cursor != null) {
 				ItemStack copy = cursor.copy(); copy.stackSize = 1; slot.putStack(copy);
@@ -60,12 +60,12 @@ public class ContainerMEEMCLink extends Container {
 	}
 
 	@Override public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
-		Slot slot = (Slot) inventorySlots.get(slotIndex);
+		Slot slot = inventorySlots.get(slotIndex);
 		if (slot != null && slot.getHasStack()) {
 			ItemStack stack = slot.getStack();
 			if (slotIndex >= 16) {
 				for (int i = 0; i < 16; i++) {
-					Slot filterSlot = (Slot) inventorySlots.get(i);
+					Slot filterSlot = inventorySlots.get(i);
 					if (!filterSlot.getHasStack()) {
 						ItemStack copy = stack.copy(); copy.stackSize = 1; filterSlot.putStack(copy);
 						break;
@@ -78,8 +78,7 @@ public class ContainerMEEMCLink extends Container {
 
 	@Override public void detectAndSendChanges() {
 		super.detectAndSendChanges();
-		for (Object crafter : crafters) {
-			ICrafting ic = (ICrafting) crafter;
+		for (ICrafting ic : crafters) {
 			if (lastAccessMode != getAccessMode()) ic.sendProgressBarUpdate(this, 0, getAccessMode());
 			if (lastPriority != getPriority()) ic.sendProgressBarUpdate(this, 1, getPriority());
 			if (lastFilterMode != getFilterMode()) ic.sendProgressBarUpdate(this, 2, getFilterMode());

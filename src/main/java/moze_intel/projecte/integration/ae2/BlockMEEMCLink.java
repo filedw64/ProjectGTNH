@@ -52,7 +52,9 @@ public class BlockMEEMCLink extends BlockContainer {
 		}
 		if (!world.isRemote) {
 			// 假设分配的 GUI ID 是 120，后文我们需要在 GuiHandler 中注册它
-			player.openGui(PECore.instance, 120, world, x, y, z);
+			if (player != null) {
+				player.openGui(PECore.instance, 120, world, x, y, z);
+			}
 		}
 		return true;
 	}

@@ -20,7 +20,9 @@ public class GuiMEEMCLink extends GuiContainer {
 
 	private static final ResourceLocation TEXTURE = new ResourceLocation("projecte", "textures/gui/me_emc_link.png");
 	private final ContainerMEEMCLink container;
-	private GuiButton btnAccess, btnFilter, btnPrecision, btnClaim;
+	private GuiButton btnAccess;
+	private GuiButton btnFilter;
+	private GuiButton btnPrecision;
 
 	public GuiMEEMCLink(InventoryPlayer playerInv, TileMEEMCLink tile) {
 		super(new ContainerMEEMCLink(playerInv, tile));
@@ -39,7 +41,8 @@ public class GuiMEEMCLink extends GuiContainer {
 		btnAccess = new GuiButton(4, guiLeft + 8, guiTop + 43, 64, 13, getAccessModeText()); buttonList.add(btnAccess);
 		btnFilter = new GuiButton(5, guiLeft + 8, guiTop + 57, 64, 13, getFilterModeText()); buttonList.add(btnFilter);
 		btnPrecision = new GuiButton(7, guiLeft + 8, guiTop + 71, 64, 13, getPrecisionText()); buttonList.add(btnPrecision);
-		btnClaim = new GuiButton(6, guiLeft + 8, guiTop + 85, 64, 13, "Link / Claim"); buttonList.add(btnClaim);
+		GuiButton btnClaim = new GuiButton(6, guiLeft + 8, guiTop + 85, 64, 13, "Link / Claim");
+		buttonList.add(btnClaim);
 	}
 
 	private String getAccessModeText() {

@@ -27,7 +27,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
 
 @cpw.mods.fml.common.Optional.InterfaceList({
 	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.IGridHost", modid = "appliedenergistics2"),
@@ -64,7 +68,7 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 			if (node != null && node.getGrid() != null) {
 				node.getGrid().postEvent(new MENetworkCellArrayUpdate());
 				try {
-					appeng.api.networking.storage.IStorageGrid storageGrid = (appeng.api.networking.storage.IStorageGrid) node.getGrid().getCache(appeng.api.networking.storage.IStorageGrid.class);
+					appeng.api.networking.storage.IStorageGrid storageGrid = node.getGrid().getCache(appeng.api.networking.storage.IStorageGrid.class);
 					if (storageGrid != null) {
 						appeng.api.storage.data.IItemList<appeng.api.storage.data.IAEItemStack> current = AEApi.instance().storage().createItemList();
 						inventoryHandler.getAvailableItems(current);

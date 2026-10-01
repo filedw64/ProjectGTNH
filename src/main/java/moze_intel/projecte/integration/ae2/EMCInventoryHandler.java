@@ -20,6 +20,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.storage.IMEInventoryHandler", modid = "appliedenergistics2")
@@ -68,8 +69,7 @@ public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
 		if (server == null) return null;
 		if (ownerUUID != null) {
 			for (Object obj : server.getConfigurationManager().playerEntityList) {
-				if (obj instanceof EntityPlayer) {
-					EntityPlayer p = (EntityPlayer) obj;
+				if (obj instanceof EntityPlayer p) {
 					if (ownerUUID.equals(p.getUniqueID())) return p;
 				}
 			}
@@ -96,7 +96,7 @@ public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
 		int precision = getFilterPrecision();
 		boolean found = false;
 		for (ItemStack f : filter) {
-			if (f != null && matchesPrecision(f, stack, precision)) {
+			if (matchesPrecision(f, stack, precision)) {
 				found = true;
 				break;
 			}
@@ -198,7 +198,7 @@ public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
 					if (f == null || f.getItem() == null || !Transmutation.hasKnowledgeForStack(f, player)) continue;
 					double cost = PEGeneralPurposeUtils.getEmcValueDouble(f);
 					if (cost > 0.0 && cost <= playerEmc) {
-						long count = (long) Math.min((double) Integer.MAX_VALUE, Math.floor(playerEmc / cost));
+						long count = (long) Math.min(Integer.MAX_VALUE, Math.floor(playerEmc / cost));
 						if (count > 0) {
 							IAEItemStack aeStack = AEApi.instance().storage().createItemStack(f);
 							if (aeStack != null) {
@@ -221,7 +221,7 @@ public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
 			double cost = PEGeneralPurposeUtils.getEmcValueDouble(stack);
 			if (cost <= 0.0 || cost > playerEmc) continue;
 
-			long count = (long) Math.min((double) Integer.MAX_VALUE, Math.floor(playerEmc / cost));
+			long count = (long) Math.min(Integer.MAX_VALUE, Math.floor(playerEmc / cost));
 			if (count > 0) {
 				StackKey key = new StackKey(stack);
 				IAEItemStack aeStack = aeItemCache.get(key);
@@ -275,9 +275,8 @@ public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
-			if (!(obj instanceof StackKey)) return false;
-			StackKey other = (StackKey) obj;
-			return this.item == other.item && this.damage == other.damage && (this.nbt == null ? other.nbt == null : this.nbt.equals(other.nbt));
+			if (!(obj instanceof StackKey other)) return false;
+			return this.item == other.item && this.damage == other.damage && (Objects.equals(this.nbt, other.nbt));
 		}
 		@Override
 		public int hashCode() { return hash; }
