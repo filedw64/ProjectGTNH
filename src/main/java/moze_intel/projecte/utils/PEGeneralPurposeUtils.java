@@ -163,6 +163,7 @@ public class PEGeneralPurposeUtils {
 		return copy;
 	}
 
+	/*
 	public static void syncPlayerEMCAndKnowledge(EntityPlayer player, double newEmc, ItemStack newlyLearnedStack) {
 		if (player == null) return;
 		UUID uuid = player.getUniqueID();
@@ -196,6 +197,7 @@ public class PEGeneralPurposeUtils {
 			}
 		}
 	}
+	 */
 
 	public static int getMatchingItemCount(TransmutationInventory inv) {
 		return inv == null ? 0 : MATCHING_ITEM_COUNTS.getOrDefault(inv, 0);
