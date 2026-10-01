@@ -43,6 +43,8 @@ import moze_intel.projecte.rendering.PedestalItemRenderer;
 import moze_intel.projecte.rendering.PedestalRenderer;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.rendering.WandRenderer;
+import net.minecraft.client.renderer.entity.RenderArrow;
+import moze_intel.projecte.gameObjs.entity.EntityPEArrow;
 
 public class ClientProxy implements IProxy
 {
@@ -98,6 +100,7 @@ public class ClientProxy implements IProxy
 		RenderingRegistry.registerEntityRenderingHandler(EntityNovaCataclysmPrimed.class, new NovaCataclysmRenderer());
 		RenderingRegistry.registerEntityRenderingHandler(EntityFireProjectile.class, new RenderSnowball(ObjHandler.fireProjectile));
 		RenderingRegistry.registerEntityRenderingHandler(EntitySWRGProjectile.class, new RenderSnowball(ObjHandler.windProjectile));
+		RenderingRegistry.registerEntityRenderingHandler(EntityPEArrow.class, new RenderArrow());
 	}
 
 	@Override
