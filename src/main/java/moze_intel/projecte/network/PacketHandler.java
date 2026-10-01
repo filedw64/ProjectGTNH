@@ -16,6 +16,7 @@ import moze_intel.projecte.network.packets.KeyPressPKT;
 import moze_intel.projecte.network.packets.KnowledgeChangePKT;
 import moze_intel.projecte.network.packets.KnowledgeClearPKT;
 import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
+import moze_intel.projecte.network.packets.MEEMCLinkPKT;
 import moze_intel.projecte.network.packets.OrientationSyncPKT;
 import moze_intel.projecte.network.packets.ParticlePKT;
 import moze_intel.projecte.network.packets.RelaySyncPKT;
@@ -65,8 +66,7 @@ public final class PacketHandler
 		HANDLER.registerMessage(KnowledgeChangePKT.Handler.class, KnowledgeChangePKT.class, 18, Side.CLIENT);
 		HANDLER.registerMessage(ArcaneTabletButtonPKT.class, ArcaneTabletButtonPKT.class, 19, Side.SERVER);
 		HANDLER.registerMessage(ArcaneRecipeTransferPKT.class, ArcaneRecipeTransferPKT.class, 20, Side.SERVER);
-
-
+		HANDLER.registerMessage(MEEMCLinkPKT.class, MEEMCLinkPKT.class, 21, Side.SERVER);
 	}
 
 	public static Packet getMCPacket(IMessage message)

@@ -192,7 +192,7 @@ public class PEGeneralPurposeUtils {
 
 			if (uuid != null && cpw.mods.fml.common.Loader.isModLoaded("appliedenergistics2")) {
 				try {
-					//moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
+					moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
 				} catch (Throwable ignored) {}
 			}
 		}

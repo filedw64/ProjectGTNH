@@ -56,6 +56,11 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK1Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 
+// AE2 Integration Imports
+import moze_intel.projecte.integration.ae2.ContainerMEEMCLink;
+import moze_intel.projecte.integration.ae2.GuiMEEMCLink;
+import moze_intel.projecte.integration.ae2.TileMEEMCLink;
+
 public class GuiHandler implements IGuiHandler {
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -67,7 +72,7 @@ public class GuiHandler implements IGuiHandler {
 					return new AlchChestContainer(player.inventory, (AlchChestTile) tile);
 				break;
 			case Constants.ALCH_BAG_GUI:
-				if (player.getHeldItem() != null) // 安全校验
+				if (player.getHeldItem() != null)
 					return new AlchBagContainer(player.inventory, new AlchBagInventory(player, player.getHeldItem()));
 				break;
 			case Constants.CONDENSER_GUI:
@@ -119,12 +124,10 @@ public class GuiHandler implements IGuiHandler {
 					return new EternalDensityContainer(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
 				break;
 			case Constants.CONDENSER_MK2_GUI:
-				// 补充强制类型转换前的 instanceof 检查
 				if (tile instanceof CondenserMK2Tile condenserMK2Tile)
 					return new CondenserMK2Container(player.inventory, condenserMK2Tile);
 				break;
 			case Constants.PEDESTAL_GUI:
-				// 补充强制类型转换前的 instanceof 检查
 				if (tile instanceof DMPedestalTile dmPedestalTile)
 					return new PedestalContainer(player.inventory, dmPedestalTile);
 				break;
@@ -132,6 +135,10 @@ public class GuiHandler implements IGuiHandler {
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
 			case Constants.ARCANE_TABLET_GUI:
 				return new ArcaneTransmutationContainer(player.inventory, player);
+			case Constants.ME_EMC_LINK_GUI:
+				if (tile instanceof TileMEEMCLink)
+					return new ContainerMEEMCLink(player.inventory, (TileMEEMCLink) tile);
+				break;
 		}
 
 		return null;
@@ -199,12 +206,10 @@ public class GuiHandler implements IGuiHandler {
 					return new GUIEternalDensity(player.inventory, new EternalDensityInventory(player.getHeldItem(), player));
 				break;
 			case Constants.CONDENSER_MK2_GUI:
-				// 补充强制类型转换前的 instanceof 检查
 				if (tile instanceof CondenserMK2Tile condenserMK2Tile)
 					return new GUICondenserMK2(player.inventory, condenserMK2Tile);
 				break;
 			case Constants.PEDESTAL_GUI:
-				// 补充强制类型转换前的 instanceof 检查
 				if (tile instanceof DMPedestalTile dmPedestalTile)
 					return new GUIPedestal(player.inventory, dmPedestalTile);
 				break;
@@ -212,6 +217,10 @@ public class GuiHandler implements IGuiHandler {
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
 			case Constants.ARCANE_TABLET_GUI:
 				return new GUIArcaneTransmutation(player.inventory, player);
+			case Constants.ME_EMC_LINK_GUI:
+				if (tile instanceof TileMEEMCLink)
+					return new GuiMEEMCLink(player.inventory, (TileMEEMCLink) tile);
+				break;
 		}
 
 		return null;

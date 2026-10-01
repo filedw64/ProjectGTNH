@@ -62,6 +62,7 @@ public final class Constants
 	public static final int PEDESTAL_GUI = 17;
 	public static final int TRANSMUTATION_PORTABLE_GUI = 18;
 	public static final int ARCANE_TABLET_GUI = 19;
+	public static final int ME_EMC_LINK_GUI = 20;
 
 	public static final int MAX_CONDENSER_PROGRESS = 102;
 
