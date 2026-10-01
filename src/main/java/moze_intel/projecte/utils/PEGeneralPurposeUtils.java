@@ -163,7 +163,7 @@ public class PEGeneralPurposeUtils {
 		return copy;
 	}
 
-	/*
+
 	public static void syncPlayerEMCAndKnowledge(EntityPlayer player, double newEmc, ItemStack newlyLearnedStack) {
 		if (player == null) return;
 		UUID uuid = player.getUniqueID();
@@ -192,12 +192,11 @@ public class PEGeneralPurposeUtils {
 
 			if (uuid != null && cpw.mods.fml.common.Loader.isModLoaded("appliedenergistics2")) {
 				try {
-					moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
+					//moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
 				} catch (Throwable ignored) {}
 			}
 		}
 	}
-	 */
 
 	public static int getMatchingItemCount(TransmutationInventory inv) {
 		return inv == null ? 0 : MATCHING_ITEM_COUNTS.getOrDefault(inv, 0);
