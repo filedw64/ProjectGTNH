@@ -5,6 +5,7 @@ import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotOutput;
 import moze_intel.projecte.gameObjs.gui.component.RefinedButton;
+import moze_intel.projecte.utils.SearchHistoryManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -13,6 +14,8 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 public class GUITransmutation extends GuiContainer {
@@ -22,6 +25,8 @@ public class GUITransmutation extends GuiContainer {
 
 	int xLocation;
 	int yLocation;
+
+	private int searchDelayTicks = 0;
 
 	public GUITransmutation(InventoryPlayer invPlayer, TransmutationInventory inventory, boolean portable) {
 		super(new TransmutationContainer(invPlayer, inventory, portable));
@@ -90,24 +95,77 @@ public class GUITransmutation extends GuiContainer {
 	public void updateScreen() {
 		super.updateScreen();
 		this.textBoxFilter.updateCursorCounter();
+
+		// 每一 tick 减少一次倒计时，归零时执行搜索
+		if (this.searchDelayTicks > 0) {
+			this.searchDelayTicks--;
+			if (this.searchDelayTicks == 0) {
+				performSearch();
+			}
+		}
+	}
+
+	// 将实际的搜索逻辑抽离出来，方便复用
+	private void performSearch() {
+		String srch = this.textBoxFilter.getText();
+		if (!inv.filter.equals(srch)) {
+			inv.filter = srch;
+			inv.searchpage = 0;
+			inv.updateOutputs();
+		}
+		this.searchDelayTicks = 0; // 清除可能存在的待定搜索
+	}
+
+	@Override
+	public void handleMouseInput() {
+		// 直接吃掉所有在转化桌界面里的鼠标滚轮事件
+		if (Mouse.getEventDWheel() != 0) {
+			return;
+		}
+		super.handleMouseInput();
 	}
 
 	@Override
 	protected void keyTyped(char par1, int par2) {
 		if (this.textBoxFilter.isFocused()) {
-			this.textBoxFilter.textboxKeyTyped(par1, par2);
-
-			String srch = this.textBoxFilter.getText();
-			if (!inv.filter.equals(srch)) {
-				inv.filter = srch;
-				inv.searchpage = 0;
-				inv.updateOutputs();
+			// 如果按下的是 ESC 键，取消焦点、立即应用搜索，并直接返回
+			if (par2 == 1) {
+				this.textBoxFilter.setFocused(false);
+				SearchHistoryManager.resetCursor();
+				performSearch();
+				return;
 			}
 
-			if (par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode())
+			// 处理搜索历史记录快捷键
+			if (par2 == Keyboard.KEY_UP) {
+				String hist = SearchHistoryManager.navigateUp(this.textBoxFilter.getText());
+				this.textBoxFilter.setText(hist);
+			}
+			else if (par2 == Keyboard.KEY_DOWN) {
+				String hist = SearchHistoryManager.navigateDown(this.textBoxFilter.getText());
+				this.textBoxFilter.setText(hist);
+			}
+			// 处理回车键确认
+			else if (par2 == Keyboard.KEY_RETURN || par2 == Keyboard.KEY_NUMPADENTER) {
+				SearchHistoryManager.addHistory(this.textBoxFilter.getText());
 				this.textBoxFilter.setFocused(false);
+				SearchHistoryManager.resetCursor();
+				performSearch();
+			}
+			else {
+				// 正常的字符输入
+				this.textBoxFilter.textboxKeyTyped(par1, par2);
+				SearchHistoryManager.resetCursor();
+
+				// 玩家正在打字，重置 1 秒的倒计时
+				if (!inv.filter.equals(this.textBoxFilter.getText())) {
+					this.searchDelayTicks = 20;
+				}
+			}
 		}
-		else super.keyTyped(par1, par2);
+		else {
+			super.keyTyped(par1, par2);
+		}
 	}
 
 	@Override
@@ -128,11 +186,11 @@ public class GUITransmutation extends GuiContainer {
 		final int minX = textBoxFilter.xPosition, maxX = minX + textBoxFilter.width;
 		final int minY = textBoxFilter.yPosition, maxY = minY + textBoxFilter.height;
 
+		// 右键清空搜索框
 		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY) {
-			inv.filter = "";
 			this.textBoxFilter.setText("");
-			inv.searchpage = 0;
-			inv.updateOutputs();
+			SearchHistoryManager.resetCursor();
+			performSearch();
 		}
 
 		this.textBoxFilter.mouseClicked(x, y, mouseButton);
@@ -143,23 +201,23 @@ public class GUITransmutation extends GuiContainer {
 		super.onGuiClosed();
 		inv.learnFlag = 0;
 		inv.unlearnFlag = 0;
+		SearchHistoryManager.resetCursor(); // GUI 关闭时重置游标
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) {
-		String srch = this.textBoxFilter.getText();
+		// 如果玩家在倒计时还没结束时点击了翻页按钮，强制先应用当前的搜索文本
+		performSearch();
 
 		if (button.id == 1) {
 			if (inv.searchpage != 0)
 				inv.searchpage--;
 		}
-
 		else if (button.id == 2) {
 			if (inv.hasNextPage())
 				inv.searchpage++;
 		}
 
-		inv.filter = srch;
 		inv.updateOutputs();
 	}
 }
