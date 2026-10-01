@@ -20,12 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TransmutationInventory implements IInventory {
-	private final EntityPlayer player;
+	public final EntityPlayer player;
 	private static final int LOCK_INDEX = 8;
 	private static final int[] MATTER_INDEXES = new int[] {12, 11, 13, 10, 14, 21, 15, 20, 16, 19, 17, 18};
 	private static final int[] FUEL_INDEXES = new int[] {22, 23, 24, 25};
 
-	private final ItemStack[] inventory = new ItemStack[27];
+	public final ItemStack[] inventory = new ItemStack[27];
 	public int learnFlag = 0, unlearnFlag = 0;
 	public String filter = "";
 	public int searchpage = 0;
