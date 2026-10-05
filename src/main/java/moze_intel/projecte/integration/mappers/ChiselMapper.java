@@ -1,5 +1,7 @@
 package moze_intel.projecte.integration.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.cricketcraft.chisel.api.carving.CarvingUtils;
 import com.cricketcraft.chisel.api.carving.ICarvingGroup;
 import com.cricketcraft.chisel.api.carving.ICarvingRegistry;
@@ -31,7 +33,7 @@ public class ChiselMapper extends AbstractIntegrationMapper {
 		/*for (String name: chiselBlockNames) {
 			Block block = Block.getBlockFromName("chisel:" + name);
 			if (block != null) {
-				mapper.setValueBefore(NormalizedSimpleStack.forFluid(block), 1.0);
+				mapper.setValueBefore(NormalizedSimpleStack.forFluid(block), ExactEMC.ONE);
 			}
 		}*/
 

@@ -365,3 +365,41 @@ pe.debug.metainvalid.name=metadata参数设置无效
 
 pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
+
+# AppliedE-style AE2 695 integration
+item.pe_me_emc_cell.name=ME EMC 存储元件
+tile.pe_me_emc_link.name=ME EMC 连接器
+container.pe.me_emc_link=ME EMC 连接器
+pe.ae2.owner=所有者：%s
+pe.ae2.unbound=未绑定：潜行右键绑定
+pe.ae2.exact=使用你的 ProjectE 精确 EMC 余额
+pe.ae2.online_only=所有者在线时才能交易
+pe.ae2.shared_budget=显示的各物品数量共享同一份 EMC 预算
+pe.ae2.owner_only=只有所有者可以配置或绑定此设备
+pe.ae2.bound=ME EMC 存储元件已绑定给你
+pe.ae2.access.0=读取／写入
+pe.ae2.access.1=仅取出
+pe.ae2.access.2=仅存入
+pe.ae2.filter.0=全部物品
+pe.ae2.filter.1=白名单
+pe.ae2.filter.2=黑名单
+pe.ae2.precision.0=精确：物品、元数据和 NBT
+pe.ae2.precision.1=模糊：仅物品类型
+pe.ae2.precision.2=矿物词典
+pe.ae2.priority=优先级
+
+# AppliedE-style EMC crafting (695 bridge)
+item.pe_emc_resource.name=EMC 资源
+item.pe_emc_transmutation_pattern.name=EMC 转化样板
+pe.ae2.resource_unit=第 %s 阶：每单位 %s EMC
+pe.ae2.resource_bridge=AE2 695 资源桥接；提取时扣除玩家 EMC。
+
+# AppliedE core hardening v3
+item.pe_emc_recovery_bundle.name=EMC 产物回收包
+pe.ae2.recovery_hint=对凭据所有者的空队列 ME EMC 连接器使用；包丢失可用 /emcrecovery list、token <id> 补发。
+pe.ae2.recovery_warning=产物由服务器账本持有；复制凭据只能兑换一次，隔离中的转移须由管理员核对。
+pe.ae2.recovery_rejected=恢复拒绝：请检查所有者、世界、凭据状态、空队列要求及隔离状态。
+
+pe.ae2.recovery_legacy=旧版未认证回收包：请保留供管理员审查，不会自动兑换。
+
+# AppliedE persistent recovery v4

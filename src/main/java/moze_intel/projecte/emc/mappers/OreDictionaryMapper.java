@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import moze_intel.projecte.utils.ItemHelper;
@@ -10,7 +12,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import java.util.HashSet;
 import java.util.Set;
 
-public class OreDictionaryMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+public class OreDictionaryMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
 	private static final Set<String> BLACKLIST_EXCEPTIONS = new HashSet<>();
 
 	public static void addBlacklistException(String str) {
@@ -22,7 +24,7 @@ public class OreDictionaryMapper implements IEMCMapper<NormalizedSimpleStack, Do
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config) {
 		if (!config.getBoolean("blacklistOres", "", true,
 			"Set EMC=0 for those whose OD Name starts with `ore`, `rawOre`, `dustPure`, `dustImpure` or `crushed` besides `crushedPineMaterial` and `oreberry`"))
 			return;
@@ -35,8 +37,8 @@ public class OreDictionaryMapper implements IEMCMapper<NormalizedSimpleStack, Do
 
 			for (ItemStack stack : ItemHelper.getODItems(s)) {
 				if (stack == null || stack.getItem() == null) continue;
-				mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), 0.0);
-				mapper.setValueAfter(NormalizedSimpleStack.forItem(stack), 0.0);
+				mapper.setValueBefore(NormalizedSimpleStack.forItem(stack), ExactEMC.ZERO);
+				mapper.setValueAfter(NormalizedSimpleStack.forItem(stack), ExactEMC.ZERO);
 			}
 		}
 	}

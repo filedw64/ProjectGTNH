@@ -1,5 +1,7 @@
 package moze_intel.projecte.utils;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.api.item.IItemEmc;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FuelMapper;
@@ -176,6 +178,86 @@ public final class EMCHelper
 		}
 		return 0.0;
 	}
+
+    public static ExactEMC getEmcValueExact(ItemStack stack) {
+        return getEmcValueExact(stack, 0);
+    }
+
+    private static ExactEMC getEmcValueExact(ItemStack stack, int depth) {
+        if (stack == null || stack.getItem() == null) return ExactEMC.ZERO;
+        if (depth > 32) throw new IllegalArgumentException("Nested EMC container limit exceeded");
+        if (EFRHelper.isShulkerBox(stack) || ForestryHelper.isForestryBag(stack)) {
+            SimpleStack key = new SimpleStack(stack);
+            if (!EMCMapper.mapContains(key)) return ExactEMC.ZERO;
+            ExactEMC total = EMCMapper.getEmcValueExact(key);
+            if (!stack.hasTagCompound()) return total;
+            java.util.List<ItemStack> contents = new java.util.ArrayList<>();
+            if (EFRHelper.isShulkerBox(stack)) {
+                net.minecraft.nbt.NBTTagList list = stack.stackTagCompound.getTagList("Items", 10);
+                for (int i = 0; i < list.tagCount(); i++)
+                    contents.add(ItemStack.loadItemStackFromNBT(list.getCompoundTagAt(i)));
+            } else {
+                net.minecraft.nbt.NBTTagCompound slots = stack.stackTagCompound.getCompoundTag("Slots");
+                for (Object rawKey : slots.func_150296_c())
+                    contents.add(ItemStack.loadItemStackFromNBT(slots.getCompoundTag((String) rawKey)));
+            }
+            for (ItemStack item : contents) {
+                if (item == null || item.getItem() == null) continue;
+                if (item.stackSize < 0) throw new IllegalArgumentException("Negative container count");
+                ExactEMC price = getEmcValueExact(item, depth + 1);
+                if (price.signum() <= 0) return ExactEMC.ZERO;
+                total = total.add(price.multiply(item.stackSize));
+            }
+            return moze_intel.projecte.math.ExactEMCCodec.validate(total);
+        }
+        SimpleStack key = SimpleStack.getFor(stack);
+        if (!key.isValid()) return ExactEMC.ZERO;
+        if (GTItemHelper.isGTtool(stack)) {
+            ExactEMC price = EMCMapper.getEmcValueExact(key);
+            if (!stack.hasTagCompound()) return price;
+            net.minecraft.nbt.NBTTagCompound stats = stack.stackTagCompound.getCompoundTag("GT.ToolStats");
+            long damage = stats.getLong("Damage"), max = stats.getLong("MaxDamage");
+            if (max <= 0 || damage < 0 || damage >= max) return ExactEMC.ZERO;
+            return price.multiply(ExactEMC.of(max).subtract(damage)).divide(max);
+        }
+        ExactEMC bonus = getEnchantEmcBonusExact(stack).add(getStoredEMCBonusExact(stack));
+        if (EMCMapper.mapContains(key)) return EMCMapper.getEmcValueExact(key).add(bonus);
+        if (!stack.getHasSubtypes() && stack.getMaxDamage() != 0) {
+            key.damage = 0;
+            if (EMCMapper.mapContains(key)) {
+                ExactEMC base = EMCMapper.getEmcValueExact(key);
+                long remaining = (long) stack.getMaxDamage() - stack.getItemDamage();
+                if (remaining <= 0) return base;
+                return base.multiply(remaining).divide(stack.getMaxDamage()).add(bonus);
+            }
+        }
+        return ExactEMC.ZERO;
+    }
+
+    public static ExactEMC getEnchantEmcBonusExact(ItemStack stack) {
+        if (stack.stackTagCompound == null || EnchantmentBlacklist.contains(stack)) return ExactEMC.ZERO;
+        Map<Integer, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
+        ExactEMC result = ExactEMC.ZERO;
+        for (Map.Entry<Integer, Integer> entry : enchants.entrySet()) {
+            int id = entry.getKey();
+            if (id < 0 || id >= Enchantment.enchantmentsList.length) continue;
+            Enchantment enchantment = Enchantment.enchantmentsList[id];
+            if (enchantment != null && enchantment.getWeight() > 0)
+                result = result.add(ExactEMC.of(Constants.ENCH_EMC_BONUS)
+                    .multiply(entry.getValue()).divide(enchantment.getWeight()));
+        }
+        return result;
+    }
+
+    public static ExactEMC getStoredEMCBonusExact(ItemStack stack) {
+        if (stack.stackTagCompound == null) return ExactEMC.ZERO;
+        if (stack.stackTagCompound.hasKey("StoredEMCExact"))
+            return moze_intel.projecte.math.ExactEMCCodec.validateBalance(
+                moze_intel.projecte.math.ExactEMCCodec.readNBT(stack.stackTagCompound, "StoredEMCExact"));
+        // Existing standalone item storage is still a legacy compatibility boundary.
+        return moze_intel.projecte.math.ExactEMCCodec.validateBalance(
+            ExactEMC.fromLegacyDouble(stack.stackTagCompound.getDouble("StoredEMC")));
+    }
 
 	public static double getEnchantEmcBonus(ItemStack stack)
 	{

@@ -93,14 +93,8 @@ public class TraitHandler extends ActiveToolMod {
 
 		if (hasPEMaterial(tags, TConstructInit.MAT_ID_RED_MATTER)) {
 			// 被遗忘者从未被遗忘
-			moze_intel.projecte.api.proxy.ITransmutationProxy proxy = ProjectEAPI.getTransmutationProxy();
-			java.util.UUID uuid = player.getUniqueID();
-			double currentEmc = proxy.getEMC(uuid);
-
-			// 确保玩家在线且数据正常
-			if (!Double.isNaN(currentEmc)) {
-				proxy.setEMC(uuid, currentEmc + 4096.0);
-			}
+            moze_intel.projecte.playerData.Transmutation.addEmcExact(player,
+                moze_intel.projecte.math.ExactEMC.of(4096));
 
 		} else if (hasPEMaterial(tags, TConstructInit.MAT_ID_DARK_MATTER)) {
 			// 被遗忘者自天堂回归

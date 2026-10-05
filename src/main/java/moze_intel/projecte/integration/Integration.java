@@ -15,6 +15,50 @@ public final class Integration
 		chisel = false, duraDisplay = false, avaritia = false,
 		botania = false, TConstruct = false;
 
+    public static void preInitAE2() {
+        if (Loader.isModLoaded("appliedenergistics2")) loadAE2();
+    }
+
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void loadAE2() {
+        moze_intel.projecte.integration.ae2.AE2Integration.preInit();
+    }
+
+    public static void initAE2Recipes() {
+        if (Loader.isModLoaded("appliedenergistics2")) loadAE2Recipes();
+    }
+
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void loadAE2Recipes() {
+        moze_intel.projecte.integration.ae2.AE2Integration.initRecipes();
+    }
+
+
+    // AppliedE persistent recovery v4
+    public static void startAE2Recovery(cpw.mods.fml.common.event.FMLServerStartingEvent event) {
+        if (Loader.isModLoaded("appliedenergistics2")) startAE2RecoveryOptional(event);
+    }
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void startAE2RecoveryOptional(cpw.mods.fml.common.event.FMLServerStartingEvent event) {
+        moze_intel.projecte.integration.ae2.AE2Integration.recoveryServerStarting(event);
+    }
+    public static void stopAE2Recovery() {
+        if (Loader.isModLoaded("appliedenergistics2")) stopAE2RecoveryOptional();
+    }
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void stopAE2RecoveryOptional() {
+        moze_intel.projecte.integration.ae2.AE2Integration.recoveryServerStopping();
+    }
+
+    public static void clearAE2() {
+        if (Loader.isModLoaded("appliedenergistics2")) clearAE2Caches();
+    }
+
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void clearAE2Caches() {
+        moze_intel.projecte.integration.ae2.AE2Integration.clear();
+    }
+
 	public static void modChecks()
 	{
 		NEI = Loader.isModLoaded("NotEnoughItems");

@@ -1,5 +1,7 @@
 package moze_intel.projecte.gameObjs.container;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotConsume;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotInput;
@@ -253,13 +255,14 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 	}
 
 	public void clearCrafting(EntityPlayer player) {
+        Transmutation.requireServer(player);
 		boolean emcUpdate = false;
 		for (int i = 0; i < this.craftMatrix.getSizeInventory(); i++) {
 			ItemStack stack = this.craftMatrix.getStackInSlot(i);
 			if (stack == null) continue;
 			if (EMCHelper.doesItemHaveEmc(stack) && Transmutation.hasKnowledgeForStack(stack, player)) {
-				double emcValue = EMCHelper.getEmcValue(stack) * stack.stackSize;
-				Transmutation.setEmc(player, Transmutation.getEmc(player) + emcValue);
+				ExactEMC emcValue = EMCHelper.getEmcValueExact(stack).multiply(stack.stackSize);
+				Transmutation.addEmcExact(player, emcValue);
 				emcUpdate = true;
 				this.craftMatrix.setInventorySlotContents(i, null);
 			} else {
@@ -347,6 +350,7 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 	// --- 将这个方法加在 ArcaneTransmutationContainer.java 的最下面 ---
 
 	public void fillRecipe(EntityPlayer player, ItemStack[] recipe) {
+        Transmutation.requireServer(player);
 		// 1. 先把当前网格里的东西退回去（变成 EMC 或塞回背包）
 		this.clearCrafting(player);
 		boolean emcUpdated = false;
@@ -378,10 +382,10 @@ public class ArcaneTransmutationContainer extends TransmutationContainer {
 			cleanTarget.stackSize = 1; // 只生成 1 个
 
 			if (EMCHelper.doesItemHaveEmc(cleanTarget) && Transmutation.hasKnowledgeForStack(cleanTarget, player)) {
-				double emcCost = EMCHelper.getEmcValue(cleanTarget);
-				if (Transmutation.getEmc(player) >= emcCost) {
+				ExactEMC emcCost = EMCHelper.getEmcValueExact(cleanTarget);
+				if (emcCost.signum() > 0 && Transmutation.tryRemoveEmcExact(player, emcCost)) {
 					// 扣钱，变物！
-					Transmutation.setEmc(player, Transmutation.getEmc(player) - emcCost);
+
 					emcUpdated = true;
 					this.craftMatrix.setInventorySlotContents(i, cleanTarget);
 				}

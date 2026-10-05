@@ -1,6 +1,8 @@
 package moze_intel.projecte.utils;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import moze_intel.projecte.math.ExactEMC;
+import moze_intel.projecte.math.ExactEMCCodec;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.playerData.TransmutationOffline;
 import moze_intel.projecte.playerData.TransmutationProps;
@@ -9,83 +11,87 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.DimensionManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 public class NetworkEmcHelper {
-
-	public static double getNetworkEMC(String uuidStr) {
-		if (uuidStr == null || uuidStr.isEmpty()) return 0;
-		UUID uuid;
-		try { uuid = UUID.fromString(uuidStr); } catch (Exception e) { return 0; }
-
-		MinecraftServer server = MinecraftServer.getServer();
-		if (server != null) {
-			for (Object obj : server.getConfigurationManager().playerEntityList) {
-				EntityPlayerMP player = (EntityPlayerMP) obj;
-				if (player.getUniqueID().equals(uuid)) {
-					return Transmutation.getEmc(player);
-				}
-			}
-		}
-
-		// 离线玩家处理
-		File playerData = new File(DimensionManager.getCurrentSaveRootDirectory(), "playerdata");
-		File playerFile = new File(playerData, uuid.toString() + ".dat");
-		if (playerFile.exists() && playerFile.isFile()) {
-			try {
-				NBTTagCompound root = CompressedStreamTools.readCompressed(new FileInputStream(playerFile));
-				return root.getCompoundTag(TransmutationProps.PROP_NAME).getDouble("transmutationEmc");
-			} catch (Exception e) {
-				PELogger.logWarn("无法读取玩家离线EMC数据: " + uuid);
-			}
-		}
-		return 0;
-	}
-
-	public static boolean deductNetworkEMC(String uuidStr, double amount) {
-		if (uuidStr == null || uuidStr.isEmpty()) return false;
-		UUID uuid;
-		try { uuid = UUID.fromString(uuidStr); } catch (Exception e) { return false; }
-
-		MinecraftServer server = MinecraftServer.getServer();
-		if (server == null) return false;
-
-		// 尝试寻找在线玩家
-		for (Object obj : server.getConfigurationManager().playerEntityList) {
-			EntityPlayerMP player = (EntityPlayerMP) obj;
-			if (player.getUniqueID().equals(uuid)) {
-				double currentEmc = Transmutation.getEmc(player);
-				if (currentEmc >= amount) {
-					Transmutation.setEmc(player, currentEmc - amount);
-					Transmutation.sync(player); // 同步给客户端
-					return true;
-				}
-				return false;
-			}
-		}
-
-		// 离线玩家处理（直接修改 dat 文件）
-		File playerData = new File(DimensionManager.getCurrentSaveRootDirectory(), "playerdata");
-		File playerFile = new File(playerData, uuid.toString() + ".dat");
-		if (playerFile.exists() && playerFile.isFile()) {
-			try {
-				NBTTagCompound root = CompressedStreamTools.readCompressed(new FileInputStream(playerFile));
-				NBTTagCompound props = root.getCompoundTag(TransmutationProps.PROP_NAME);
-				double currentEmc = props.getDouble("transmutationEmc");
-				if (currentEmc >= amount) {
-					props.setDouble("transmutationEmc", currentEmc - amount);
-					CompressedStreamTools.writeCompressed(root, new FileOutputStream(playerFile));
-					TransmutationOffline.clear(uuid); // 清除缓存，使其下次读取时更新
-					return true;
-				}
-			} catch (Exception e) {
-				PELogger.logWarn("无法修改玩家离线EMC数据: " + uuid);
-			}
-		}
-		return false;
-	}
+    private static UUID parse(String text) {
+        try { return text == null ? null : UUID.fromString(text); }
+        catch (IllegalArgumentException invalid) { return null; }
+    }
+    private static EntityPlayerMP online(UUID uuid) {
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server == null) return null;
+        for (Object object : server.getConfigurationManager().playerEntityList) {
+            EntityPlayerMP player = (EntityPlayerMP) object;
+            if (uuid.equals(player.getUniqueID())) return player;
+        }
+        return null;
+    }
+    private static File playerFile(UUID uuid) {
+        return new File(new File(DimensionManager.getCurrentSaveRootDirectory(), "playerdata"), uuid + ".dat");
+    }
+    public static double getNetworkEMC(String uuidStr) {
+        return getNetworkEMCExact(uuidStr).toLegacyDouble();
+    }
+    public static ExactEMC getNetworkEMCExact(String uuidStr) {
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        UUID uuid = parse(uuidStr);
+        if (uuid == null) return ExactEMC.ZERO;
+        EntityPlayerMP player = online(uuid);
+        if (player != null) return Transmutation.getEmcExact(player);
+        File file = playerFile(uuid);
+        if (!file.isFile()) return ExactEMC.ZERO;
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return ExactEMCCodec.readBalance(CompressedStreamTools.readCompressed(stream)
+                .getCompoundTag(TransmutationProps.PROP_NAME));
+        } catch (java.io.IOException error) {
+            throw new IllegalStateException("Cannot read offline EMC: " + uuid, error);
+        }
+    }
+    public static boolean deductNetworkEMC(String uuidStr, double amount) {
+        return deductNetworkEMCExact(uuidStr, ExactEMC.fromLegacyDouble(amount));
+    }
+    public static boolean deductNetworkEMCExact(String uuidStr, ExactEMC amount) {
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        ExactEMCCodec.validateBalance(amount);
+        UUID uuid = parse(uuidStr);
+        if (uuid == null || MinecraftServer.getServer() == null) return false;
+        EntityPlayerMP player = online(uuid);
+        if (player != null) return Transmutation.tryRemoveEmcExact(player, amount);
+        File file = playerFile(uuid);
+        if (!file.isFile()) return false;
+        // Same server thread as login/save. Preserve original .dat until complete replacement.
+        java.nio.file.Path temporary = null;
+        try {
+            NBTTagCompound root;
+            try (FileInputStream stream = new FileInputStream(file)) {
+                root = CompressedStreamTools.readCompressed(stream);
+            }
+            NBTTagCompound props = root.getCompoundTag(TransmutationProps.PROP_NAME);
+            ExactEMC current = ExactEMCCodec.readBalance(props);
+            if (current.compareTo(amount) < 0) return false;
+            ExactEMCCodec.writeBalance(props, current.subtract(amount));
+            root.setTag(TransmutationProps.PROP_NAME, props);
+            temporary = Files.createTempFile(file.toPath().getParent(), "projecte-emc-", ".tmp");
+            try (FileOutputStream stream = new FileOutputStream(temporary.toFile())) {
+                CompressedStreamTools.writeCompressed(root, stream);
+            }
+            Files.move(temporary, file.toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            TransmutationOffline.clear(uuid);
+            return true;
+        } catch (java.io.IOException error) {
+            PELogger.logWarn("Cannot safely update offline EMC for " + uuid + ": " + error);
+            return false;
+        } finally {
+            if (temporary != null) {
+                try { Files.deleteIfExists(temporary); }
+                catch (java.io.IOException ignored) {}
+            }
+        }
+    }
 }

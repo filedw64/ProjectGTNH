@@ -121,6 +121,7 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 		// 构建 SPFA 队列
 		Queue<T> workQueue = new ArrayDeque<>(values.keySet());
 		Set<T> inQueue = new HashSet<>(values.keySet());
+        Map<T, Integer> relaxationCounts = new HashMap<>();
 
 		while (!workQueue.isEmpty()) {
 			T item = workQueue.poll();
@@ -141,6 +142,12 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 				if (currentVal != null && currentVal.compareTo(convVal) <= 0)
 					continue;
 
+                if (arithmetic instanceof moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic) {
+                    int updates = relaxationCounts.getOrDefault(conv.output, 0) + 1;
+                    relaxationCounts.put(conv.output, updates);
+                    if (updates > 1024) throw new IllegalStateException(
+                        "Exact EMC mapping did not converge for " + conv.output + "; inspect decreasing recipe cycles");
+                }
 				values.put(conv.output, convVal);
 				if (inQueue.contains(conv.output)) // 拦截重复入队
 					continue;

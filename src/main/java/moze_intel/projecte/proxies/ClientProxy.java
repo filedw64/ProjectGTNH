@@ -106,6 +106,7 @@ public class ClientProxy implements IProxy
 		MinecraftForge.EVENT_BUS.register(new ToolTipEvent());
 		MinecraftForge.EVENT_BUS.register(new TransmutationRenderingEvent());
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
+        FMLCommonHandler.instance().bus().register(new moze_intel.projecte.network.ClientEMCUpdates());
 
 		RenderEvents pr = new RenderEvents();
 		MinecraftForge.EVENT_BUS.register(pr);

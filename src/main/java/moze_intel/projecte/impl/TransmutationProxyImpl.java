@@ -1,5 +1,7 @@
 package moze_intel.projecte.impl;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.base.Preconditions;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -164,6 +166,30 @@ public class TransmutationProxyImpl implements ITransmutationProxy
                 return TransmutationOffline.getEmc(playerUUID);
             }
         }
+    }
+
+    @Override
+    public ExactEMC getEMCExact(UUID uuid) {
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT)
+            return Transmutation.getEmcExact(PECore.proxy.getClientPlayer());
+        Preconditions.checkNotNull(uuid);
+        EntityPlayer player = findOnlinePlayer(uuid);
+        return player == null ? TransmutationOffline.getEmcExact(uuid) : Transmutation.getEmcExact(player);
+    }
+    private EntityPlayer requireOnline(UUID uuid) {
+        Preconditions.checkNotNull(uuid);
+        Preconditions.checkState(FMLCommonHandler.instance().getEffectiveSide().isServer(), "Server-only EMC operation");
+        EntityPlayer player = findOnlinePlayer(uuid);
+        Preconditions.checkState(player != null, "Player must be online to modify EMC through API");
+        return player;
+    }
+    @Override
+    public void setEMCExact(UUID uuid, ExactEMC value) { Transmutation.setEmcExact(requireOnline(uuid), value); }
+    @Override
+    public void addEMCExact(UUID uuid, ExactEMC amount) { Transmutation.addEmcExact(requireOnline(uuid), amount); }
+    @Override
+    public boolean tryRemoveEMCExact(UUID uuid, ExactEMC amount) {
+        return Transmutation.tryRemoveEmcExact(requireOnline(uuid), amount);
     }
 
     @SuppressWarnings("unchecked")

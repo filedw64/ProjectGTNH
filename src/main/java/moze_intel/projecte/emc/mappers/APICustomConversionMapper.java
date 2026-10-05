@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import net.minecraftforge.common.config.Configuration;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
@@ -8,7 +10,7 @@ import moze_intel.projecte.impl.ConversionProxyImpl;
 import java.util.List;
 import java.util.Map;
 
-public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,Double>
+public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,ExactEMC>
 {
 	@Override
 	public String getName()
@@ -29,7 +31,7 @@ public class APICustomConversionMapper implements IEMCMapper<NormalizedSimpleSta
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config)
 	{
 		for (Map.Entry<String, List<ConversionProxyImpl.APIConversion>> entry : ConversionProxyImpl.instance.storedConversions.entrySet())
 		{

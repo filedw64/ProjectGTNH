@@ -1,5 +1,9 @@
 package moze_intel.projecte.playerData;
 
+import moze_intel.projecte.math.ExactEMCCodec;
+
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.entity.Entity;
@@ -17,7 +21,7 @@ import java.util.List;
 public class TransmutationProps implements IExtendedEntityProperties {
 	private final EntityPlayer player;
 
-	private double transmutationEmc;
+	private ExactEMC transmutationEmc = ExactEMC.ZERO;
 	private final List<ItemStack> knowledge = new ArrayList<>();
 	private ItemStack[] inputLocks = new ItemStack[9];
 	public static final String PROP_NAME = "ProjectETransmutation";
@@ -42,12 +46,12 @@ public class TransmutationProps implements IExtendedEntityProperties {
 		this.inputLocks = inputLocks;
 	}
 
-	protected double getTransmutationEmc() {
+	protected ExactEMC getTransmutationEmc() {
 		return transmutationEmc;
 	}
 
-	protected void setTransmutationEmc(double transmutationEmc) {
-		this.transmutationEmc = transmutationEmc;
+	protected void setTransmutationEmc(ExactEMC transmutationEmc) {
+		this.transmutationEmc = ExactEMCCodec.validateBalance(transmutationEmc);
 	}
 
 	protected List<ItemStack> getKnowledge() {
@@ -69,7 +73,7 @@ public class TransmutationProps implements IExtendedEntityProperties {
 
 	protected NBTTagCompound saveForPacket() {
 		NBTTagCompound nbt = new NBTTagCompound();
-		nbt.setDouble("transmutationEmc", transmutationEmc);
+		ExactEMCCodec.writeBalance(nbt, transmutationEmc);
 
 		pruneStaleKnowledge();
 		NBTTagList knowledgeList = new NBTTagList();
@@ -83,8 +87,23 @@ public class TransmutationProps implements IExtendedEntityProperties {
 		return nbt;
 	}
 
+    public void applyBalancePacket(ExactEMC balance) {
+        if (!player.worldObj.isRemote) throw new IllegalStateException("Client balance update on server");
+        setTransmutationEmc(balance);
+        refreshClientInventory();
+    }
+
+    private void refreshClientInventory() {
+        if (player.openContainer instanceof moze_intel.projecte.gameObjs.container.TransmutationContainer) {
+            moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory inv =
+                ((moze_intel.projecte.gameObjs.container.TransmutationContainer) player.openContainer).transmutationInventory;
+            inv.invalidateSearchCache();
+            inv.updateOutputs();
+        }
+    }
+
 	public void readFromPacket(NBTTagCompound nbt) {
-		transmutationEmc = nbt.getDouble("transmutationEmc");
+		transmutationEmc = ExactEMCCodec.readBalance(nbt);
 
 		NBTTagList knowledgeList = nbt.getTagList("knowledge", Constants.NBT.TAG_COMPOUND);
 		int length = knowledgeList.tagCount();
@@ -98,12 +117,13 @@ public class TransmutationProps implements IExtendedEntityProperties {
 
 		NBTTagList inputLockList = nbt.getTagList("inputlocks", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(inputLockList, new ItemStack[9]);
+        if (player.worldObj.isRemote) refreshClientInventory();
 	}
 
 	@Override
 	public void saveNBTData(NBTTagCompound playerData) {
 		NBTTagCompound data = new NBTTagCompound();
-		data.setDouble("transmutationEmc", transmutationEmc);
+		ExactEMCCodec.writeBalance(data, transmutationEmc);
 
 		pruneStaleKnowledge();
 		NBTTagList knowledgeList = new NBTTagList();
@@ -120,7 +140,7 @@ public class TransmutationProps implements IExtendedEntityProperties {
 	@Override
 	public void loadNBTData(NBTTagCompound playerData) {
 		NBTTagCompound data = playerData.getCompoundTag(PROP_NAME);
-		transmutationEmc = data.getDouble("transmutationEmc");
+		transmutationEmc = ExactEMCCodec.readBalance(data);
 
 		NBTTagList knowledgeList = data.getTagList("knowledge", Constants.NBT.TAG_COMPOUND);
 		int length = knowledgeList.tagCount();
@@ -133,6 +153,7 @@ public class TransmutationProps implements IExtendedEntityProperties {
 
 		NBTTagList inputLockList = data.getTagList("inputlock", Constants.NBT.TAG_COMPOUND);
 		inputLocks = ItemHelper.copyIndexedNBTToArray(inputLockList, new ItemStack[9]);
+        if (player.worldObj.isRemote) refreshClientInventory();
 	}
 
 	@Override

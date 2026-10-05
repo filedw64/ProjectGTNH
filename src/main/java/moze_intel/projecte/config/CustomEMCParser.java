@@ -1,5 +1,7 @@
 package moze_intel.projecte.config;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.Maps;
 import net.minecraft.item.ItemStack;
 import moze_intel.projecte.PECore;
@@ -22,7 +24,7 @@ public final class CustomEMCParser
 	private static Path CONFIG_PATH;
 	private static boolean loaded;
 
-	public static Map<NormalizedSimpleStack, Double> userValues = Maps.newHashMap();
+	public static Map<NormalizedSimpleStack, ExactEMC> userValues = Maps.newHashMap();
 
 	public static void init()
 	{
@@ -79,7 +81,7 @@ public final class CustomEMCParser
 				{
 					String name = line.substring(2);
 					int meta = -1;
-					double emc = -1;
+					ExactEMC emc = null;
 
 					// 向下探查 Meta 和 EMC
 					while (i < lines.size())
@@ -88,14 +90,14 @@ public final class CustomEMCParser
 						if (nextLine.startsWith("M:")) {
 							meta = Integer.parseInt(nextLine.substring(2));
 						} else if (nextLine.startsWith("E:")) {
-							emc = Double.parseDouble(nextLine.substring(2));
+							emc = ExactEMC.parse(nextLine.substring(2));
 							i++;
 							break; // 找到了 EMC，这个 Entry 结束
 						}
 						i++;
 					}
 
-					if (emc == -1) continue; // 格式错误？
+					if (emc == null) continue; // 格式错误？
 
 					if (name.contains(":"))
 					{
@@ -106,10 +108,10 @@ public final class CustomEMCParser
 							continue;
 						}
 
-						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
+						if (emc.signum() <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
 						else PELogger.logInfo("Registered custom EMC for: " + name + "(" + emc + ")");
 
-						userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
+						userValues.put(NormalizedSimpleStack.forItem(stack), emc.signum() < 0 ? ExactEMC.ZERO : emc);
 					}
 					else
 					{
@@ -121,12 +123,12 @@ public final class CustomEMCParser
 							continue;
 						}
 
-						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
+						if (emc.signum() <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
 						else PELogger.logInfo("Registered custom EMC for: " + name + "(" + emc + ")");
 
 						for (ItemStack stack : odItems)
 						{
-							userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
+							userValues.put(NormalizedSimpleStack.forItem(stack), emc.signum() < 0 ? ExactEMC.ZERO : emc);
 						}
 					}
 				}
@@ -138,7 +140,11 @@ public final class CustomEMCParser
 		}
 	}
 
-	public static boolean addToFile(String toAdd, int meta, double emc)
+	public static boolean addToFile(String toAdd, int meta, double emc) {
+        return addToFile(toAdd, meta, ExactEMC.fromLegacyDouble(emc));
+    }
+
+    public static boolean addToFile(String toAdd, int meta, ExactEMC emc)
 	{
 		if (!loaded) return false;
 
@@ -173,7 +179,7 @@ public final class CustomEMCParser
 					}
 
 					if (metaMatches && eIndex != -1) {
-						lines.set(eIndex, "E:" + emc);
+						lines.set(eIndex, "E:" + emc.toBigDecimalExact().toString());
 						found = true;
 						break;
 					}
@@ -185,7 +191,7 @@ public final class CustomEMCParser
 				lines.add("");
 				lines.add("S:" + toAdd);
 				if (!isOD) lines.add("M:" + meta);
-				lines.add("E:" + emc);
+				lines.add("E:" + emc.toBigDecimalExact().toString());
 			}
 
 			// 一次性写回

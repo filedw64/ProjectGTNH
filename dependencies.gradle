@@ -35,6 +35,8 @@
  */
 dependencies {
     testImplementation "junit:junit:4.11"
+    // Optional integration: compilation only, never bundled into ProjectE.
+    compileOnly("com.github.GTNewHorizons:Applied-Energistics-2-Unofficial:rv3-beta-695-GTNH:dev")
     compileOnly("com.github.GTNewHorizons:Chisel:2.16.15-GTNH:api")
     compileOnly("com.github.GTNewHorizons:CodeChickenCore:1.4.10:dev")
     compileOnly("com.github.GTNewHorizons:NotEnoughItems:2.8.44-GTNH:dev")

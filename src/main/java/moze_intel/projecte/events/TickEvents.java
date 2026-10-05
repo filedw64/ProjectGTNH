@@ -9,10 +9,22 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 public class TickEvents
 {
+    private static volatile Thread serverThread;
+    // AppliedE core hardening v3
+    public static boolean isServerThread() { return serverThread != null && serverThread == Thread.currentThread(); }
+    public static void requireServerThread() {
+        if (serverThread == null || serverThread != Thread.currentThread())
+            throw new IllegalStateException("EMC operation must run on the server tick thread");
+    }
+
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END)
-			PlayerTimers.update();
+		serverThread = Thread.currentThread();
+        if (event.phase == TickEvent.Phase.START) moze_intel.projecte.network.ServerEMCUpdates.drain();
+        if (event.phase == TickEvent.Phase.END) {
+            moze_intel.projecte.playerData.Transmutation.drainDeferredEmcSync();
+            PlayerTimers.update();
+        }
 	}
 
 	@SubscribeEvent

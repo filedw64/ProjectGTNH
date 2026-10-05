@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
 	public static APICustomEMCMapper instance = new APICustomEMCMapper();
 	public static final int PRIORITY_MIN_VALUE = 0;
 	public static final int PRIORITY_MAX_VALUE = 512;
@@ -24,8 +26,8 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 	private APICustomEMCMapper() {}
 
 	//Need a special Map for Items and Blocks because the ItemID-mapping might change, so we need to store modid:unlocalizedName instead of the NormalizedSimpleStack which only holds itemid and metadata
-	Map<String, Map<NormalizedSimpleStack, Double>> customEMCforMod = new HashMap<>();
-	Map<String, Map<NormalizedSimpleStack, Double>> customNonItemEMCforMod = new HashMap<>();
+	Map<String, Map<NormalizedSimpleStack, ExactEMC>> customEMCforMod = new HashMap<>();
+	Map<String, Map<NormalizedSimpleStack, ExactEMC>> customNonItemEMCforMod = new HashMap<>();
 
 	public void registerCustomEMC(ItemStack stack, double emcValue) {
 		if (stack == null || stack.getItem() == null) return;
@@ -35,7 +37,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 
 		// 用 computeIfAbsent 简化初始化逻辑
 		customEMCforMod.computeIfAbsent(modId, k -> new HashMap<>())
-			.put(NormalizedSimpleStack.forItem(stack), emcValue);
+			.put(NormalizedSimpleStack.forItem(stack), ExactEMC.fromLegacyDouble(emcValue));
 	}
 
 	public void registerCustomEMC(Object o, double emcValue) {
@@ -45,8 +47,24 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		ModContainer activeMod = Loader.instance().activeModContainer();
 		String modId = activeMod == null ? null : activeMod.getModId();
 
-		customNonItemEMCforMod.computeIfAbsent(modId, k -> new HashMap<>()).put(stack, emcValue);
+		customNonItemEMCforMod.computeIfAbsent(modId, k -> new HashMap<>()).put(stack, ExactEMC.fromLegacyDouble(emcValue));
 	}
+
+    public void registerCustomEMCExact(ItemStack stack, ExactEMC value) {
+        if (stack == null || stack.getItem() == null) return;
+        moze_intel.projecte.math.ExactEMCCodec.validateBalance(value);
+        ModContainer mod = Loader.instance().activeModContainer();
+        String id = mod == null ? null : mod.getModId();
+        customEMCforMod.computeIfAbsent(id, k -> new HashMap<>()).put(NormalizedSimpleStack.forItem(stack), value);
+    }
+    public void registerCustomEMCExact(Object object, ExactEMC value) {
+        NormalizedSimpleStack key = ConversionProxyImpl.instance.objectToNSS(object);
+        if (key == null) return;
+        moze_intel.projecte.math.ExactEMCCodec.validateBalance(value);
+        ModContainer mod = Loader.instance().activeModContainer();
+        String id = mod == null ? null : mod.getModId();
+        customNonItemEMCforMod.computeIfAbsent(id, k -> new HashMap<>()).put(key, value);
+    }
 
 	@Override
 	public String getName() {
@@ -64,7 +82,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config) {
 		final Map<String, Integer> priorityMap = new HashMap<>();
 		Set<String> modIdSet = new HashSet<>();
 		modIdSet.addAll(customEMCforMod.keySet());
@@ -104,13 +122,13 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		}
 	}
 
-	private void processMap(Map<NormalizedSimpleStack, Double> map, String modId, String modIdOrUnknown,
-							IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
+	private void processMap(Map<NormalizedSimpleStack, ExactEMC> map, String modId, String modIdOrUnknown,
+							IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config)
 	{
 		if (map == null) return;
-		for (Map.Entry<NormalizedSimpleStack, Double> entry : map.entrySet()) {
+		for (Map.Entry<NormalizedSimpleStack, ExactEMC> entry : map.entrySet()) {
 			NormalizedSimpleStack normStack = entry.getKey();
-			Double value = entry.getValue();
+			ExactEMC value = entry.getValue();
 			if (!isAllowedToSet(modId, normStack, value, config)) {
 				PELogger.logInfo(String.format("Disallowed %s to set the value for %s to %s", modIdOrUnknown, normStack, value));
 				continue;
@@ -120,7 +138,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		}
 	}
 
-	protected boolean isAllowedToSet(String modId, NormalizedSimpleStack stack, Double value, Configuration config) {
+	protected boolean isAllowedToSet(String modId, NormalizedSimpleStack stack, ExactEMC value, Configuration config) {
 		String itemName;
 		if (stack instanceof NormalizedSimpleStack.NSSItem item)
 			itemName = item.itemName;
@@ -140,7 +158,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Dou
 		if (permission.equals("both"))
 			return true;
 
-		if (value == 0)
+		if (value.isZero())
 			return permission.equals("remove");
 		return permission.equals("set");
 	}

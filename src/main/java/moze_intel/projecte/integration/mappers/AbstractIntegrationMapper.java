@@ -1,5 +1,7 @@
 package moze_intel.projecte.integration.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.ImmutableMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
@@ -8,8 +10,8 @@ import net.minecraft.item.ItemStack;
 
 public abstract class AbstractIntegrationMapper {
 
-    protected IMappingCollector<NormalizedSimpleStack, Double> mapper;
-    public final void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+    protected IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper;
+    public final void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper) {
         this.mapper = mapper;
 		try {
 			doAddMappings(); // 避免一个 IntegrationMapper 出错，后续的联动都丢失
@@ -21,20 +23,20 @@ public abstract class AbstractIntegrationMapper {
 
     protected abstract void doAddMappings();
 
-    protected void addMapping(NormalizedSimpleStack nss, double value) {
+    protected void addMapping(NormalizedSimpleStack nss, long value) {
         if (nss == null) return;
-        mapper.setValueBefore(nss, value);
+        mapper.setValueBefore(nss, ExactEMC.of(value));
     }
 
-    protected void addMapping(String id, int meta, double value) {
+    protected void addMapping(String id, int meta, long value) {
         addMapping(NormalizedSimpleStack.forItem(id, meta), value);
     }
 
-    protected void addMapping(String id, double value) {
+    protected void addMapping(String id, long value) {
         addMapping(id, 0, value);
     }
 
-    protected void addMapping(ItemStack istack, double value) {
+    protected void addMapping(ItemStack istack, long value) {
         addMapping(NormalizedSimpleStack.forItem(istack), value);
     }
 

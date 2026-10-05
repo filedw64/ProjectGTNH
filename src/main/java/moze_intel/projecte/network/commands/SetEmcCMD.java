@@ -1,5 +1,7 @@
 package moze_intel.projecte.network.commands;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -9,6 +11,11 @@ import moze_intel.projecte.utils.MathUtils;
 
 public class SetEmcCMD extends ProjectEBaseCMD
 {
+    private static ExactEMC parseExact(String text) {
+        try { return moze_intel.projecte.math.ExactEMCCodec.validate(ExactEMC.parse(text)); }
+        catch (IllegalArgumentException | ArithmeticException invalid) { return null; }
+    }
+
 	@Override
 	public String getCommandName()
 	{
@@ -38,7 +45,7 @@ public class SetEmcCMD extends ProjectEBaseCMD
 
 		String name;
 		int meta;
-		double emc;
+		ExactEMC emc;
 
 		if (params.length == 1)
 		{
@@ -52,7 +59,7 @@ public class SetEmcCMD extends ProjectEBaseCMD
 
 			name = Item.itemRegistry.getNameForObject(heldItem.getItem());
 			meta = heldItem.getItemDamage();
-			emc = MathUtils.parseDouble(params[0]);
+			emc = parseExact(params[0]);
 
         }
 		else
@@ -71,21 +78,22 @@ public class SetEmcCMD extends ProjectEBaseCMD
                     return;
                 }
 
-                emc = MathUtils.parseDouble(params[2]);
+                emc = parseExact(params[2]);
             }
 			else
 			{
-				emc = MathUtils.parseDouble(params[1]);
+				emc = parseExact(params[1]);
             }
         }
-        if (emc < 0 || emc > 1e300)
+        if (emc == null || emc.signum() < 0)
         {
             sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
             return;
         }
         if (CustomEMCParser.addToFile(name, meta, emc))
 		{
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.set.success", name, emc));
+			sender.addChatMessage(new ChatComponentTranslation("pe.command.set.success", name,
+				moze_intel.projecte.math.ExactEMCFormatter.compact(emc)));
 			sender.addChatMessage(new ChatComponentTranslation("pe.command.reload.notice"));
 		}
 		else

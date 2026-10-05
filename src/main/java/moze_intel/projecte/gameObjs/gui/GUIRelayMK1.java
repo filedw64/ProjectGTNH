@@ -14,6 +14,8 @@ public class GUIRelayMK1 extends GuiContainer
 {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/relay1.png");
 	private final RelayMK1Tile tile;
+	private final moze_intel.projecte.math.ExactEMCFormatter.Cache emcDisplay =
+		new moze_intel.projecte.math.ExactEMCFormatter.Cache();
 
 	public GUIRelayMK1(InventoryPlayer invPlayer, RelayMK1Tile tile)
 	{
@@ -27,7 +29,7 @@ public class GUIRelayMK1 extends GuiContainer
 	protected void drawGuiContainerForegroundLayer(int var1, int var2)
 	{
 		this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.relay.mk1"), 10, 6, 4210752);
-		this.fontRendererObj.drawString(Integer.toString(tile.displayEmc), 88, 24, 4210752);
+		this.fontRendererObj.drawString(emcDisplay.format(tile.displayEmc), 88, 24, 4210752);
 	}
 
 	@Override
