@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -11,12 +13,12 @@ import moze_intel.projecte.emc.collector.IMappingCollector;
 
 import java.util.Collections;
 
-public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
 
-	IMappingCollector<NormalizedSimpleStack, Double> mapper;
+	IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper;
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config) {
 		this.mapper = mapper;
 
 		// 直接传入 Block/Item
@@ -155,23 +157,23 @@ public class LazyMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 		addMapping("appliedenergistics2:item.ItemMultiMaterial", 1, 256);
 	}
 
-	protected void addMapping(Block block, double value) {
-		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(block), value);
+	protected void addMapping(Block block, long value) {
+		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(block), ExactEMC.of(value));
 	}
 
-	protected void addMapping(Block block, int meta, double value) {
-		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(block, meta), value);
+	protected void addMapping(Block block, int meta, long value) {
+		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(block, meta), ExactEMC.of(value));
 	}
 
-	protected void addMapping(Item item, double value) {
-		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(item), value);
+	protected void addMapping(Item item, long value) {
+		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(item), ExactEMC.of(value));
 	}
 
-	protected void addMapping(Item item, int meta, double value) {
-		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(item, meta), value);
+	protected void addMapping(Item item, int meta, long value) {
+		this.mapper.setValueBefore(NormalizedSimpleStack.forItem(item, meta), ExactEMC.of(value));
 	}
 
-	protected void addMapping(String unlocalName, int meta, double value) {
+	protected void addMapping(String unlocalName, int meta, long value) {
 		Object obj = Item.itemRegistry.getObject(unlocalName);
 		if (obj instanceof Item item)
 			addMapping(item, meta, value);

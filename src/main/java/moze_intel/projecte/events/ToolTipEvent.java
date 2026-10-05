@@ -22,30 +22,19 @@ import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.oredict.OreDictionary;
 
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.List;
-import java.util.Locale;
 
 @SideOnly(Side.CLIENT)
 public class ToolTipEvent
 {
-	// 预编译
-	private static final DecimalFormat NORMAL_FORMAT = new DecimalFormat("#.##");
-	private static final DecimalFormat SCI_FORMAT;
 	private static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###");
 
-	static {
-		DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
-		// 使用 config 中的自定义字符串作为科学计数法的分隔符，如果由于类加载顺序问题为空则默认给 "e"
-		symbols.setExponentSeparator(ProjectEConfig.sciFormat != null ? ProjectEConfig.sciFormat : "e");
-		SCI_FORMAT = new DecimalFormat("0.000E0", symbols);
+	private static String formatEMC(double value) {
+		return moze_intel.projecte.math.ExactEMCFormatter.compact(value);
 	}
 
-	// 快速格式化
-	private static String formatEMC(double value) {
-		if (value < 1e5)
-			return NORMAL_FORMAT.format(value);
-		return SCI_FORMAT.format(value);
+	private static String formatEMC(moze_intel.projecte.math.ExactEMC value) {
+		return moze_intel.projecte.math.ExactEMCFormatter.compact(value);
 	}
 
 	@SubscribeEvent
@@ -104,15 +93,13 @@ public class ToolTipEvent
 
 			if (EMCHelper.doesItemHaveEmc(current))
 			{
-				double value = EMCHelper.getEmcValue(current);
+				moze_intel.projecte.math.ExactEMC value = EMCHelper.getEmcValueExact(current);
 
 				event.toolTip.add(EnumChatFormatting.YELLOW + emcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(value));
 
 				if (current.stackSize > 1) {
-					double total = value * current.stackSize;
-					if (Double.isInfinite(total))
-						event.toolTip.add(EnumChatFormatting.YELLOW + stackEmcPrefix + " " + EnumChatFormatting.OBFUSCATED + StatCollector.translateToLocal("pe.emc.too_much"));
-					else event.toolTip.add(EnumChatFormatting.YELLOW + stackEmcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(total));
+					moze_intel.projecte.math.ExactEMC total = value.multiply(current.stackSize);
+					event.toolTip.add(EnumChatFormatting.YELLOW + stackEmcPrefix + " " + EnumChatFormatting.WHITE + formatEMC(total));
 				}
 			}
 			else if (GTItemHelper.isGTfluidDisplay(current)) {
@@ -171,12 +158,13 @@ public class ToolTipEvent
 					event.toolTip.add(EnumChatFormatting.YELLOW + storedEmcTooltip + " " + EnumChatFormatting.RESET + formatEMC(stackEMC));
 				}
 			}
-			if (current.getItem() instanceof IItemEmc || current.stackTagCompound.hasKey("StoredEMC")) {
-				double value;
-				if (current.stackTagCompound.hasKey("StoredEMC"))
-					value = current.stackTagCompound.getDouble("StoredEMC");
-				else value = ((IItemEmc) current.getItem()).getStoredEmc(current);
-				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + formatEMC(value));
+			if (current.getItem() instanceof IItemEmc || current.stackTagCompound.hasKey("StoredEMC")
+				|| current.stackTagCompound.hasKey("StoredEMCExact")) {
+				String value;
+				if (current.stackTagCompound.hasKey("StoredEMCExact") || current.stackTagCompound.hasKey("StoredEMC"))
+					value = formatEMC(EMCHelper.getStoredEMCBonusExact(current));
+				else value = formatEMC(((IItemEmc) current.getItem()).getStoredEmc(current));
+				event.toolTip.add(EnumChatFormatting.YELLOW + StatCollector.translateToLocal("pe.emc.storedemc_tooltip") + " " + EnumChatFormatting.RESET + value);
 			}
 
 			if (current.stackTagCompound.hasKey("StoredXP")) {

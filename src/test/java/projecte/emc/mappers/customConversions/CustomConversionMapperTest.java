@@ -109,10 +109,10 @@ public class CustomConversionMapperTest
 						"}";
 		CustomConversionFile f = CustomConversionMapper.parseJson(new StringReader(simpleFile));
 		assertNotNull(f.values);
-		assertEquals(1.0, f.values.setValueBefore.get("a"), 1e-7);
-		assertEquals(2.0, f.values.setValueBefore.get("b"), 1e-7);
-		assertEquals(-Double.MAX_VALUE, f.values.setValueBefore.get("c"), 1e-7);
-		assertEquals(3.0, f.values.setValueAfter.get("d"), 1e-7);
+		assertEquals(moze_intel.projecte.math.ExactEMC.of(1), f.values.setValueBefore.get("a"));
+		assertEquals(moze_intel.projecte.math.ExactEMC.of(2), f.values.setValueBefore.get("b"));
+		assertSame(moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic.FREE, f.values.setValueBefore.get("c"));
+		assertEquals(moze_intel.projecte.math.ExactEMC.of(3), f.values.setValueAfter.get("d"));
 
 	}
 

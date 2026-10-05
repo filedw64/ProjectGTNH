@@ -1,5 +1,7 @@
 package moze_intel.projecte.api.proxy;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 
@@ -9,6 +11,11 @@ import java.util.UUID;
 
 public interface ITransmutationProxy
 {
+    ExactEMC getEMCExact(UUID playerUUID);
+    void setEMCExact(UUID playerUUID, ExactEMC emc);
+    void addEMCExact(UUID playerUUID, ExactEMC amount);
+    boolean tryRemoveEMCExact(UUID playerUUID, ExactEMC amount);
+
     /**
      * Register a world transmutation with the Philosopher's Stone
      * Calls this during the postinit phase

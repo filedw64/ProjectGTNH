@@ -30,9 +30,7 @@ public class SlotInput extends Slot
 			return;
 
 		if (stack.getItem() instanceof IItemEmc itemEmc) {
-			double toAdd = Math.min(itemEmc.getMaximumEmc(stack) - itemEmc.getStoredEmc(stack), inv.emc);
-			itemEmc.addEmc(stack, toAdd);
-			inv.removeEmc(toAdd);
+			moze_intel.projecte.utils.LegacyEMCTransfer.charge(inv, stack, itemEmc);
 			inv.updateOutputs(); // 避免 return 后 emc 改变但未更新
 		}
 

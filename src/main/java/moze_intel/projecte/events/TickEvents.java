@@ -9,8 +9,16 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 public class TickEvents
 {
+    private static volatile Thread serverThread;
+    public static void requireServerThread() {
+        if (serverThread == null || serverThread != Thread.currentThread())
+            throw new IllegalStateException("EMC operation must run on the server tick thread");
+    }
+
 	@SubscribeEvent
 	public void onServerTick(TickEvent.ServerTickEvent event) {
+		serverThread = Thread.currentThread();
+        if (event.phase == TickEvent.Phase.START) moze_intel.projecte.network.ServerEMCUpdates.drain();
 		if (event.phase == TickEvent.Phase.END)
 			PlayerTimers.update();
 	}

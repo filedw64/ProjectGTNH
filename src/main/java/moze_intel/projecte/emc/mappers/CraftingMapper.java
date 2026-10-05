@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.Lists;
 import moze_intel.projecte.emc.IngredientMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
@@ -29,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
 
 	public static List<IRecipeMapper> recipeMappers = Arrays.asList(new VanillaRecipeMapper(), new VanillaOreRecipeMapper(), new PECustomRecipeMapper());
 	public static boolean emcDependencyForUnconsumedItems = false;
@@ -37,7 +39,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 	Map<Class<?>, Integer> recipeCount = new HashMap<>();
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, final Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, final Configuration config) {
 		emcDependencyForUnconsumedItems = config.getBoolean("emcDependencyForUnconsumedItems", "", false,
 			"Items crafted with unconsumed ingredients get an emc value, only when unconsumed items also have a value. (Examples: Extra Utilities Sigil, Cutting Board, Mixer, Juicer...)");
 		for (IRecipeMapper recipeMapper : recipeMappers) {
@@ -79,7 +81,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 					}
 					//stack does not have a wildcard damage value
 					if (GTItemHelper.isNullGTtool(stack)) {
-						mapper.setValueBefore(nss, -Double.MAX_VALUE);
+						mapper.setValueBefore(nss, moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic.FREE);
 						ingredientMap.addIngredient(nss, 0);
 						continue;
 					}
@@ -101,7 +103,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Double>
 						IngredientMap<NormalizedSimpleStack> fakeIngredients = new IngredientMap<>();
 
 						if (GTItemHelper.isNullGTtool(is)) {
-							mapper.setValueBefore(nss, -Double.MAX_VALUE);
+							mapper.setValueBefore(nss, moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic.FREE);
 							fakeIngredients.addIngredient(nss, 0);
 							mapper.addConversion(1, fake, fakeIngredients.getMap());
 							continue;

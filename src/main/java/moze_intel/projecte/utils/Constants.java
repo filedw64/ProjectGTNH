@@ -9,7 +9,8 @@ import java.text.DecimalFormat;
 
 public final class Constants
 {
-	public static final DecimalFormat EMC_FORMATTER = new DecimalFormat("##.##");
+	public static final DecimalFormat EMC_FORMATTER = new DecimalFormat("0.00", java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ROOT));
+	static { EMC_FORMATTER.setRoundingMode(java.math.RoundingMode.HALF_UP); }
 	public static final float PLAYER_WALK_SPEED = 0.1F;
 
 	public static final double[] MAX_KLEIN_EMC = new double[] {5e4, 2e5, 8e5, 3.2e6, 1.28e7, 5.12e7};

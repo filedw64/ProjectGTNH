@@ -27,7 +27,7 @@ public class BotaniaMapper extends AbstractIntegrationMapper {
 	protected void doAddMappings() {
 		// 定义 1 Mana = 1 EMC
 		NormalizedSimpleStack manaFake = NormalizedSimpleStack.forFake("Botania_Mana");
-		addMapping(manaFake, 1.0);
+		addMapping(manaFake, 1);
 
 		// Petal Apothecary
 		for (RecipePetals recipe : BotaniaAPI.petalRecipes) {

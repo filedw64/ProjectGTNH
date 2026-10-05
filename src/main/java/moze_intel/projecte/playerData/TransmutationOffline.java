@@ -1,5 +1,7 @@
 package moze_intel.projecte.playerData;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -23,7 +25,7 @@ import java.util.UUID;
 public class TransmutationOffline
 {
     private static final Map<UUID, List<ItemStack>> cachedKnowledge = Maps.newHashMap();
-    private static final Map<UUID, Double> cachedEmc = Maps.newHashMap();
+    private static final Map<UUID, ExactEMC> cachedEmc = Maps.newHashMap();
     private static final Map<UUID, Boolean> cachedFullKnowledge = Maps.newHashMap();
 
     public static void cleanAll()
@@ -65,13 +67,20 @@ public class TransmutationOffline
         return false;
     }
 
+    public static ExactEMC getEmcExact(UUID playerUUID) {
+        if (!cachedEmc.containsKey(playerUUID)) cacheOfflineData(playerUUID);
+        ExactEMC value = cachedEmc.get(playerUUID);
+        if (value == null) throw new IllegalStateException("Offline EMC data unavailable: " + playerUUID);
+        return value;
+    }
+
     public static double getEmc(UUID playerUUID)
     {
         if (!cachedEmc.containsKey(playerUUID))
         {
             cacheOfflineData(playerUUID);
         }
-        return cachedEmc.get(playerUUID) == null ? Double.NaN : cachedEmc.get(playerUUID);
+        return cachedEmc.get(playerUUID) == null ? Double.NaN : cachedEmc.get(playerUUID).toLegacyDouble();
     }
 
     private static void cacheOfflineData(UUID playerUUID) {
@@ -82,8 +91,11 @@ public class TransmutationOffline
             File player = new File(playerData, playerUUID.toString() + ".dat");
             if (player.exists() && player.isFile()) {
                 try {
-                    NBTTagCompound props = CompressedStreamTools.readCompressed(new FileInputStream(player)).getCompoundTag(TransmutationProps.PROP_NAME);
-                    cachedEmc.put(playerUUID, props.getDouble("transmutationEmc"));
+                    NBTTagCompound props;
+                    try (FileInputStream stream = new FileInputStream(player)) {
+                        props = CompressedStreamTools.readCompressed(stream).getCompoundTag(TransmutationProps.PROP_NAME);
+                    }
+                    cachedEmc.put(playerUUID, moze_intel.projecte.math.ExactEMCCodec.readBalance(props));
                     cachedFullKnowledge.put(playerUUID, props.getBoolean("tome"));
 
                     List<ItemStack> knowledge = Lists.newArrayList();

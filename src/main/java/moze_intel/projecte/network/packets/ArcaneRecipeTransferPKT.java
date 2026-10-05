@@ -35,9 +35,13 @@ public class ArcaneRecipeTransferPKT implements IMessage, IMessageHandler<Arcane
 	@Override
 	public IMessage onMessage(ArcaneRecipeTransferPKT message, MessageContext ctx) {
 		EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+        final net.minecraft.inventory.Container expected = player.openContainer;
+        moze_intel.projecte.network.ServerEMCUpdates.enqueue(() -> {
+        if (player.isDead || player.openContainer != expected) return;
 		if (player.openContainer instanceof ArcaneTransmutationContainer) {
 			((ArcaneTransmutationContainer) player.openContainer).fillRecipe(player, message.recipe);
 		}
+        });
 		return null;
 	}
 }

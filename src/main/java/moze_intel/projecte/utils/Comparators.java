@@ -9,10 +9,7 @@ import java.util.Comparator;
 
 public final class Comparators {
 	public static final Comparator<ItemStack> ITEMSTACK_EMC_DESCENDING = (s1, s2) -> {
-        double emc1 = EMCHelper.getEmcValue(s1);
-        double emc2 = EMCHelper.getEmcValue(s2);
-
-        return Double.compare(emc2, emc1);
+        return EMCHelper.getEmcValueExact(s2).compareTo(EMCHelper.getEmcValueExact(s1));
     };
 
 	public static final Comparator<ItemStack> ITEMSTACK_ASCENDING = (o1, o2) -> {
@@ -30,9 +27,7 @@ public final class Comparators {
 	};
 
 	public static final Comparator<SimpleStack> SIMPLESTACK_ASCENDING = (s1, s2) -> {
-        Double emc1 = EMCMapper.getEmcValue(s1);
-        Double emc2 = EMCMapper.getEmcValue(s2);
-        return emc1.compareTo(emc2);
+        return EMCMapper.getEmcValueExact(s1).compareTo(EMCMapper.getEmcValueExact(s2));
     };
 
 //	public static final Comparator<AbstractPage> PAGE_HEADER = (o1, o2) -> StatCollector.translateToLocal(o1.getHeaderText()).compareToIgnoreCase(StatCollector.translateToLocal(o2.getHeaderText()));

@@ -1,5 +1,7 @@
 package moze_intel.projecte.utils;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.playerData.Transmutation;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -80,16 +82,11 @@ public class WandHelper {
 	}
 
 	// 【优化】接收预计算好的 EMC 价格和知识，不再重复计算
-	public static boolean consumeCost(EntityPlayer player, ItemStack targetStack, boolean hasKnowledge, double emcCost) {
+	public static boolean consumeCost(EntityPlayer player, ItemStack targetStack, boolean hasKnowledge, ExactEMC emcCost) {
 		if (player.capabilities.isCreativeMode) return true;
 
-		if (hasKnowledge && emcCost > 0) {
-			double currentEmc = Transmutation.getEmc(player);
-			if (currentEmc >= emcCost) {
-				Transmutation.setEmc(player, currentEmc - emcCost);
-				return true;
-			}
-		}
+        if (hasKnowledge && emcCost.signum() > 0 && Transmutation.tryRemoveEmcExact(player, emcCost))
+            return true;
 
 		for (int i = 0; i < player.inventory.getSizeInventory(); i++) {
 			ItemStack invStack = player.inventory.getStackInSlot(i);

@@ -1,5 +1,9 @@
 package moze_intel.projecte.gameObjs.container;
 
+import moze_intel.projecte.playerData.Transmutation;
+
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotConsume;
@@ -77,6 +81,8 @@ public class TransmutationContainer extends Container
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotIndex) {
+		if (player.worldObj.isRemote) return null;
+        Transmutation.requireServer(player);
 		Slot slot = getSlot(slotIndex);
 
 		if (slot == null || !slot.getHasStack())
@@ -94,27 +100,29 @@ public class TransmutationContainer extends Container
 		}
 		else if (slotIndex >= 10 && slotIndex <= 25) // Output Slots
 		{
-			double emc = EMCHelper.getEmcValue(stack);
+			ExactEMC emc = EMCHelper.getEmcValueExact(stack);
 
 			int maxStackSize = stack.getMaxStackSize();
-			int count = (int) Math.min(maxStackSize, transmutationInventory.emc / emc);
+			if (emc.signum() <= 0) return null;
+            int count = transmutationInventory.getEmcExact().affordableUnits(emc)
+                .min(java.math.BigInteger.valueOf(maxStackSize)).intValue();
 			count = Math.min(count, ItemHelper.getSpaceFor(player.inventory.mainInventory, stack));
 
 			if (count <= 0) return null; // 确保至少能提取1个
 
 			newStack.stackSize = count;
-			transmutationInventory.removeEmc(emc * count);
+			if (!transmutationInventory.removeEmc(emc.multiply(count))) return null;
 			ItemHelper.pushStackInInv(player.inventory, newStack);
 			transmutationInventory.updateOutputs();
 		}
 		else if (slotIndex >= 27) // Player Inventory
 		{
-			double emc = EMCHelper.getEmcValue(stack);
+			ExactEMC emc = EMCHelper.getEmcValueExact(stack);
 
-			if (emc == 0 && stack.getItem() != ObjHandler.tome)
+			if (emc.isZero() && stack.getItem() != ObjHandler.tome)
 				return null;
 
-			transmutationInventory.addEmc(emc * stack.stackSize);
+			transmutationInventory.addEmc(emc.multiply(stack.stackSize));
 			transmutationInventory.handleKnowledge(stack);
 			slot.putStack(null);
 		}

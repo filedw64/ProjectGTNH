@@ -19,6 +19,8 @@ public class GUITransmutation extends GuiContainer {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/transmute.png");
 	TransmutationInventory inv;
 	private GuiTextField textBoxFilter;
+	private final moze_intel.projecte.math.ExactEMCFormatter.Cache emcDisplay =
+		new moze_intel.projecte.math.ExactEMCFormatter.Cache();
 
 	int xLocation;
 	int yLocation;
@@ -55,7 +57,7 @@ public class GUITransmutation extends GuiContainer {
 	@Override
 	protected void drawGuiContainerForegroundLayer(int var1, int var2) {
 		this.fontRendererObj.drawString(StatCollector.translateToLocal("pe.transmutation.transmute"), 6, 8, 4210752);
-		String emc = StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") + String.format(inv.emc < 1e5 ? " %.2f": " %.3e", inv.emc);
+		String emc = StatCollector.translateToLocal("pe.emc.emc_tooltip_prefix") + " " + emcDisplay.format(inv.getEmcExact());
 		this.fontRendererObj.drawString(emc, 6, this.ySize - 94, 4210752);
 
 		if (inv.learnFlag > 0) {
@@ -85,6 +87,7 @@ public class GUITransmutation extends GuiContainer {
 			inv.unlearnFlag--;
 		}
 	}
+
 
 	@Override
 	public void updateScreen() {

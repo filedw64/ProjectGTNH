@@ -1,5 +1,7 @@
 package moze_intel.projecte.playerData;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.SimpleStack;
@@ -131,15 +133,58 @@ public final class Transmutation {
 		}
 	}
 
-	public static double getEmc(EntityPlayer player)
-	{
-		return TransmutationProps.getDataFor(player).getTransmutationEmc();
-	}
+    public static ExactEMC getEmcExact(EntityPlayer player) {
+        return TransmutationProps.getDataFor(player).getTransmutationEmc();
+    }
 
-	public static void setEmc(EntityPlayer player, double emc)
-	{
-		TransmutationProps.getDataFor(player).setTransmutationEmc(emc);
-	}
+    /** Deprecated, lossy external compatibility view only. */
+    @Deprecated
+    public static double getEmc(EntityPlayer player) {
+        return getEmcExact(player).toLegacyDouble();
+    }
+
+    /** Refuses unsafe double read/modify/write on a nonrepresentable balance. */
+    @Deprecated
+    public static void setEmc(EntityPlayer player, double emc) {
+        requireServer(player);
+        if (!getEmcExact(player).isExactlyRepresentableAsDouble())
+            throw new IllegalStateException("Use exact EMC transaction API for this balance");
+        setEmcExact(player, ExactEMC.fromLegacyDouble(emc));
+    }
+
+    public static void requireServer(EntityPlayer player) {
+        if (player == null || player.worldObj.isRemote)
+            throw new IllegalStateException("Player EMC transactions are server-only");
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+    }
+
+    public static void setEmcExact(EntityPlayer player, ExactEMC emc) {
+        requireServer(player);
+        TransmutationProps.getDataFor(player).setTransmutationEmc(emc);
+        syncEmc(player);
+    }
+
+    public static void addEmcExact(EntityPlayer player, ExactEMC amount) {
+        requireServer(player);
+        moze_intel.projecte.math.ExactEMCCodec.validateBalance(amount);
+        if (amount.isZero()) return;
+        setEmcExact(player, getEmcExact(player).add(amount));
+    }
+
+    public static boolean tryRemoveEmcExact(EntityPlayer player, ExactEMC amount) {
+        requireServer(player);
+        moze_intel.projecte.math.ExactEMCCodec.validateBalance(amount);
+        ExactEMC current = getEmcExact(player);
+        if (current.compareTo(amount) < 0) return false;
+        if (!amount.isZero()) setEmcExact(player, current.subtract(amount));
+        return true;
+    }
+
+    public static void syncEmc(EntityPlayer player) {
+        if (player instanceof EntityPlayerMP && !player.worldObj.isRemote)
+            PacketHandler.sendTo(new moze_intel.projecte.network.packets.PlayerEMCSyncPKT(getEmcExact(player)),
+                (EntityPlayerMP) player);
+    }
 
 	/**
 	 * Send Knowledge Sync Packet to player.<br>

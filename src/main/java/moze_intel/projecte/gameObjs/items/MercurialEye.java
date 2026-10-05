@@ -1,5 +1,7 @@
 package moze_intel.projecte.gameObjs.items;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -64,10 +66,12 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 			}
 
 			int newMeta = inventory[1].getItemDamage();
-			double reqEmc = EMCHelper.getEmcValue(inventory[1]);
+			ExactEMC reqEmc = EMCHelper.getEmcValueExact(inventory[1]);
+            if (reqEmc.signum() <= 0) return stack;
+            Transmutation.requireServer(player);
 
 			// 直接从玩家的转化桌网络获取当前 EMC 余额
-			double playerEmc = Transmutation.getEmc(player);
+			ExactEMC playerEmc = Transmutation.getEmcExact(player);
 
 			byte charge = getCharge(stack);
 			byte mode = this.getMode(stack);
@@ -160,13 +164,13 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 
 							if (mode == NORMAL_MODE && oldBlock == Blocks.air)
 							{
-								if (playerEmc < reqEmc)
+								if (playerEmc.compareTo(reqEmc) < 0)
 								{
 									break breakLoop; // EMC 不足时直接跳出所有循环，不再空转
 								}
 								if (PlayerHelper.checkedPlaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 								{
-									playerEmc -= reqEmc;
+									playerEmc = playerEmc.subtract(reqEmc);
 									hasAction = true;
 								}
 							}
@@ -177,26 +181,26 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 									continue;
 								}
 
-								double emc = EMCHelper.getEmcValue(new ItemStack(oldBlock, 1, oldMeta));
+								ExactEMC emc = EMCHelper.getEmcValueExact(new ItemStack(oldBlock, 1, oldMeta));
 
-								if (emc > reqEmc)
+								if (emc.compareTo(reqEmc) > 0)
 								{
 									if (PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 									{
-										double difference = emc - reqEmc;
-										playerEmc += difference;
+										ExactEMC difference = emc.subtract(reqEmc);
+										playerEmc = playerEmc.add(difference);
 										hasAction = true;
 									}
 								}
-								else if (emc < reqEmc)
+								else if (emc.compareTo(reqEmc) < 0)
 								{
-									double difference = reqEmc - emc;
+									ExactEMC difference = reqEmc.subtract(emc);
 
-									if (playerEmc >= difference)
+									if (playerEmc.compareTo(difference) >= 0)
 									{
 										if (PlayerHelper.checkedReplaceBlock(((EntityPlayerMP) player), x, y, z, newBlock, newMeta))
 										{
-											playerEmc -= difference;
+											playerEmc = playerEmc.subtract(difference);
 											hasAction = true;
 										}
 									}
@@ -216,7 +220,7 @@ public class MercurialEye extends ItemMode implements IExtraFunction
 				// 只有在确实发生改变时，才消耗 EMC、同步网络数据并播放音效
 				if (hasAction)
 				{
-					Transmutation.setEmc(player, playerEmc);
+					Transmutation.setEmcExact(player, playerEmc);
 					Transmutation.sync(player);
 					player.worldObj.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 0.80F + ((0.20F / (float)numCharges) * charge));
 				}

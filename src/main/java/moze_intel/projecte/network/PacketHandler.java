@@ -46,6 +46,8 @@ public final class PacketHandler
 	public static void register()
 	{
 		HANDLER.registerMessage(SyncEmcPKT.Handler.class, SyncEmcPKT.class, 0, Side.CLIENT);
+        HANDLER.registerMessage(moze_intel.projecte.network.packets.PlayerEMCSyncPKT.Handler.class,
+            moze_intel.projecte.network.packets.PlayerEMCSyncPKT.class, 22, Side.CLIENT);
 		HANDLER.registerMessage(KeyPressPKT.Handler.class, KeyPressPKT.class, 1, Side.SERVER);
 		HANDLER.registerMessage(ParticlePKT.Handler.class, ParticlePKT.class, 2, Side.CLIENT);
 		HANDLER.registerMessage(SwingItemPKT.Handler.class, SwingItemPKT.class, 3, Side.CLIENT);
@@ -74,79 +76,43 @@ public final class PacketHandler
 		return HANDLER.getPacketFrom(message);
 	}
 
-	public static void sendFragmentedEmcPacket(EntityPlayerMP player)
-	{
-		ArrayList<Object[]> list = new ArrayList<>();
-		int counter = 0;
-
-		// Copy constructor to prevent race condition CME in SP
-		for (Map.Entry<SimpleStack, Double> entry : new HashMap<>(EMCMapper.emc).entrySet()) {
-			SimpleStack stack = entry.getKey();
-
-			if (stack == null)
-				continue;
-
+    private static java.util.List<SyncEmcPKT> exactPricePackets() {
+        java.util.List<java.util.List<Object[]>> fragments = new ArrayList<>();
+        java.util.List<Object[]> fragment = new ArrayList<>();
+        int bytes = 7;
+        for (Map.Entry<SimpleStack, moze_intel.projecte.math.ExactEMC> entry :
+            new HashMap<>(EMCMapper.exactEmc).entrySet()) {
+            SimpleStack key = entry.getKey();
+            if (key == null) continue;
             Object[] data;
-            if (stack instanceof NBTSimpleStack nbtss)
-                data = new Object[] {stack.id, stack.damage, entry.getValue(), nbtss.nbt};
-			else if (stack instanceof FluidSimpleStack)
-				data = new Object[] {stack.id, entry.getValue()};
-            else data = new Object[] {stack.id, stack.damage, entry.getValue()};
-
-            list.add(data);
-
-			if (list.size() >= MAX_PKT_SIZE)
-			{
-				PacketHandler.sendTo(new SyncEmcPKT(counter, list), player);
-				list.clear();
-				counter++;
-			}
-		}
-
-        PacketHandler.sendTo(new SyncEmcPKT(-1, list), player);
-        list.clear();
-        counter++;
-
-		PELogger.logInfo("Sent EMC data packets to: " + player.getCommandSenderName());
-		PELogger.logDebug("Total packets: " + counter);
-	}
-
-	public static void sendFragmentedEmcPacketToAll()
-	{
-		ArrayList<Object[]> list = new ArrayList<>();
-		int counter = 0;
-
-		// Copy constructor to prevent race condition CME in SP
-		for (Map.Entry<SimpleStack, Double> entry : new HashMap<>(EMCMapper.emc).entrySet()) {
-			SimpleStack stack = entry.getKey();
-
-			if (stack == null)
-				continue;
-
-            Object[] data;
-			if (stack instanceof NBTSimpleStack nbtss)
-				data = new Object[] {stack.id, stack.damage, entry.getValue(), nbtss.nbt};
-			else if (stack instanceof FluidSimpleStack)
-				data = new Object[] {stack.id, entry.getValue()};
-            else data = new Object[] {stack.id, stack.damage, entry.getValue()};
-
-			list.add(data);
-
-			if (list.size() >= MAX_PKT_SIZE)
-			{
-				PacketHandler.sendToAll(new SyncEmcPKT(counter, list));
-				list.clear();
-				counter++;
-			}
-		}
-
-        PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
-        list.clear();
-        counter++;
-
-		PELogger.logInfo("Sent EMC data packets to all players.");
-		PELogger.logDebug("Total packets per player: " + counter);
-	}
+            if (key instanceof NBTSimpleStack) data = new Object[] { key.id, key.damage, entry.getValue(), ((NBTSimpleStack) key).nbt };
+            else if (key instanceof FluidSimpleStack) data = new Object[] { key.id, entry.getValue() };
+            else data = new Object[] { key.id, key.damage, entry.getValue() };
+            // Measure the actual serializer, including compressed NBT rather than estimates.
+            io.netty.buffer.ByteBuf probe = io.netty.buffer.Unpooled.buffer();
+            int entryBytes;
+            try {
+                new SyncEmcPKT(false, false, java.util.Collections.singletonList(data)).toBytes(probe);
+                entryBytes = probe.readableBytes() - 7;
+            } finally { probe.release(); }
+            if (entryBytes + 7 > 60000) throw new IllegalArgumentException("Single EMC price entry exceeds packet budget");
+            if (!fragment.isEmpty() && (fragment.size() >= MAX_PKT_SIZE || bytes + entryBytes > 60000)) {
+                fragments.add(fragment); fragment = new ArrayList<>(); bytes = 7;
+            }
+            fragment.add(data); bytes += entryBytes;
+        }
+        fragments.add(fragment);
+        java.util.List<SyncEmcPKT> result = new ArrayList<>();
+        for (int i = 0; i < fragments.size(); i++)
+            result.add(new SyncEmcPKT(i == 0, i == fragments.size() - 1, fragments.get(i)));
+        return result;
+    }
+    public static void sendFragmentedEmcPacket(EntityPlayerMP player) {
+        for (SyncEmcPKT packet : exactPricePackets()) sendTo(packet, player);
+    }
+    public static void sendFragmentedEmcPacketToAll() {
+        for (SyncEmcPKT packet : exactPricePackets()) sendToAll(packet);
+    }
 
 	/**
 	 * Sends a packet to the server.<br>

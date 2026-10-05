@@ -1,5 +1,7 @@
 package moze_intel.projecte.gameObjs.container.inventory;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.ObjHandler;
@@ -29,7 +31,9 @@ public class TransmutationInventory implements IInventory {
 	public int learnFlag = 0, unlearnFlag = 0;
 	public String filter = "";
 	public int searchpage = 0;
-	public double emc;
+	/** Compatibility field removed: all balance reads use the player property. */
+    public ExactEMC getEmcExact() { return Transmutation.getEmcExact(player); }
+    public void invalidateSearchCache() { knowledgeDirty = true; lastFilter = null; }
 
 	// 双轨知识库缓存
 	private List<ItemStack> cachedMatter = new ArrayList<>();
@@ -39,6 +43,7 @@ public class TransmutationInventory implements IInventory {
 	private List<ItemStack> filteredMatter = new ArrayList<>();
 	private List<ItemStack> filteredFuel = new ArrayList<>();
 	private String lastFilter = null;
+	private ExactEMC lastSearchBalance;
 	private boolean knowledgeDirty = true; // 知识库缓存标记
 
 	public TransmutationInventory(EntityPlayer player)
@@ -134,7 +139,7 @@ public class TransmutationInventory implements IInventory {
 		if (filter == null) filter = "";
 
 		// 如果知识库没变，且搜索词也没变，直接返回缓存
-		if (!knowledgeDirty && filter.equals(lastFilter)) return;
+		if (!knowledgeDirty && filter.equals(lastFilter) && getEmcExact().equals(lastSearchBalance)) return;
 
 		if (knowledgeDirty) {
 			cachedMatter.clear();
@@ -155,7 +160,7 @@ public class TransmutationInventory implements IInventory {
 			filteredFuel = cachedFuel;
 		}
 		else {
-			ItemSearchHelper searchHelper = ItemSearchHelper.create(filter);
+			ItemSearchHelper searchHelper = ItemSearchHelper.create(filter, getEmcExact());
 
 			// 如果新搜索词是以旧词开头的，就在上次过滤的结果上继续搜
 			List<ItemStack> sourceMatter = (lastFilter != null && filter.startsWith(lastFilter)) ? filteredMatter : cachedMatter;
@@ -172,16 +177,17 @@ public class TransmutationInventory implements IInventory {
 					filteredFuel.add(s);
 		}
 		lastFilter = filter;
+        lastSearchBalance = getEmcExact();
 	}
 
 	// 使用二分查找寻找第一个 EMC <= target 的物品索引
-	private int findStartIndexByEmc(List<ItemStack> list, double targetEmc) {
+	private int findStartIndexByEmc(List<ItemStack> list, ExactEMC targetEmc) {
 		int left = 0, right = list.size() - 1;
 		int ans = -1;
 		while (left <= right) {
 			int mid = left + (right - left) / 2;
-			double midEmc = EMCHelper.getEmcValue(list.get(mid));
-			if (midEmc <= targetEmc) {
+			ExactEMC midEmc = EMCHelper.getEmcValueExact(list.get(mid));
+			if (midEmc.compareTo(targetEmc) <= 0) {
 				ans = mid;
 				right = mid - 1; // 尝试寻找更靠左的（同 EMC 的前置项）
 			}
@@ -190,7 +196,7 @@ public class TransmutationInventory implements IInventory {
 		return ans;
 	}
 
-	private void fillOutputs(List<ItemStack> sourceList, int[] slots, double reqEmc, int skipCount) {
+	private void fillOutputs(List<ItemStack> sourceList, int[] slots, ExactEMC reqEmc, int skipCount) {
 		int startIndex = findStartIndexByEmc(sourceList, reqEmc);
 		if (startIndex == -1) return;
 
@@ -208,10 +214,10 @@ public class TransmutationInventory implements IInventory {
 		for (int i : MATTER_INDEXES) inventory[i] = null;
 		for (int i : FUEL_INDEXES) inventory[i] = null;
 
-		double reqEmc = emc;
+		ExactEMC reqEmc = getEmcExact();
 		if (inventory[LOCK_INDEX] != null) {
-			reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
-			if (reqEmc == 0 || reqEmc > emc) reqEmc = emc;
+			reqEmc = EMCHelper.getEmcValueExact(inventory[LOCK_INDEX]);
+			if (reqEmc.isZero() || reqEmc.compareTo(getEmcExact()) > 0) reqEmc = getEmcExact();
 		}
 
 		// 极速填充输出槽
@@ -222,10 +228,10 @@ public class TransmutationInventory implements IInventory {
 	public boolean hasNextPage() {
 		updateSearchCache();
 
-		double reqEmc = emc;
+		ExactEMC reqEmc = getEmcExact();
 		if (inventory[LOCK_INDEX] != null) {
-			reqEmc = EMCHelper.getEmcValue(inventory[LOCK_INDEX]);
-			if (reqEmc == 0 || reqEmc > emc) reqEmc = emc;
+			reqEmc = EMCHelper.getEmcValueExact(inventory[LOCK_INDEX]);
+			if (reqEmc.isZero() || reqEmc.compareTo(getEmcExact()) > 0) reqEmc = getEmcExact();
 		}
 
 		int startMatter = findStartIndexByEmc(filteredMatter, reqEmc);
@@ -239,7 +245,9 @@ public class TransmutationInventory implements IInventory {
 	}
 
 	public void writeIntoOutputSlot(int slot, ItemStack item) {
-		if (EMCHelper.doesItemHaveEmc(item) && EMCHelper.getEmcValue(item) <= this.emc && Transmutation.hasKnowledgeForStack(item, player))
+        if (slot < 10 || slot > 25) return;
+        if (item != null) { item = item.copy(); item.stackSize = 1; }
+		if (EMCHelper.doesItemHaveEmc(item) && EMCHelper.getEmcValueExact(item).compareTo(getEmcExact()) <= 0 && Transmutation.hasKnowledgeForStack(item, player))
 			inventory[slot] = item;
 		else inventory[slot] = null;
 	}
@@ -315,7 +323,7 @@ public class TransmutationInventory implements IInventory {
 
 	@Override
 	public void openInventory() {
-		emc = Transmutation.getEmc(player);
+
 		ItemStack[] inputLocks = Transmutation.getInputsAndLock(player);
 		System.arraycopy(inputLocks, 0, inventory, 0, 9);
 
@@ -326,7 +334,7 @@ public class TransmutationInventory implements IInventory {
 
 	@Override
 	public void closeInventory() {
-		Transmutation.setEmc(player, emc);
+		if (player.worldObj.isRemote) return;
 		Transmutation.setInputsAndLocks(Arrays.copyOfRange(inventory, 0, 9), player);
 		//Transmutation.sync(player);
 	}
@@ -339,19 +347,15 @@ public class TransmutationInventory implements IInventory {
 	@Override
 	public void markDirty() {}
 
-	public void addEmc(double value) {
-		emc += value;
-		if (emc > Constants.TILE_MAX_EMC)
-			emc = Constants.TILE_MAX_EMC;
-	}
-
-	public void removeEmc(double value) {
-		emc -= value;
-		if (emc < 0)
-			emc = 0;
-	}
+    public void addEmc(ExactEMC value) {
+        if (!player.worldObj.isRemote) Transmutation.addEmcExact(player, value);
+    }
+    public boolean removeEmc(ExactEMC value) {
+        if (player.worldObj.isRemote) return getEmcExact().compareTo(value) >= 0;
+        return Transmutation.tryRemoveEmcExact(player, value);
+    }
 
 	public boolean hasMaxedEmc() {
-		return emc >= Constants.TILE_MAX_EMC;
+		return false; // Player balance has no machine-capacity cap.
 	}
 }
