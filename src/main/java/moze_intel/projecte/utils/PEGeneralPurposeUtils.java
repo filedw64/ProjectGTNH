@@ -106,7 +106,7 @@ public class PEGeneralPurposeUtils {
         return inv == null ? ExactEMC.ZERO : inv.getEmcExact();
     }
     public static void setInventoryEmc(TransmutationInventory inv, ExactEMC value) {
-        if (inv != null) Transmutation.setEmcExact(inv.player, value);
+        if (inv != null) Transmutation.setEmcExact(inv.getPlayer(), value);
     }
     public static boolean removeInventoryEmc(TransmutationInventory inv, ExactEMC amount) {
         return inv != null && inv.removeEmc(amount);
@@ -140,11 +140,20 @@ public class PEGeneralPurposeUtils {
     public static void syncPlayerEMCAndKnowledge(EntityPlayer player, ExactEMC newEmc, ItemStack newlyLearnedStack) {
         if (player == null) return;
         Transmutation.setEmcExact(player, newEmc);
-        if (newlyLearnedStack != null) addKnowledgeSafe(normalizeKnowledgeStack(newlyLearnedStack), player);
-        if (player instanceof EntityPlayerMP) Transmutation.sync(player);
+        if (newlyLearnedStack != null) {
+            ItemStack single = normalizeKnowledgeStack(newlyLearnedStack);
+            boolean known = Transmutation.hasKnowledgeForStack(single, player);
+            addKnowledgeSafe(single, player);
+            if (!known && player instanceof EntityPlayerMP) Transmutation.syncIncremental(player, single, false);
+        }
         UUID uuid = player.getUniqueID();
         if (cpw.mods.fml.common.Loader.isModLoaded("appliedenergistics2"))
-            moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
+            notifyAE2(uuid);
+    }
+
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private static void notifyAE2(UUID uuid) {
+        moze_intel.projecte.integration.ae2.AE2Integration.notifyHandlersForPlayer(uuid);
     }
 
 	public static int getMatchingItemCount(TransmutationInventory inv) {
@@ -157,7 +166,7 @@ public class PEGeneralPurposeUtils {
 
 	public static void handleUpdateOutputs(TransmutationInventory inv, boolean isSearchPage) {
 		if (inv == null) return;
-		EntityPlayer player = inv.player;
+		EntityPlayer player = inv.getPlayer();
 
 		List<ItemStack> knowledge = new ArrayList<>();
 
@@ -184,8 +193,8 @@ public class PEGeneralPurposeUtils {
 		knowledge = cleanKnowledge;
 
 		// 清空输出槽
-		for (int idx : MATTER_INDEXES) if (idx < inv.inventory.length) inv.inventory[idx] = null;
-		for (int idx : FUEL_INDEXES) if (idx < inv.inventory.length) inv.inventory[idx] = null;
+		for (int idx : MATTER_INDEXES) if (idx < inv.getSizeInventory()) inv.setInventorySlotContents(idx, null);
+		for (int idx : FUEL_INDEXES) if (idx < inv.getSizeInventory()) inv.setInventorySlotContents(idx, null);
 
 		// 排序
 		knowledge.sort((s1, s2) -> EMCHelper.getEmcValueExact(s2).compareTo(EMCHelper.getEmcValueExact(s1)));
@@ -193,7 +202,7 @@ public class PEGeneralPurposeUtils {
 		// 接入 GTNH 版的搜索引擎！
 		ItemSearchHelper searchHelper = ItemSearchHelper.create(inv.filter, inv.getEmcExact());
 
-		ItemStack lock = inv.inventory.length > 8 ? inv.inventory[8] : null;
+		ItemStack lock = inv.getSizeInventory() > 8 ? inv.getStackInSlot(8) : null;
 		List<ItemStack> matching = new ArrayList<>();
 
 		for (ItemStack stack : knowledge) {
@@ -223,12 +232,12 @@ public class PEGeneralPurposeUtils {
 			stack.stackSize = 1;
 
 			if (isStackFuelSafe(stack)) {
-				if (fuelIdx < FUEL_INDEXES.length && FUEL_INDEXES[fuelIdx] < inv.inventory.length) {
-					inv.inventory[FUEL_INDEXES[fuelIdx++]] = stack;
+				if (fuelIdx < FUEL_INDEXES.length && FUEL_INDEXES[fuelIdx] < inv.getSizeInventory()) {
+					inv.setInventorySlotContents(FUEL_INDEXES[fuelIdx++], stack);
 				}
 			} else {
-				if (matterIdx < MATTER_INDEXES.length && MATTER_INDEXES[matterIdx] < inv.inventory.length) {
-					inv.inventory[MATTER_INDEXES[matterIdx++]] = stack;
+				if (matterIdx < MATTER_INDEXES.length && MATTER_INDEXES[matterIdx] < inv.getSizeInventory()) {
+					inv.setInventorySlotContents(MATTER_INDEXES[matterIdx++], stack);
 				}
 			}
 
@@ -329,7 +338,7 @@ public class PEGeneralPurposeUtils {
 			return copy;
 		}
 
-		EntityPlayer player = inv.player;
+		EntityPlayer player = inv.getPlayer();
 		UUID uuid = player != null ? player.getUniqueID() : null;
 
 		synchronized (getPlayerLock(uuid)) {
@@ -350,7 +359,7 @@ public class PEGeneralPurposeUtils {
 	public static void handleConsume(Slot slot, ItemStack stack, TransmutationInventory inv) {
 		if (stack == null || inv == null) return;
 		ItemStack copy = normalizeKnowledgeStack(stack);
-		EntityPlayer player = inv.player;
+		EntityPlayer player = inv.getPlayer();
 
 		synchronized (getPlayerLock(player != null ? player.getUniqueID() : null)) {
 			while (!handleInventoryHasMaxedEmc(inv) && stack.stackSize > 0) {

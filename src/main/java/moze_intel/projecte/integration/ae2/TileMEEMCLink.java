@@ -39,9 +39,10 @@ import java.util.UUID;
 	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.IGridHost", modid = "appliedenergistics2"),
 	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.IGridBlock", modid = "appliedenergistics2"),
 	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.storage.ICellContainer", modid = "appliedenergistics2"),
-	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.security.IActionHost", modid = "appliedenergistics2")
+	@cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.security.IActionHost", modid = "appliedenergistics2"),
+    @cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.networking.crafting.ICraftingProvider", modid = "appliedenergistics2")
 })
-public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, ICellContainer, IActionHost, IInventory {
+public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, ICellContainer, IActionHost, IInventory, appeng.api.networking.crafting.ICraftingProvider {
 
 	private final EMCInventoryHandler inventoryHandler;
 	private IGridNode gridNode;
@@ -62,34 +63,28 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 		this.inventoryHandler = new EMCInventoryHandler(this);
 	}
 
-	public void notifyGrid() {
-		if (isNotifying) return;
-		isNotifying = true;
-		try {
-			IGridNode node = getGridNode(ForgeDirection.UNKNOWN);
-			if (node != null && node.getGrid() != null) {
-				node.getGrid().postEvent(new MENetworkCellArrayUpdate());
-				try {
-					appeng.api.networking.storage.IStorageGrid storageGrid = node.getGrid().getCache(appeng.api.networking.storage.IStorageGrid.class);
-					if (storageGrid != null) {
-						appeng.api.storage.data.IItemList<appeng.api.storage.data.IAEItemStack> current = AEApi.instance().storage().createItemList();
-						inventoryHandler.getAvailableItems(current);
-						if (current != null && !current.isEmpty()) {
-							storageGrid.postAlterationOfStoredItems(StorageChannel.ITEMS, current, new appeng.api.networking.security.MachineSource(this));
-						}
-					}
-				} catch (Throwable ignored) {}
-			}
-		} finally {
-			isNotifying = false;
-		}
-	}
+    public void notifyGrid() {
+        if (worldObj != null && !worldObj.isRemote) {
+            AE2Integration.notifyHandlersForPlayer(ownerUUID);
+            EMCKnowledgeGridCache cache = emcCache();
+            if (cache != null) cache.invalidatePatterns();
+        }
+    }
+
+    public void collectGrid(java.util.Set<IGrid> grids) {
+        if (!isInvalid() && gridNode != null && gridNode.getGrid() != null) grids.add(gridNode.getGrid());
+    }
+
+    private NBTTagCompound pendingNodeData = new NBTTagCompound();
 
 	public void setOwner(EntityPlayer player) {
-		if (player != null) {
+		if (player != null && worldObj != null && !worldObj.isRemote
+                && (ownerUUID == null || ownerUUID.equals(player.getUniqueID()))) {
 			this.ownerUUID = player.getUniqueID();
 			this.ownerName = player.getCommandSenderName();
 			this.inventoryHandler.setOwner(ownerUUID, ownerName);
+            IGridNode node = getGridNode(ForgeDirection.UNKNOWN);
+            if (node != null) node.setPlayerID(AEApi.instance().registries().players().getID(player));
 			AE2Integration.registerTile(this);
 			markDirty();
 			if (worldObj != null) {
@@ -114,6 +109,7 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 	public ItemStack[] getFilterSlots() { return filterSlots; }
 
 	public void setAccessMode(int mode) {
+		mode = Math.max(0, Math.min(2, mode));
 		this.accessMode = mode;
 		if (mode == 0) this.inventoryHandler.setAccess(AccessRestriction.READ_WRITE);
 		else if (mode == 1) this.inventoryHandler.setAccess(AccessRestriction.READ);
@@ -122,47 +118,225 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 		notifyGrid();
 	}
 	public void setPriority(int priority) { this.priority = priority; this.inventoryHandler.setPriority(priority); markDirty(); notifyGrid(); }
-	public void setFilterMode(int mode) { this.filterMode = mode; markDirty(); notifyGrid(); }
-	public void setFilterPrecision(int precision) { this.filterPrecision = precision; markDirty(); notifyGrid(); }
+	public void setFilterMode(int mode) { this.filterMode = Math.max(0, Math.min(2, mode)); markDirty(); notifyGrid(); }
+	public void setFilterPrecision(int precision) { this.filterPrecision = Math.max(0, Math.min(2, precision)); markDirty(); notifyGrid(); }
 
-	@Override
-	public void updateEntity() {
-		super.updateEntity();
-		if (worldObj != null && !worldObj.isRemote) {
-			if (gridNode == null) {
-				getGridNode(ForgeDirection.UNKNOWN);
-				AE2Integration.registerTile(this);
-			}
-			// GTNH 优化：降低检测频率到 20 tick (1秒)，防止 AE2 持续卡服
-			if (worldObj.getTotalWorldTime() % 20L == 0L) {
-				EntityPlayer player = inventoryHandler.getPlayer();
-				if (player != null) {
-					ExactEMC currentEmc = Transmutation.getEmcExact(player);
-					List<ItemStack> knowledge = Transmutation.getKnowledge(player);
-					int currentKnowledge = knowledge != null ? knowledge.size() : 0;
+    @Override
+    public void updateEntity() {
+        if (worldObj != null && !worldObj.isRemote && !isInvalid()) {
+            getGridNode(ForgeDirection.UNKNOWN);
+            AE2Integration.registerTile(this);
+            flushEMCOutputs();
+        }
+    }
 
-					// 仅当学会新物品，或 EMC 变动较大时才通知 AE2（防止刷石机导致每秒发包）
-					if (!currentEmc.equals(lastTrackedEmc) || currentKnowledge != lastTrackedKnowledge) {
-						lastTrackedEmc = currentEmc;
-						lastTrackedKnowledge = currentKnowledge;
-						notifyGrid();
-					}
-				}
-			}
-		}
-	}
 
+
+    // AppliedE core refinement v2
+    // AppliedE core hardening v3
+    private static final long MAX_PENDING_EMC_OUTPUTS = 65536;
+    private static final long EMC_OUTPUTS_PER_TICK = 4096;
+    private static final int EMC_OUTPUT_ENTRIES_PER_TICK = 16;
+    private final java.util.List<appeng.api.storage.data.IAEItemStack> emcOutputs = new java.util.ArrayList<>();
+    private boolean releasingEMCOutputs;
+
+    private int emcOutputCursor;
+    // AppliedE persistent recovery v4
+    private boolean recoveryAttached;
+    private String recoveryIdentity = "";
+    public void attachRecoveryLedger() {
+        if (worldObj == null || worldObj.isRemote || ownerUUID == null)
+            throw new IllegalStateException("Recovery queue requires a server-side owner");
+        if (recoveryAttached) {
+            NBTTagCompound current = EMCRecoveryLedger.get().attach(this, ownerUUID, new NBTTagList());
+            if (!recoveryIdentity.equals(current.getString("Id")))
+                throw new IllegalStateException("Recovery queue identity changed");
+            return;
+        }
+        NBTTagCompound legacy = new NBTTagCompound(); saveEMCOutputs(legacy);
+        NBTTagCompound q = EMCRecoveryLedger.get().attach(this, ownerUUID, legacy.getTagList("AppliedEOutputsV1", 10));
+        recoveryIdentity = q.getString("Id"); recoveryAttached = true;
+        reloadRecoveryLedger();
+    }
+    public void reloadRecoveryLedger() {
+        NBTTagCompound tag = new NBTTagCompound(); tag.setTag("AppliedEOutputsV1", EMCRecoveryLedger.get().queue(this));
+        loadEMCOutputs(tag); markDirty();
+    }
+    private NBTTagList recoveryQueueTag() {
+        NBTTagCompound tag = new NBTTagCompound(); saveEMCOutputs(tag); return tag.getTagList("AppliedEOutputsV1", 10);
+    }
+    private boolean recoveryHeld() {
+        if (worldObj == null || worldObj.isRemote || ownerUUID == null) return true;
+        attachRecoveryLedger(); return EMCRecoveryLedger.get().held(this);
+    }
+    private EMCKnowledgeGridCache emcCache() {
+        return gridNode == null || gridNode.getGrid() == null ? null
+            : gridNode.getGrid().getCache(EMCKnowledgeGridCache.class);
+    }
+    public boolean acceptsTransmutationItem(ItemStack stack) {
+        return stack != null && stack.getItem() != null && stack.getItem() != AE2Integration.itemEMCResource
+            && stack.getItem() != AE2Integration.itemEMCTransmutationPattern
+            && stack.getItem() != AE2Integration.itemEMCRecoveryBundle && inventoryHandler.filterMatches(stack);
+    }
+    @Override public void provideCrafting(appeng.api.networking.crafting.ICraftingProviderHelper helper) {
+        EMCKnowledgeGridCache cache = emcCache();
+        if (cache != null) cache.provide(this, helper);
+    }
+    private long pendingEMCOutputCount() {
+        long total = 0;
+        for (appeng.api.storage.data.IAEItemStack output : emcOutputs) {
+            long count = output.getStackSize();
+            if (count <= 0 || count > MAX_PENDING_EMC_OUTPUTS - total)
+                throw new IllegalStateException("Invalid AppliedE output queue; refusing to discard stored outputs");
+            total += count;
+        }
+        return total;
+    }
+    @Override public boolean isBusy() {
+        return recoveryHeld() || releasingEMCOutputs || emcOutputs.size() >= 256 || pendingEMCOutputCount() >= MAX_PENDING_EMC_OUTPUTS
+            || gridNode == null || !gridNode.isActive();
+    }
+    private void mergeEMCOutput(appeng.api.storage.data.IAEItemStack addition) {
+        for (appeng.api.storage.data.IAEItemStack existing : emcOutputs) {
+            if (existing.isSameType(addition) && addition.getStackSize() <= Long.MAX_VALUE - existing.getStackSize()) {
+                existing.setStackSize(existing.getStackSize() + addition.getStackSize());
+                return;
+            }
+        }
+        emcOutputs.add(addition.copy());
+    }
+    @Override public boolean pushPattern(appeng.api.networking.crafting.ICraftingPatternDetails details,
+            net.minecraft.inventory.InventoryCrafting table) {
+        if (worldObj == null || worldObj.isRemote || isInvalid() || isBusy()
+                || !(details instanceof EMCTransmutationPattern)) return false;
+        EMCTransmutationPattern pattern = (EMCTransmutationPattern) details;
+        EMCKnowledgeGridCache cache = emcCache();
+        if (!pattern.matchesTable(table) || cache == null || !cache.authorizes(this, pattern)) return false;
+        appeng.api.storage.data.IAEItemStack[] outputs = pattern.getCondensedOutputs();
+        long remaining = MAX_PENDING_EMC_OUTPUTS - pendingEMCOutputCount();
+        for (appeng.api.storage.data.IAEItemStack output : outputs) {
+            if (output == null || output.getStackSize() <= 0 || output.getStackSize() > remaining) return false;
+            remaining -= output.getStackSize();
+        }
+        // CPU has already acquired the inputs. Do not withdraw from player EMC here.
+        for (appeng.api.storage.data.IAEItemStack output : outputs) mergeEMCOutput(output);
+        EMCRecoveryLedger.get().storeQueue(this, recoveryQueueTag());
+        markDirty();
+        // Never inject synchronously: CPU registers waitingFor only after this returns.
+        return true;
+    }
+    private void flushEMCOutputs() {
+        if (recoveryHeld() || releasingEMCOutputs || emcOutputs.isEmpty() || gridNode == null || !gridNode.isActive()
+                || gridNode.getGrid() == null) return;
+        appeng.api.networking.storage.IStorageGrid storageGrid = gridNode.getGrid()
+            .getCache(appeng.api.networking.storage.IStorageGrid.class);
+        appeng.api.storage.IMEInventory<appeng.api.storage.data.IAEItemStack> storage = storageGrid.getItemInventory();
+        appeng.api.networking.security.MachineSource source = new appeng.api.networking.security.MachineSource(this);
+        long budget = EMC_OUTPUTS_PER_TICK;
+        int attempts = Math.min(EMC_OUTPUT_ENTRIES_PER_TICK, emcOutputs.size());
+        // Round-robin prevents a permanently blocked output from starving later types.
+        while (attempts-- > 0 && budget > 0 && !emcOutputs.isEmpty()) {
+            if (emcOutputCursor >= emcOutputs.size()) emcOutputCursor = 0;
+            appeng.api.storage.data.IAEItemStack output = emcOutputs.get(emcOutputCursor);
+            appeng.api.storage.data.IAEItemStack offered = output.copy();
+            long offeredCount = Math.min(budget, output.getStackSize());
+            offered.setStackSize(offeredCount);
+            budget -= offeredCount;
+            NBTTagCompound offerAudit = new NBTTagCompound();
+            ItemStack offerItem = offered.getItemStack(); offerItem.stackSize = 1; offerItem.writeToNBT(offerAudit);
+            offerAudit.setLong("EMCOutputCount", offeredCount);
+            EMCRecoveryLedger.get().beginDelivery(this, offerAudit);
+            appeng.api.storage.data.IAEItemStack remainder = storage.injectItems(offered,
+                appeng.api.config.Actionable.MODULATE, source);
+            long returned = remainder == null ? 0 : remainder.getStackSize();
+            if (returned < 0 || returned > offeredCount || remainder != null && !output.isSameType(remainder))
+                throw new IllegalStateException("Invalid AE inventory remainder for AppliedE output");
+            long accepted = offeredCount - returned;
+            if (accepted > 0) {
+                output.setStackSize(output.getStackSize() - accepted);
+                if (output.getStackSize() == 0) emcOutputs.remove(emcOutputCursor);
+                else emcOutputCursor++;
+                markDirty();
+            } else emcOutputCursor++;
+            EMCRecoveryLedger.get().endDelivery(this, recoveryQueueTag(), accepted);
+        }
+    }
+    private void saveEMCOutputs(NBTTagCompound tag) {
+        pendingEMCOutputCount();
+        NBTTagList list = new NBTTagList();
+        for (appeng.api.storage.data.IAEItemStack output : emcOutputs) {
+            NBTTagCompound entry = new NBTTagCompound();
+            ItemStack template = output.getItemStack(); template.stackSize = 1;
+            template.writeToNBT(entry);
+            entry.setLong("EMCOutputCount", output.getStackSize());
+            list.appendTag(entry);
+        }
+        tag.setTag("AppliedEOutputsV1", list);
+    }
+    private void loadEMCOutputs(NBTTagCompound tag) {
+        java.util.List<appeng.api.storage.data.IAEItemStack> restored = new java.util.ArrayList<>();
+        NBTTagList list = tag.getTagList("AppliedEOutputsV1", Constants.NBT.TAG_COMPOUND);
+        long total = 0;
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound entry = list.getCompoundTagAt(i);
+            long count = entry.getLong("EMCOutputCount");
+            // Original v1 may have a truncated/zero Count byte. The separate long is authoritative.
+            NBTTagCompound itemTag = (NBTTagCompound) entry.copy(); itemTag.setByte("Count", (byte) 1);
+            ItemStack stack = ItemStack.loadItemStackFromNBT(itemTag);
+            if (stack == null || count <= 0 || count > MAX_PENDING_EMC_OUTPUTS - total)
+                throw new IllegalStateException("Invalid AppliedE saved output; repair the backup instead of silently discarding it");
+            appeng.api.storage.data.IAEItemStack output = AEApi.instance().storage().createItemStack(stack);
+            if (output == null) throw new IllegalStateException("Unregistered AppliedE output item");
+            output.setStackSize(count); restored.add(output); total += count;
+        }
+        // Do not replace the live queue until the entire saved queue has passed validation.
+        emcOutputs.clear(); emcOutputCursor = 0;
+        for (appeng.api.storage.data.IAEItemStack output : restored) mergeEMCOutput(output);
+    }
+
+
+    /** Receipt payload is authoritative on the server, never in the item's NBT. */
+    public boolean restoreEMCRecoveryBundle(ItemStack bundle, EntityPlayer player) {
+        if (worldObj == null || worldObj.isRemote || releasingEMCOutputs || !isUseableByPlayer(player)
+                || bundle == null || bundle.getItem() != AE2Integration.itemEMCRecoveryBundle) return false;
+        attachRecoveryLedger();
+        if (!EMCRecoveryLedger.get().redeem(this, ownerUUID, bundle)) return false;
+        reloadRecoveryLedger(); return true;
+    }
+    /** Queue moves to the receipt atomically; rejected/destroyed token entities do not own the payload. */
+    public void releaseEMCOutputsOnBreak() {
+        if (worldObj == null || worldObj.isRemote || releasingEMCOutputs || ownerUUID == null) return;
+        attachRecoveryLedger();
+        if (emcOutputs.isEmpty()) return;
+        // Held queues stay in ledger at their location, including if an unusual removal destroys the tile.
+        if (EMCRecoveryLedger.get().held(this)) {
+            moze_intel.projecte.utils.PELogger.logWarn("Removed EMC link has a quarantined queue; recreate link at same location and review ledger");
+            return;
+        }
+        releasingEMCOutputs = true;
+        try {
+            ItemStack bundle = EMCRecoveryLedger.get().export(this, ownerUUID);
+            reloadRecoveryLedger();
+            net.minecraft.entity.item.EntityItem entity = new net.minecraft.entity.item.EntityItem(worldObj,
+                xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D, bundle);
+            entity.delayBeforeCanPickup = 10;
+            if (!worldObj.spawnEntityInWorld(entity))
+                moze_intel.projecte.utils.PELogger.logWarn("Receipt token spawn rejected; owner may use /emcrecovery list and token");
+        } finally { releasingEMCOutputs = false; }
+    }
 	// --- IGridHost & IGridBlock ---
 	@Override public IGridNode getGridNode(ForgeDirection dir) {
-		if (gridNode == null && worldObj != null && !worldObj.isRemote) {
+		if (gridNode == null && worldObj != null && !worldObj.isRemote && !isInvalid()) {
 			gridNode = AEApi.instance().createGridNode(this);
+			gridNode.loadFromNBT("AE2Node", pendingNodeData);
+            pendingNodeData = new NBTTagCompound();
 			gridNode.updateState();
 			AE2Integration.registerTile(this);
 		}
 		return gridNode;
 	}
 	@Override public AECableType getCableConnectionType(ForgeDirection dir) { return AECableType.SMART; }
-	@Override public void securityBreak() {}
+	@Override public void securityBreak() { if (worldObj != null && !worldObj.isRemote) worldObj.func_147480_a(xCoord, yCoord, zCoord, true); }
 	@Override public double getIdlePowerUsage() { return 5.0; }
 	@Override public EnumSet<GridFlags> getFlags() { return EnumSet.of(GridFlags.REQUIRE_CHANNEL); }
 	@Override public boolean isWorldAccessible() { return true; }
@@ -170,7 +344,7 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 	@Override public AEColor getGridColor() { return AEColor.Transparent; }
 	@Override public void onGridNotification(GridNotification notification) {}
 	@Override public void setNetworkStatus(IGrid grid, int channelsInUse) {}
-	@Override public EnumSet<ForgeDirection> getConnectableSides() { return EnumSet.allOf(ForgeDirection.class); }
+	@Override public EnumSet<ForgeDirection> getConnectableSides() { return EnumSet.of(ForgeDirection.DOWN, ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST); }
 	@Override public IGridHost getMachine() { return this; }
 	@Override public void gridChanged() {}
 	@Override public ItemStack getMachineRepresentation() { return new ItemStack(AE2Integration.blockMEEMCLink); }
@@ -181,7 +355,9 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 		if (channel == StorageChannel.ITEMS) {
 			inventoryHandler.setOwner(ownerUUID, ownerName);
 			inventoryHandler.setPriority(priority);
-			return Collections.<IMEInventoryHandler>singletonList(inventoryHandler);
+            EMCKnowledgeGridCache cache = emcCache();
+            EMCResourceInventoryHandler storage = cache == null ? null : cache.storageFor(this);
+            if (storage != null) return Collections.<IMEInventoryHandler>singletonList(storage);
 		}
 		return Collections.emptyList();
 	}
@@ -202,13 +378,7 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 	// --- IInventory ---
 	@Override public int getSizeInventory() { return filterSlots.length; }
 	@Override public ItemStack getStackInSlot(int slot) { return slot >= 0 && slot < filterSlots.length ? filterSlots[slot] : null; }
-	@Override public ItemStack decrStackSize(int slot, int amount) {
-		if (slot >= 0 && slot < filterSlots.length && filterSlots[slot] != null) {
-			ItemStack stack = filterSlots[slot]; filterSlots[slot] = null;
-			markDirty(); notifyGrid(); return stack;
-		}
-		return null;
-	}
+    @Override public ItemStack decrStackSize(int slot, int amount) { return null; }
 	@Override public ItemStack getStackInSlotOnClosing(int slot) { return null; }
 	@Override public void setInventorySlotContents(int slot, ItemStack stack) {
 		if (slot >= 0 && slot < filterSlots.length) {
@@ -221,13 +391,21 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 	@Override public String getInventoryName() { return "container.pe.me_emc_link"; }
 	@Override public boolean hasCustomInventoryName() { return false; }
 	@Override public int getInventoryStackLimit() { return 1; }
-	@Override public boolean isUseableByPlayer(EntityPlayer player) { return worldObj.getTileEntity(xCoord, yCoord, zCoord) == this && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64.0D; }
+    @Override public boolean isUseableByPlayer(EntityPlayer player) {
+        return player != null && ownerUUID != null && ownerUUID.equals(player.getUniqueID())
+            && worldObj != null && worldObj.getTileEntity(xCoord, yCoord, zCoord) == this
+            && player.getDistanceSq(xCoord + 0.5D, yCoord + 0.5D, zCoord + 0.5D) <= 64.0D;
+    }
 	@Override public void openInventory() {}
 	@Override public void closeInventory() {}
-	@Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return true; }
+	@Override public boolean isItemValidForSlot(int slot, ItemStack stack) { return false; }
 
 	@Override public void writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
+        saveEMCOutputs(tag);
+        tag.setString("AppliedEQueueIdentityV4", recoveryIdentity);
+        if (gridNode != null) gridNode.saveToNBT("AE2Node", tag);
+        else if (pendingNodeData.hasKey("AE2Node")) tag.setTag("AE2Node", pendingNodeData.getCompoundTag("AE2Node").copy());
 		if (ownerUUID != null) tag.setString("OwnerUUID", ownerUUID.toString());
 		if (ownerName != null) tag.setString("OwnerName", ownerName);
 		tag.setInteger("AccessMode", accessMode);
@@ -249,12 +427,21 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 
 	@Override public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
+        recoveryAttached = false;
+        recoveryIdentity = tag.getString("AppliedEQueueIdentityV4");
+        loadEMCOutputs(tag);
+        if (gridNode == null) {
+            pendingNodeData = new NBTTagCompound();
+            if (tag.hasKey("AE2Node")) pendingNodeData.setTag("AE2Node", tag.getCompoundTag("AE2Node").copy());
+        }
+        ownerUUID = null;
+        ownerName = "";
 		if (tag.hasKey("OwnerUUID")) { try { this.ownerUUID = UUID.fromString(tag.getString("OwnerUUID")); } catch (Exception ignored) {} }
 		if (tag.hasKey("OwnerName")) this.ownerName = tag.getString("OwnerName");
-		this.accessMode = tag.getInteger("AccessMode");
+		this.accessMode = Math.max(0, Math.min(2, tag.getInteger("AccessMode")));
 		this.priority = tag.getInteger("Priority");
-		this.filterMode = tag.getInteger("FilterMode");
-		this.filterPrecision = tag.getInteger("FilterPrecision");
+		this.filterMode = Math.max(0, Math.min(2, tag.getInteger("FilterMode")));
+		this.filterPrecision = Math.max(0, Math.min(2, tag.getInteger("FilterPrecision")));
 
 		Arrays.fill(filterSlots, null);
 		if (tag.hasKey("FilterSlots", Constants.NBT.TAG_LIST)) {
@@ -267,8 +454,7 @@ public class TileMEEMCLink extends TileEntity implements IGridHost, IGridBlock, 
 		}
 		this.inventoryHandler.setOwner(ownerUUID, ownerName);
 		this.inventoryHandler.setPriority(priority);
-		setAccessMode(accessMode);
-		AE2Integration.registerTile(this);
+		this.inventoryHandler.setAccess(accessMode == 0 ? AccessRestriction.READ_WRITE : accessMode == 1 ? AccessRestriction.READ : AccessRestriction.WRITE);
 	}
 
 	@Override public net.minecraft.network.Packet getDescriptionPacket() {

@@ -59,6 +59,8 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 public class GuiHandler implements IGuiHandler {
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        if (ID == 20 && cpw.mods.fml.common.Loader.isModLoaded("appliedenergistics2"))
+            return getAE2ServerGui(player, world, x, y, z);
 		TileEntity tile = world.getTileEntity(x, y, z);
 
 		switch (ID) {
@@ -139,6 +141,8 @@ public class GuiHandler implements IGuiHandler {
 
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        if (ID == 20 && cpw.mods.fml.common.Loader.isModLoaded("appliedenergistics2"))
+            return getAE2ClientGui(player, world, x, y, z);
 		TileEntity tile = world.getTileEntity(x, y, z);
 
 		switch (ID) {
@@ -216,4 +220,22 @@ public class GuiHandler implements IGuiHandler {
 
 		return null;
 	}
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private Object getAE2ServerGui(EntityPlayer player, World world, int x, int y, int z) {
+        TileEntity raw = world.getTileEntity(x, y, z);
+        if (!(raw instanceof moze_intel.projecte.integration.ae2.TileMEEMCLink)) return null;
+        moze_intel.projecte.integration.ae2.TileMEEMCLink tile =
+            (moze_intel.projecte.integration.ae2.TileMEEMCLink) raw;
+        return tile.isUseableByPlayer(player)
+            ? new moze_intel.projecte.integration.ae2.ContainerMEEMCLink(player.inventory, tile) : null;
+    }
+
+    @cpw.mods.fml.relauncher.SideOnly(cpw.mods.fml.relauncher.Side.CLIENT)
+    @cpw.mods.fml.common.Optional.Method(modid = "appliedenergistics2")
+    private Object getAE2ClientGui(EntityPlayer player, World world, int x, int y, int z) {
+        TileEntity raw = world.getTileEntity(x, y, z);
+        return raw instanceof moze_intel.projecte.integration.ae2.TileMEEMCLink
+            ? new moze_intel.projecte.integration.ae2.GuiMEEMCLink(player.inventory,
+                (moze_intel.projecte.integration.ae2.TileMEEMCLink) raw) : null;
+    }
 }

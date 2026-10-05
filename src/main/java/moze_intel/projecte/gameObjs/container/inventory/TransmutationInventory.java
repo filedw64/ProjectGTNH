@@ -31,7 +31,9 @@ public class TransmutationInventory implements IInventory {
 	public int learnFlag = 0, unlearnFlag = 0;
 	public String filter = "";
 	public int searchpage = 0;
-	/** Compatibility field removed: all balance reads use the player property. */
+    /** Returns the player whose balance and knowledge this inventory represents. */
+    public EntityPlayer getPlayer() { return player; }
+    /** All balance reads use the player property instead of a compatibility field. */
     public ExactEMC getEmcExact() { return Transmutation.getEmcExact(player); }
     public void invalidateSearchCache() { knowledgeDirty = true; lastFilter = null; }
 

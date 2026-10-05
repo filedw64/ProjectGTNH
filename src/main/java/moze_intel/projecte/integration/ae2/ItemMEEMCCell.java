@@ -36,7 +36,12 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 	@SideOnly(Side.CLIENT)
 	private IIcon iconTop;
 
-	private final Map<UUID, EMCInventoryHandler> handlerCache = new HashMap<>();
+	// AppliedE core hardening v3
+    private final Map<ISaveProvider, Map<UUID, EMCInventoryHandler>> handlerCache = new java.util.WeakHashMap<>();
+    public void refreshHostedSnapshots() {
+        for (Map<UUID, EMCInventoryHandler> handlers : new java.util.ArrayList<>(handlerCache.values()))
+            for (EMCInventoryHandler handler : new java.util.ArrayList<>(handlers.values())) handler.refreshLegacySnapshot();
+    }
 	private final Map<UUID, Set<ISaveProvider>> providerCache = new HashMap<>();
 
 	public ItemMEEMCCell() {
@@ -45,39 +50,41 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 		setMaxStackSize(1);
 	}
 
-	public void notifyGridForPlayer(UUID uuid) {
-		if (uuid == null) return;
-		Set<ISaveProvider> providers = providerCache.get(uuid);
-		if (providers != null) {
-			for (ISaveProvider sp : providers) {
-				if (sp instanceof appeng.api.networking.IGridHost) {
-					try {
-						appeng.api.networking.IGridNode node = ((appeng.api.networking.IGridHost) sp).getGridNode(net.minecraftforge.common.util.ForgeDirection.UNKNOWN);
-						if (node != null && node.getGrid() != null) {
-							node.getGrid().postEvent(new appeng.api.networking.events.MENetworkCellArrayUpdate());
-							appeng.api.networking.storage.IStorageGrid storageGrid = (appeng.api.networking.storage.IStorageGrid) node.getGrid().getCache(appeng.api.networking.storage.IStorageGrid.class);
-							EMCInventoryHandler handler = handlerCache.get(uuid);
-							if (storageGrid != null && handler != null) {
-								appeng.api.storage.data.IItemList<appeng.api.storage.data.IAEItemStack> current = appeng.api.AEApi.instance().storage().createItemList();
-								handler.getAvailableItems(current);
-								if (current != null && !current.isEmpty()) {
-									appeng.api.networking.security.BaseActionSource src = (sp instanceof appeng.api.networking.security.IActionHost)
-										? new appeng.api.networking.security.MachineSource((appeng.api.networking.security.IActionHost) sp)
-										: new appeng.api.networking.security.PlayerSource(handler.getPlayer(), null);
-									storageGrid.postAlterationOfStoredItems(StorageChannel.ITEMS, current, src);
-								}
-							}
-						}
-					} catch (Throwable ignored) {}
-				}
-			}
-		}
-	}
+    public java.util.Set<UUID> getTrackedOwners() { return new java.util.HashSet<>(providerCache.keySet()); }
+
+    public void collectGrids(UUID uuid, java.util.Set<appeng.api.networking.IGrid> grids) {
+        Set<ISaveProvider> providers = providerCache.get(uuid);
+        if (providers == null) return;
+        for (ISaveProvider provider : new java.util.ArrayList<>(providers)) {
+            if (provider instanceof net.minecraft.tileentity.TileEntity
+                    && ((net.minecraft.tileentity.TileEntity) provider).isInvalid()) {
+                providers.remove(provider);
+                continue;
+            }
+            if (provider instanceof appeng.api.networking.IGridHost) {
+                appeng.api.networking.IGridNode node = ((appeng.api.networking.IGridHost) provider)
+                    .getGridNode(net.minecraftforge.common.util.ForgeDirection.UNKNOWN);
+                if (node != null && node.getGrid() != null) grids.add(node.getGrid());
+            }
+        }
+        if (providers.isEmpty()) {
+            providerCache.remove(uuid);
+            // Weak host keys release removed drive/chest handlers.
+        }
+    }
+
+    public void clearCaches() { providerCache.clear(); handlerCache.clear(); }
+
+    public static UUID getOwner(ItemStack stack) {
+        if (stack == null || !stack.hasTagCompound()) return null;
+        try { return UUID.fromString(stack.getTagCompound().getString("OwnerUUID")); }
+        catch (IllegalArgumentException ex) { return null; }
+    }
 
 	@Override
 	public void onCreated(ItemStack stack, net.minecraft.world.World world, EntityPlayer player) {
 		super.onCreated(stack, world, player);
-		if (player != null) {
+		if (player != null && !world.isRemote && getOwner(stack) == null) {
 			setOwner(stack, player.getUniqueID(), player.getCommandSenderName());
 		}
 	}
@@ -90,30 +97,29 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 		}
 	}
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
-		if (stack != null && stack.hasTagCompound() && stack.getTagCompound().hasKey("OwnerName")) {
-			list.add(EnumChatFormatting.AQUA + "Owner: " + EnumChatFormatting.WHITE + stack.getTagCompound().getString("OwnerName"));
-		} else {
-			list.add(EnumChatFormatting.GRAY + "Unbound (Shift+Right-click to claim)");
-		}
-		list.add(EnumChatFormatting.GREEN + "Capacity: " + EnumChatFormatting.GOLD + "Infinite 64-bit EMC");
-	}
+    @Override @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean advanced) {
+        if (getOwner(stack) != null) list.add(net.minecraft.util.StatCollector.translateToLocalFormatted(
+            "pe.ae2.owner", stack.getTagCompound().getString("OwnerName")));
+        else list.add(net.minecraft.util.StatCollector.translateToLocal("pe.ae2.unbound"));
+        list.add(net.minecraft.util.StatCollector.translateToLocal("pe.ae2.exact"));
+        list.add(net.minecraft.util.StatCollector.translateToLocal("pe.ae2.online_only"));
+        list.add(net.minecraft.util.StatCollector.translateToLocal("pe.ae2.shared_budget"));
+    }
 
-	@Override
-	public ItemStack onItemRightClick(ItemStack stack, net.minecraft.world.World world, EntityPlayer player) {
-		if (player != null && player.isSneaking()) {
-			setOwner(stack, player.getUniqueID(), player.getCommandSenderName());
-			if (!world.isRemote) {
-				world.playSoundAtEntity(player, "random.orb", 0.8F, 1.2F);
-				player.addChatMessage(new ChatComponentText(
-					EnumChatFormatting.GREEN + "[ProjectE] " + EnumChatFormatting.GRAY + "ME EMC Storage Cell claimed by " + EnumChatFormatting.YELLOW + player.getCommandSenderName()
-				));
-			}
-		}
-		return stack;
-	}
+    @Override
+    public ItemStack onItemRightClick(ItemStack stack, net.minecraft.world.World world, EntityPlayer player) {
+        if (!world.isRemote && player != null && player.isSneaking()) {
+            UUID owner = getOwner(stack);
+            if (owner != null && !owner.equals(player.getUniqueID())) {
+                player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.ae2.owner_only"));
+                return stack;
+            }
+            setOwner(stack, player.getUniqueID(), player.getCommandSenderName());
+            player.addChatMessage(new net.minecraft.util.ChatComponentTranslation("pe.ae2.bound"));
+        }
+        return stack;
+    }
 
 	@Override
 	public boolean isCell(ItemStack stack) {
@@ -132,13 +138,21 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 				} catch (Exception ignored) {}
 			}
 			if (ownerUUID == null) return null;
+            // A null-host inspection must not retain a global handler.
+            if (saveProvider == null) {
+                EMCInventoryHandler handler = new EMCInventoryHandler();
+                handler.setOwner(ownerUUID, ownerName);
+                return handler;
+            }
 
 			if (saveProvider != null) {
 				Set<ISaveProvider> providers = providerCache.computeIfAbsent(ownerUUID, k -> java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>()));
 				providers.add(saveProvider);
 			}
 
-			EMCInventoryHandler handler = handlerCache.computeIfAbsent(ownerUUID, k -> new EMCInventoryHandler());
+            Map<UUID, EMCInventoryHandler> hosted = handlerCache.computeIfAbsent(saveProvider, k -> new HashMap<>());
+            EMCInventoryHandler handler = hosted.computeIfAbsent(ownerUUID, k -> new EMCInventoryHandler());
+            handler.setStorageHost(saveProvider);
 			handler.setOwner(ownerUUID, ownerName);
 			return handler;
 		}
@@ -146,15 +160,18 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 	}
 
 	@Override
+	@SideOnly(Side.CLIENT)
 	public IIcon getTopTexture_Light() { return iconTop != null ? iconTop : itemIcon; }
 	@Override
+	@SideOnly(Side.CLIENT)
 	public IIcon getTopTexture_Medium() { return iconTop != null ? iconTop : itemIcon; }
 	@Override
+	@SideOnly(Side.CLIENT)
 	public IIcon getTopTexture_Dark() { return iconTop != null ? iconTop : itemIcon; }
 	@Override
 	public void openChestGui(EntityPlayer player, IChestOrDrive chest, ICellHandler cellHandler, IMEInventoryHandler inv, ItemStack stack, StorageChannel channel) {}
 	@Override
-	public int getStatusForCell(ItemStack stack, IMEInventory inv) { return 1; }
+	public int getStatusForCell(ItemStack stack, IMEInventory inv) { return getOwner(stack) == null ? 4 : 1; }
 	@Override
 	public double cellIdleDrain(ItemStack stack, IMEInventory inv) { return 0.5; }
 	@Override
@@ -171,7 +188,7 @@ public class ItemMEEMCCell extends Item implements ICellHandler, ICellWorkbenchI
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register) {
-		itemIcon = register.registerIcon("projecte:me_emc_cell");
-		iconTop = register.registerIcon("projecte:me_emc_cell_top");
+		itemIcon = register.registerIcon("projecte:transmute_tablet");
+		iconTop = register.registerIcon("projecte:transmute_tablet");
 	}
 }

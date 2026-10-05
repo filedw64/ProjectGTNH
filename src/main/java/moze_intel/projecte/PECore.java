@@ -51,7 +51,7 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-@Mod(modid = PECore.MODID, name = "ProjectE", version = "1.11.1-GTNH")
+@Mod(modid = PECore.MODID, name = "ProjectE", version = "1.11.1-GTNH", dependencies = "after:appliedenergistics2")
 public class PECore
 {
 	public static final String MODID = "ProjectE";
@@ -96,6 +96,7 @@ public class PECore
 		proxy.registerClientOnlyEvents();
 
 		ObjHandler.register();
+        Integration.preInitAE2();
 		ObjHandler.addRecipes();
 	}
 
@@ -110,6 +111,7 @@ public class PECore
 	public void postInit(FMLPostInitializationEvent event) {
 		proxy.initializeManual();
 		Integration.init();
+        Integration.initAE2Recipes();
 	}
 
 	@EventHandler
@@ -121,6 +123,8 @@ public class PECore
 	@EventHandler
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new ProjectECMD());
+        // AppliedE persistent recovery v4
+        Integration.startAE2Recovery(event);
 
 		if (!ThreadCheckUpdate.hasRunServer())
 			new ThreadCheckUpdate(true).start();
@@ -137,12 +141,14 @@ public class PECore
 
 	@EventHandler
 	public void serverStopping(FMLServerStoppingEvent event) {
+        Integration.stopAE2Recovery();
 		TransmutationOffline.cleanAll();
 	}
 
 	@EventHandler
 	public void serverQuit(FMLServerStoppedEvent event) {
 		TileEntityHandler.clearAll();
+        Integration.clearAE2();
 		PELogger.logDebug("Cleared tile entity maps.");
 
 		Transmutation.clearCache();

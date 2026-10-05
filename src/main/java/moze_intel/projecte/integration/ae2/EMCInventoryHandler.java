@@ -26,261 +26,249 @@ import java.util.Objects;
 import java.util.UUID;
 
 @cpw.mods.fml.common.Optional.Interface(iface = "appeng.api.storage.IMEInventoryHandler", modid = "appliedenergistics2")
+// AppliedE persistent recovery v4
 public class EMCInventoryHandler implements IMEInventoryHandler<IAEItemStack> {
+    private final TileMEEMCLink tile;
+    private UUID ownerUUID;
+    private String ownerName;
+    private AccessRestriction access = AccessRestriction.READ_WRITE;
+    private int priority;
+    private int lastIteration = Integer.MIN_VALUE;
 
-	private final TileMEEMCLink tile;
-	private UUID ownerUUID;
-	private String ownerName;
-	private AccessRestriction access = AccessRestriction.READ_WRITE;
-	private int priority = 0;
 
-	private EntityPlayer cachedPlayer = null;
-	private long cachedPlayerTimestamp = 0L;
-	private static final long PLAYER_CACHE_MS = 2000L;
+    // AppliedE core hardening v3
+    private java.lang.ref.WeakReference<appeng.api.storage.ISaveProvider> storageHost = new java.lang.ref.WeakReference<>(null);
+    private volatile java.util.List<IAEItemStack> legacySnapshot = java.util.Collections.emptyList();
+    public void setStorageHost(appeng.api.storage.ISaveProvider host) { storageHost = new java.lang.ref.WeakReference<>(host); }
+    private boolean budgetSuppressed() {
+        appeng.api.storage.ISaveProvider host = storageHost.get();
+        if (!(host instanceof appeng.api.networking.IGridHost)) return false;
+        appeng.api.networking.IGridNode node = ((appeng.api.networking.IGridHost) host)
+            .getGridNode(net.minecraftforge.common.util.ForgeDirection.UNKNOWN);
+        if (node == null || node.getGrid() == null) return false;
+        EMCKnowledgeGridCache cache = node.getGrid().getCache(EMCKnowledgeGridCache.class);
+        return cache != null && cache.ownsBudget(ownerUUID);
+    }
+    public void refreshLegacySnapshot() {
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        if (budgetSuppressed() || !canRead()) { legacySnapshot = java.util.Collections.emptyList(); return; }
+        EntityPlayer player = getPlayer();
+        if (player == null) { legacySnapshot = java.util.Collections.emptyList(); return; }
+        java.util.List<IAEItemStack> entries = new java.util.ArrayList<>();
+        IItemList<IAEItemStack> unique = AEApi.instance().storage().createItemList();
+        ExactEMC balance = Transmutation.getEmcExact(player);
+        for (ItemStack learned : Transmutation.getKnowledge(player)) {
+            if (!filterMatches(learned)) continue;
+            ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(learned);
+            if (cost.signum() <= 0) continue;
+            long count = balance.affordableUnits(cost).min(java.math.BigInteger.valueOf(Integer.MAX_VALUE)).longValue();
+            IAEItemStack entry = AEApi.instance().storage().createItemStack(learned);
+            if (count > 0 && entry != null && unique.findPrecise(entry) == null) {
+                entry.setStackSize(count); unique.add(entry); entries.add(entry);
+            }
+        }
+        legacySnapshot = java.util.Collections.unmodifiableList(entries);
+    }
+    private IAEItemStack simulatedLegacyExtraction(IAEItemStack request) {
+        if (request == null || request.getStackSize() <= 0) return null;
+        for (IAEItemStack entry : legacySnapshot) if (entry.isSameType(request)) {
+            IAEItemStack result = request.copy(); result.setStackSize(Math.min(request.getStackSize(), entry.getStackSize()));
+            return result;
+        }
+        return null;
+    }
 
-	private final Map<StackKey, IAEItemStack> aeItemCache = new HashMap<>();
+    public EMCInventoryHandler() { this(null); }
+    public EMCInventoryHandler(TileMEEMCLink tile) { this.tile = tile; }
 
-	public EMCInventoryHandler() { this(null); }
-	public EMCInventoryHandler(TileMEEMCLink tile) { this.tile = tile; }
+    public void setOwner(UUID uuid, String name) {
+        if (!Objects.equals(ownerUUID, uuid)) lastIteration = Integer.MIN_VALUE;
+        ownerUUID = uuid;
+        ownerName = name;
+    }
+    public UUID getOwnerUUID() { return ownerUUID; }
+    public EntityPlayer getPlayer() { return resolveOnlinePlayer(ownerUUID); }
 
-	public void setOwner(UUID uuid, String name) {
-		if ((this.ownerUUID == null && uuid != null) || (this.ownerUUID != null && !this.ownerUUID.equals(uuid))) {
-			this.cachedPlayer = null;
-		}
-		this.ownerUUID = uuid;
-		this.ownerName = name;
-	}
+    public static EntityPlayer resolveOnlinePlayer(UUID uuid) {
+        MinecraftServer server = MinecraftServer.getServer();
+        if (uuid == null || server == null || server.getConfigurationManager() == null) return null;
+        for (Object raw : server.getConfigurationManager().playerEntityList) {
+            if (raw instanceof EntityPlayer) {
+                EntityPlayer player = (EntityPlayer) raw;
+                if (uuid.equals(player.getUniqueID()) && !player.isDead && player.worldObj != null
+                        && !player.worldObj.isRemote) return player;
+            }
+        }
+        return null;
+    }
+    public void setAccess(AccessRestriction value) { access = value == null ? AccessRestriction.READ_WRITE : value; }
+    public void setPriority(int value) { priority = value; }
 
-	public UUID getOwnerUUID() { return ownerUUID; }
+    public static boolean matchesPrecision(ItemStack filter, ItemStack target, int precision) {
+        if (filter == null || target == null) return false;
+        if (precision == 1) return filter.getItem() == target.getItem();
+        boolean exact = filter.getItem() == target.getItem() && filter.getItemDamage() == target.getItemDamage()
+            && ItemStack.areItemStackTagsEqual(filter, target);
+        if (precision != 2 || exact) return exact;
+        for (int a : OreDictionary.getOreIDs(filter)) for (int b : OreDictionary.getOreIDs(target))
+            if (a == b) return true;
+        return false;
+    }
 
-	public EntityPlayer getPlayer() {
-		long now = System.currentTimeMillis();
-		if (cachedPlayer != null && (now - cachedPlayerTimestamp < PLAYER_CACHE_MS)) {
-			if (!cachedPlayer.isDead) return cachedPlayer;
-			cachedPlayer = null;
-		}
-		EntityPlayer found = resolvePlayer();
-		cachedPlayer = found;
-		cachedPlayerTimestamp = now;
-		return found;
-	}
+    public boolean filterMatches(ItemStack stack) {
+        if (stack == null || stack.getItem() == null) return false;
+        if (tile == null || tile.getFilterMode() == 0) return true;
+        boolean found = false;
+        for (ItemStack filter : tile.getFilterSlots()) {
+            if (matchesPrecision(filter, stack, tile.getFilterPrecision())) { found = true; break; }
+        }
+        return tile.getFilterMode() == 1 ? found : !found;
+    }
 
-	private EntityPlayer resolvePlayer() {
-		if (ownerUUID == null && (ownerName == null || ownerName.isEmpty())) return null;
-		MinecraftServer server = MinecraftServer.getServer();
-		if (server == null) return null;
-		if (ownerUUID != null) {
-			for (Object obj : server.getConfigurationManager().playerEntityList) {
-				if (obj instanceof EntityPlayer p) {
-					if (ownerUUID.equals(p.getUniqueID())) return p;
-				}
-			}
-		}
-		return null;
-	}
+    private boolean canRead() { return access == AccessRestriction.READ || access == AccessRestriction.READ_WRITE; }
+    private boolean canWrite() { return access == AccessRestriction.WRITE || access == AccessRestriction.READ_WRITE; }
 
-	public void setAccess(AccessRestriction access) { this.access = access != null ? access : AccessRestriction.READ_WRITE; }
-	public void setPriority(int priority) { this.priority = priority; }
+    // Strict learned-stack identity prevents constructing arbitrary NBT variants when ProjectE NBT matching is disabled.
+    private boolean knowsExactly(EntityPlayer player, ItemStack stack) {
+        for (ItemStack learned : Transmutation.getKnowledge(player))
+            if (matchesPrecision(learned, stack, 0)) return true;
+        return false;
+    }
 
-	// --- 过滤逻辑 (仅方块有效) ---
-	private int getFilterMode() { return tile != null ? tile.getFilterMode() : 0; }
-	private int getFilterPrecision() { return tile != null ? tile.getFilterPrecision() : 0; }
-	private ItemStack[] getFilterSlots() { return tile != null ? tile.getFilterSlots() : null; }
 
-	public boolean filterMatches(ItemStack stack) {
-		if (stack == null) return true;
-		int mode = getFilterMode();
-		if (mode == 0) return true; // All Items
-
-		ItemStack[] filter = getFilterSlots();
-		if (filter == null || filter.length == 0) return true;
-
-		int precision = getFilterPrecision();
-		boolean found = false;
-		for (ItemStack f : filter) {
-			if (matchesPrecision(f, stack, precision)) {
-				found = true;
-				break;
-			}
-		}
-		return mode == 1 ? found : !found; // 1 = Whitelist, 2 = Blacklist
-	}
-
-	public static boolean matchesPrecision(ItemStack filterStack, ItemStack targetStack, int precision) {
-		if (filterStack == null || targetStack == null) return false;
-		if (precision == 1) { // Fuzzy
-			return filterStack.getItem() == targetStack.getItem();
-		} else if (precision == 2) { // OreDict
-			if (PEGeneralPurposeUtils.areKnowledgeStacksEqual(filterStack, targetStack)) return true;
-			int[] fIds = OreDictionary.getOreIDs(filterStack);
-			int[] tIds = OreDictionary.getOreIDs(targetStack);
-			for (int fId : fIds) {
-				for (int tId : tIds) {
-					if (fId == tId) return true;
-				}
-			}
-			return false;
-		} else { // Exact
-			return PEGeneralPurposeUtils.areKnowledgeStacksEqual(filterStack, targetStack);
-		}
-	}
-
-	@Override
-	public IAEItemStack injectItems(IAEItemStack input, Actionable mode, BaseActionSource src) {
-		if (input == null || access == AccessRestriction.READ || access == AccessRestriction.NO_ACCESS) return input;
-		EntityPlayer player = getPlayer();
-		if (player == null) return input;
-
-		ItemStack inStack = input.getItemStack();
-		if (inStack == null || !filterMatches(inStack)) return input;
-
-		ExactEMC itemEmc = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(inStack);
-		if (itemEmc.signum() <= 0 || input.getStackSize() <= 0) return input;
+    @Override
+    public IAEItemStack injectItems(IAEItemStack input, Actionable mode, BaseActionSource source) {
+        if (input == null || input.getStackSize() <= 0 || !canWrite()) return input;
+        if (!moze_intel.projecte.events.TickEvents.isServerThread() || budgetSuppressed()) return input;
+        EntityPlayer player = getPlayer();
+        if (player == null) return input;
+        if (source instanceof appeng.api.networking.security.MachineSource
+                && ((appeng.api.networking.security.MachineSource) source).via instanceof TileMEEMCLink) return input;
+        ItemStack stack = input.getItemStack();
+        if (stack == null || stack.getItem() == AE2Integration.itemEMCResource
+                || stack.getItem() == AE2Integration.itemEMCTransmutationPattern
+                || stack.getItem() == AE2Integration.itemEMCRecoveryBundle || !filterMatches(stack)) return input;
+        ExactEMC value = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack);
+        if (value.signum() <= 0) return input;
         Transmutation.requireServer(player);
-
-		if (mode == Actionable.MODULATE) {
-			synchronized (PEGeneralPurposeUtils.getPlayerLock(player.getUniqueID())) {
-                ExactEMC totalAdd = itemEmc.multiply(input.getStackSize());
-                ExactEMC newEmc = Transmutation.getEmcExact(player).add(totalAdd);
-				PEGeneralPurposeUtils.syncPlayerEMCAndKnowledge(player, newEmc, inStack.copy());
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public IAEItemStack extractItems(IAEItemStack request, Actionable mode, BaseActionSource src) {
-		if (request == null || access == AccessRestriction.WRITE || access == AccessRestriction.NO_ACCESS) return null;
-		EntityPlayer player = getPlayer();
-		if (player == null) return null;
-
-		ItemStack reqStack = request.getItemStack();
-		if (reqStack == null || !filterMatches(reqStack)) return null;
-		if (!Transmutation.hasKnowledgeForStack(reqStack, player)) return null;
-
-		ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(reqStack);
-		if (cost.signum() <= 0 || request.getStackSize() <= 0) return null;
+        synchronized (PEGeneralPurposeUtils.getPlayerLock(ownerUUID)) {
+            ExactEMC before = Transmutation.getEmcExact(player);
+            ExactEMC after = before.add(value.multiply(input.getStackSize()));
+            try { moze_intel.projecte.math.ExactEMCCodec.validateBalance(after); }
+            catch (IllegalArgumentException ex) { return input; }
+            if (mode == Actionable.MODULATE) {
+                String intent = EMCRecoveryLedger.get().prepareKnowledge(ownerUUID, stack);
+                EMCRecoveryLedger.commitBalances(java.util.Collections.singletonList(player),
+                    java.util.Collections.singletonList(before), java.util.Collections.singletonList(after));
+                EMCRecoveryLedger.get().commitKnowledge(intent);
+            }
+        }
+        if (mode == Actionable.MODULATE) {
+            AE2Integration.notifyHandlersForPlayer(ownerUUID);
+            try { refreshLegacySnapshot(); }
+            catch (RuntimeException failure) {
+                moze_intel.projecte.utils.PELogger.logWarn("Legacy EMC deposit committed; snapshot refresh deferred");
+            }
+        }
+        return null;
+    }
+    @Override
+    public IAEItemStack extractItems(IAEItemStack request, Actionable mode, BaseActionSource source) {
+        if (request == null || request.getStackSize() <= 0 || !canRead()) return null;
+        if (mode == Actionable.SIMULATE) {
+            if (moze_intel.projecte.events.TickEvents.isServerThread()) refreshLegacySnapshot();
+            return simulatedLegacyExtraction(request);
+        }
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        if (budgetSuppressed()) return null;
+        EntityPlayer player = getPlayer();
+        if (player == null) return null;
+        ItemStack stack = request.getItemStack();
+        if (!filterMatches(stack) || !knowsExactly(player, stack)) return null;
+        ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack);
+        if (cost.signum() <= 0) return null;
         Transmutation.requireServer(player);
+        IAEItemStack result;
+        synchronized (PEGeneralPurposeUtils.getPlayerLock(ownerUUID)) {
+            ExactEMC before = Transmutation.getEmcExact(player);
+            long count = before.affordableUnits(cost).min(java.math.BigInteger.valueOf(request.getStackSize())).longValue();
+            if (count <= 0) return null;
+            EMCRecoveryLedger.commitBalances(java.util.Collections.singletonList(player),
+                java.util.Collections.singletonList(before),
+                java.util.Collections.singletonList(before.subtract(cost.multiply(count))));
+            result = request.copy(); result.setStackSize(count);
+        }
+        AE2Integration.notifyHandlersForPlayer(ownerUUID);
+        try { refreshLegacySnapshot(); }
+        catch (RuntimeException failure) {
+            moze_intel.projecte.utils.PELogger.logWarn("Legacy EMC extraction committed; snapshot refresh deferred");
+        }
+        return result;
+    }
+    @Override
+    public IItemList<IAEItemStack> getAvailableItems(IItemList<IAEItemStack> out, int iteration) {
+        if (!moze_intel.projecte.events.TickEvents.isServerThread()) {
+            for (IAEItemStack entry : legacySnapshot) out.add(entry.copy());
+            return out;
+        }
+        if (budgetSuppressed()) return out;
+        // A single cell handler may appear in multiple slots: report its balance only once per AE2 query.
+        if (lastIteration == iteration) return out;
+        lastIteration = iteration;
+        if (!canRead()) return out;
+        EntityPlayer player = getPlayer();
+        if (player == null) return out;
+        ExactEMC balance = Transmutation.getEmcExact(player);
+        if (balance.signum() <= 0) return out;
+        IItemList<IAEItemStack> unique = AEApi.instance().storage().createItemList();
+        for (ItemStack stack : Transmutation.getKnowledge(player)) {
+            if (!filterMatches(stack)) continue;
+            ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack);
+            if (cost.signum() <= 0) continue;
+            long count = balance.affordableUnits(cost).min(java.math.BigInteger.valueOf(Integer.MAX_VALUE)).longValue();
+            if (count <= 0) continue;
+            IAEItemStack entry = AEApi.instance().storage().createItemStack(stack);
+            if (entry != null && unique.findPrecise(entry) == null) {
+                entry.setStackSize(count);
+                unique.add(entry);
+            }
+        }
+        for (IAEItemStack entry : unique) out.add(entry);
+        return out;
+    }
 
-		synchronized (PEGeneralPurposeUtils.getPlayerLock(player.getUniqueID())) {
-			ExactEMC playerEmc = Transmutation.getEmcExact(player);
-			if (playerEmc.compareTo(cost) < 0) return null;
-
-			long toExtract = playerEmc.affordableUnits(cost)
-                .min(java.math.BigInteger.valueOf(request.getStackSize())).longValue();
-			if (toExtract <= 0) return null;
-
-			if (mode == Actionable.MODULATE) {
-				ExactEMC newEmc = playerEmc.subtract(cost.multiply(toExtract));
-				PEGeneralPurposeUtils.syncPlayerEMCAndKnowledge(player, newEmc, null);
-			}
-			IAEItemStack result = request.copy();
-			result.setStackSize(toExtract);
-			return result;
-		}
-	}
-
-	@Override
-	public IItemList<IAEItemStack> getAvailableItems(IItemList<IAEItemStack> out) {
-		if (access == AccessRestriction.WRITE || access == AccessRestriction.NO_ACCESS) return out;
-		EntityPlayer player = getPlayer();
-		if (player == null) return out;
-
-		ExactEMC playerEmc = Transmutation.getEmcExact(player);
-		if (playerEmc.signum() <= 0) return out;
-
-		int mode = getFilterMode();
-		int precision = getFilterPrecision();
-
-		// 优化：精确白名单模式下，直接按过滤槽读取，不遍历整个上万物品的知识库
-		if (mode == 1 && precision == 0) {
-			ItemStack[] filter = getFilterSlots();
-			if (filter != null) {
-				for (ItemStack f : filter) {
-					if (f == null || f.getItem() == null || !Transmutation.hasKnowledgeForStack(f, player)) continue;
-					ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(f);
-					if (cost.signum() > 0 && cost.compareTo(playerEmc) <= 0) {
-						long count = playerEmc.affordableUnits(cost).min(java.math.BigInteger.valueOf(Integer.MAX_VALUE)).longValue();
-						if (count > 0) {
-							IAEItemStack aeStack = AEApi.instance().storage().createItemStack(f);
-							if (aeStack != null) {
-								aeStack.setStackSize(count);
-								out.add(aeStack);
-							}
-						}
-					}
-				}
-				return out;
-			}
-		}
-
-		// 正常遍历知识库（已包含 aeItemCache 缓存优化）
-		List<ItemStack> knowledge = Transmutation.getKnowledge(player);
-		if (knowledge == null || knowledge.isEmpty()) return out;
-
-		for (ItemStack stack : knowledge) {
-			if (stack == null || stack.getItem() == null || !filterMatches(stack)) continue;
-			ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack);
-			if (cost.signum() <= 0 || cost.compareTo(playerEmc) > 0) continue;
-
-			long count = playerEmc.affordableUnits(cost).min(java.math.BigInteger.valueOf(Integer.MAX_VALUE)).longValue();
-			if (count > 0) {
-				StackKey key = new StackKey(stack);
-				IAEItemStack aeStack = aeItemCache.get(key);
-				if (aeStack == null) {
-					aeStack = AEApi.instance().storage().createItemStack(stack);
-					if (aeStack != null) aeItemCache.put(key, aeStack.copy());
-				}
-				if (aeStack != null) {
-					IAEItemStack outStack = aeStack.copy();
-					outStack.setStackSize(count);
-					out.add(outStack);
-				}
-			}
-		}
-		return out;
-	}
-
-	@Override
-	public StorageChannel getChannel() { return StorageChannel.ITEMS; }
-	@Override
-	public AccessRestriction getAccess() { return access; }
-	@Override
-	public boolean isPrioritized(IAEItemStack stack) { return false; }
-	@Override
-	public boolean canAccept(IAEItemStack stack) {
-		if (access == AccessRestriction.READ || access == AccessRestriction.NO_ACCESS || stack == null) return false;
-		ItemStack itemStack = stack.getItemStack();
-		return itemStack != null && filterMatches(itemStack) && moze_intel.projecte.utils.EMCHelper.getEmcValueExact(itemStack).signum() > 0;
-	}
-	@Override
-	public int getPriority() { return priority; }
-	@Override
-	public int getSlot() { return 0; }
-	@Override
-	public boolean validForPass(int i) { return true; }
-
-	private static class StackKey {
-		private final Item item;
-		private final int damage;
-		private final NBTTagCompound nbt;
-		private final int hash;
-		public StackKey(ItemStack stack) {
-			this.item = stack.getItem();
-			this.damage = stack.getItemDamage();
-			this.nbt = stack.stackTagCompound;
-			int h = Item.getIdFromItem(item);
-			h = 31 * h + damage;
-			if (nbt != null) h = 31 * h + nbt.hashCode();
-			this.hash = h;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			if (!(obj instanceof StackKey other)) return false;
-			return this.item == other.item && this.damage == other.damage && (Objects.equals(this.nbt, other.nbt));
-		}
-		@Override
-		public int hashCode() { return hash; }
-	}
+    @Override public IAEItemStack getAvailableItem(IAEItemStack request, int iteration) {
+        if (request == null || !canRead()) return null;
+        if (!moze_intel.projecte.events.TickEvents.isServerThread()) {
+            for (IAEItemStack entry : legacySnapshot) if (entry.isSameType(request)) return entry.copy();
+            return null;
+        }
+        if (budgetSuppressed()) return null;
+        EntityPlayer player = getPlayer();
+        if (player == null) return null;
+        ItemStack stack = request.getItemStack();
+        if (!filterMatches(stack) || !knowsExactly(player, stack)) return null;
+        ExactEMC cost = moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack);
+        if (cost.signum() <= 0) return null;
+        long count = Transmutation.getEmcExact(player).affordableUnits(cost)
+            .min(java.math.BigInteger.valueOf(Integer.MAX_VALUE)).longValue();
+        if (count <= 0) return null;
+        IAEItemStack result = request.copy();
+        result.setStackSize(count);
+        return result;
+    }
+    @Override public StorageChannel getChannel() { return StorageChannel.ITEMS; }
+    @Override public AccessRestriction getAccess() { return access; }
+    @Override public boolean isPrioritized(IAEItemStack stack) { return false; }
+    @Override public boolean canAccept(IAEItemStack stack) {
+        if (!moze_intel.projecte.events.TickEvents.isServerThread() || budgetSuppressed()) return false;
+        return stack != null && stack.getItemStack().getItem() != AE2Integration.itemEMCRecoveryBundle
+            && stack.getItemStack().getItem() != AE2Integration.itemEMCResource
+            && stack.getItemStack().getItem() != AE2Integration.itemEMCTransmutationPattern
+            && getPlayer() != null && canWrite() && filterMatches(stack.getItemStack())
+            && moze_intel.projecte.utils.EMCHelper.getEmcValueExact(stack.getItemStack()).signum() > 0;
+    }
+    @Override public int getPriority() { return priority; }
+    @Override public int getSlot() { return 0; }
+    @Override public boolean validForPass(int pass) { return true; }
 }

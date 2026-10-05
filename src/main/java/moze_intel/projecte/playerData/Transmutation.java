@@ -26,6 +26,7 @@ public final class Transmutation {
 
 	public static void clearCache() {
 		CACHED_TOME_KNOWLEDGE.clear();
+        DEFERRED_EMC_SYNC.clear(); WARNED_EMC_SYNC.clear();
 	}
 
 	public static void cacheFullKnowledge() {
@@ -162,6 +163,60 @@ public final class Transmutation {
         requireServer(player);
         TransmutationProps.getDataFor(player).setTransmutationEmc(emc);
         syncEmc(player);
+    }
+
+
+    // AppliedE core hardening v3
+    private static final java.util.Set<java.util.UUID> DEFERRED_EMC_SYNC = new java.util.HashSet<>();
+    private static final java.util.Set<java.util.UUID> WARNED_EMC_SYNC = new java.util.HashSet<>();
+    /** Caller holds UUID-ordered player locks. No networking or event dispatch during commit. */
+    public static void commitEmcBalances(List<EntityPlayer> players, List<ExactEMC> before, List<ExactEMC> after) {
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        if (players.size() != before.size() || players.size() != after.size())
+            throw new IllegalArgumentException("Mismatched EMC transaction");
+        List<TransmutationProps> props = new ArrayList<>();
+        java.util.Set<java.util.UUID> unique = new java.util.HashSet<>();
+        for (int i = 0; i < players.size(); i++) {
+            EntityPlayer player = players.get(i); requireServer(player);
+            if (!unique.add(player.getUniqueID())) throw new IllegalArgumentException("Duplicate EMC owner");
+            TransmutationProps data = TransmutationProps.getDataFor(player);
+            if (data == null || !data.getTransmutationEmc().equals(before.get(i)))
+                throw new IllegalStateException("EMC balance changed during transaction");
+            moze_intel.projecte.math.ExactEMCCodec.validateBalance(after.get(i));
+            props.add(data);
+        }
+        int committed = 0;
+        try {
+            for (; committed < props.size(); committed++)
+                if (!before.get(committed).equals(after.get(committed)))
+                    props.get(committed).setTransmutationEmc(after.get(committed));
+        } catch (RuntimeException failure) {
+            for (int i = committed - 1; i >= 0; i--) props.get(i).setTransmutationEmc(before.get(i));
+            throw failure;
+        }
+        for (int i = 0; i < players.size(); i++)
+            if (!before.get(i).equals(after.get(i))) DEFERRED_EMC_SYNC.add(players.get(i).getUniqueID());
+    }
+    /** Run outside player locks; retry notification failures, never reapply committed balances. */
+    public static void drainDeferredEmcSync() {
+        moze_intel.projecte.events.TickEvents.requireServerThread();
+        net.minecraft.server.MinecraftServer server = net.minecraft.server.MinecraftServer.getServer();
+        if (server == null || server.getConfigurationManager() == null) return;
+        for (java.util.UUID uuid : new java.util.HashSet<>(DEFERRED_EMC_SYNC)) {
+            EntityPlayer found = null;
+            for (Object raw : server.getConfigurationManager().playerEntityList)
+                if (raw instanceof EntityPlayer && uuid.equals(((EntityPlayer) raw).getUniqueID())) {
+                    found = (EntityPlayer) raw; break;
+                }
+            if (found == null) { DEFERRED_EMC_SYNC.remove(uuid); WARNED_EMC_SYNC.remove(uuid); continue; }
+            try {
+                syncEmc(found);
+                DEFERRED_EMC_SYNC.remove(uuid); WARNED_EMC_SYNC.remove(uuid);
+            } catch (RuntimeException failure) {
+                if (WARNED_EMC_SYNC.add(uuid))
+                    PELogger.logWarn("Deferred EMC sync failed; balance is committed, notification will retry: " + uuid);
+            }
+        }
     }
 
     public static void addEmcExact(EntityPlayer player, ExactEMC amount) {

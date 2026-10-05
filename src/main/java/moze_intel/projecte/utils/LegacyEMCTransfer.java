@@ -21,8 +21,8 @@ public final class LegacyEMCTransfer {
 
     private static void transfer(TransmutationInventory inv, ItemStack stack, IItemEmc item,
                                  boolean charging) {
-        if (inv.player.worldObj.isRemote) return;
-        Transmutation.requireServer(inv.player);
+        if (inv.getPlayer().worldObj.isRemote) return;
+        Transmutation.requireServer(inv.getPlayer());
         ExactEMC balance = inv.getEmcExact();
         ItemStack candidate = stack.copy();
         double before = item.getStoredEmc(candidate);
@@ -57,7 +57,7 @@ public final class LegacyEMCTransfer {
         if (charging && moved.compareTo(balance) > 0) return;
         ExactEMC nextBalance = charging ? balance.subtract(moved) : balance.add(moved);
         ExactEMCCodec.validateBalance(nextBalance);
-        Transmutation.setEmcExact(inv.player, nextBalance);
+        Transmutation.setEmcExact(inv.getPlayer(), nextBalance);
         stack.setItemDamage(candidate.getItemDamage());
         stack.setTagCompound(candidate.hasTagCompound()
             ? (net.minecraft.nbt.NBTTagCompound) candidate.stackTagCompound.copy() : null);

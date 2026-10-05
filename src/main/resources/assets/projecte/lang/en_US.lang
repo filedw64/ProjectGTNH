@@ -406,3 +406,41 @@ pe.manual.introduction.header=Introduction
 
 # ImagePage headers
 pe.manual.img_alchchest.header=alchchest.png
+
+# AppliedE-style AE2 695 integration
+item.pe_me_emc_cell.name=ME EMC Storage Cell
+tile.pe_me_emc_link.name=ME EMC Link
+container.pe.me_emc_link=ME EMC Link
+pe.ae2.owner=Owner: %s
+pe.ae2.unbound=Unbound: sneak-right-click to bind
+pe.ae2.exact=Uses your exact ProjectE EMC balance
+pe.ae2.online_only=Owner must be online for transactions
+pe.ae2.shared_budget=Displayed item counts share one EMC budget
+pe.ae2.owner_only=Only the owner may configure or bind this device
+pe.ae2.bound=ME EMC cell bound to you
+pe.ae2.access.0=Read / Write
+pe.ae2.access.1=Extract only
+pe.ae2.access.2=Insert only
+pe.ae2.filter.0=All items
+pe.ae2.filter.1=Whitelist
+pe.ae2.filter.2=Blacklist
+pe.ae2.precision.0=Exact: item, metadata and NBT
+pe.ae2.precision.1=Fuzzy: item only
+pe.ae2.precision.2=Ore Dictionary
+pe.ae2.priority=Priority
+
+# AppliedE-style EMC crafting (695 bridge)
+item.pe_emc_resource.name=EMC Resource
+item.pe_emc_transmutation_pattern.name=EMC Transmutation Pattern
+pe.ae2.resource_unit=Tier %s: %s EMC per unit
+pe.ae2.resource_bridge=AE2 695 resource bridge; withdrawn from player EMC.
+
+# AppliedE core hardening v3
+item.pe_emc_recovery_bundle.name=EMC Output Recovery Bundle
+pe.ae2.recovery_hint=Use on an empty ME EMC Link owned by the receipt owner. Lost tokens: /emcrecovery list, token <id>.
+pe.ae2.recovery_warning=Server ledger owns outputs. Copied tokens redeem once. Quarantined transfers require operator review.
+pe.ae2.recovery_rejected=Recovery refused: check owner, world, receipt state, empty queue and quarantine status.
+
+pe.ae2.recovery_legacy=Legacy unverified bundle: preserve it for operator review; no automatic redemption.
+
+# AppliedE persistent recovery v4
