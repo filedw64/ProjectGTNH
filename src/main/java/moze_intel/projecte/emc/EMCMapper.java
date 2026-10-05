@@ -1,8 +1,10 @@
 package moze_intel.projecte.emc;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.event.EMCRemapEvent;
-import moze_intel.projecte.emc.arithmetics.DoubleArithmetic;
+import moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic;
 import moze_intel.projecte.emc.mappers.APICustomConversionMapper;
 import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
 import moze_intel.projecte.emc.mappers.CraftingMapper;
@@ -31,14 +33,16 @@ import java.util.Map;
 public final class EMCMapper
 {
 	public static boolean enableNBTprocess = true;
-	public static Map<SimpleStack, Double> emc = new HashMap<>();
+	/** Deprecated compatibility view; internal player pricing uses exactEmc. */
+    public static Map<SimpleStack, Double> emc = new HashMap<>();
+    public static final Map<SimpleStack, ExactEMC> exactEmc = new HashMap<>();
 
 	public static void map()
 	{
 		// 在开始映射前清空之前的记录
 		clearMaps();
 
-		List<IEMCMapper<NormalizedSimpleStack, Double>> emcMappers = Arrays.asList(
+		List<IEMCMapper<NormalizedSimpleStack, ExactEMC>> emcMappers = Arrays.asList(
 			new OreDictionaryMapper(),
 			new LazyMapper(),
 			APICustomEMCMapper.instance,
@@ -52,7 +56,7 @@ public final class EMCMapper
 		);
 
 		// 废弃了 DoubleCollector 和 DoubleGenerator，直接使用单一实例！
-		SimpleGraphMapper<NormalizedSimpleStack, Double> mapper = new SimpleGraphMapper<>(DoubleArithmetic.INSTANCE);
+		SimpleGraphMapper<NormalizedSimpleStack, ExactEMC> mapper = new SimpleGraphMapper<>(ExactEMCArithmetic.INSTANCE);
 
 		Configuration config = new Configuration(new File(PECore.CONFIG_DIR, "mapping.cfg"));
 		config.load();
@@ -60,7 +64,7 @@ public final class EMCMapper
 		enableNBTprocess = config.getBoolean("enableNBTprocess", "general", true, "Process items that have different NBT tags as different items.");
 
 		PELogger.logInfo("Start to collect Mappings");
-		for (IEMCMapper<NormalizedSimpleStack, Double> emcMapper : emcMappers) {
+		for (IEMCMapper<NormalizedSimpleStack, ExactEMC> emcMapper : emcMappers) {
 			if (!config.getBoolean(emcMapper.getName(), "enabledMappers", emcMapper.isAvailable(), emcMapper.getDescription()) || !emcMapper.isAvailable())
 				continue;
 			long start = System.currentTimeMillis();
@@ -87,7 +91,7 @@ public final class EMCMapper
 
 		start = System.currentTimeMillis();
 		// 将 graphMapperValues 写入 map() 内，生成结束后释放内存
-		Map<NormalizedSimpleStack, Double> graphMapperValues = mapper.generateValues();
+		Map<NormalizedSimpleStack, ExactEMC> graphMapperValues = mapper.generateValues();
 		filterEMCMap(graphMapperValues);
 		PELogger.logInfo("EMC Values Generated! (took %.3fs)", (System.currentTimeMillis() - start) / 1e3);
 
@@ -101,11 +105,11 @@ public final class EMCMapper
 					return;
 				}
 				if (nss instanceof NormalizedSimpleStack.NBTNSSItem nbtnssItem)
-					emc.put(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
-				else emc.put(new SimpleStack(id, nssItem.damage), val);
+					putExact(new NBTSimpleStack(id, nbtnssItem.damage, nbtnssItem.nbt), val);
+				else putExact(new SimpleStack(id, nssItem.damage), val);
 			}
 			else if (nss instanceof NormalizedSimpleStack.NSSFluid nssFluid) {
-				emc.put(new FluidSimpleStack(nssFluid.fluid.getID()), val);
+				putExact(new FluidSimpleStack(nssFluid.fluid.getID()), val);
 			}
 		});
 
@@ -119,11 +123,11 @@ public final class EMCMapper
 	 * Remove all entrys from the map, that are not {@link NormalizedSimpleStack.NSSItem} or {@link NormalizedSimpleStack.NSSFluid},
 	 * have a value <= 0 or WILDCARD_VALUE as metadata.
 	 */
-	static void filterEMCMap(Map<NormalizedSimpleStack, Double> map) {
+	static void filterEMCMap(Map<NormalizedSimpleStack, ExactEMC> map) {
 		// 使用 entrySet() 代替 keySet()，避免重复寻址查询
 		// 接管之前 DoubleGenerator 负责的 <= 0 过滤，原地剔除，不产生新的 HashMap
 		map.entrySet().removeIf(entry -> {
-			if (entry.getValue() <= 0) return true;
+			if (entry.getValue().signum() <= 0) return true;
 			NormalizedSimpleStack nss = entry.getKey();
 			if (nss instanceof NormalizedSimpleStack.NSSItem nssItem)
 				return nssItem.damage == OreDictionary.WILDCARD_VALUE;
@@ -135,11 +139,22 @@ public final class EMCMapper
 		return emc.containsKey(key);
 	}
 
+    public static ExactEMC getEmcValueExact(SimpleStack stack) {
+        return exactEmc.getOrDefault(stack, ExactEMC.ZERO);
+    }
+
+    public static void putExact(SimpleStack stack, ExactEMC value) {
+        moze_intel.projecte.math.ExactEMCCodec.validate(value);
+        exactEmc.put(stack, value);
+        emc.put(stack, value.toLegacyDouble());
+    }
+
 	public static Double getEmcValue(SimpleStack stack) {
 		return emc.get(stack);
 	}
 
 	public static void clearMaps() {
 		emc.clear();
+        exactEmc.clear();
 	}
 }

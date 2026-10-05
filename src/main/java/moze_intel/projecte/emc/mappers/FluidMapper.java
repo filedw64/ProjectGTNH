@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.ImmutableMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
@@ -19,13 +21,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 
-public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
-	IMappingCollector<NormalizedSimpleStack, Double> mapper;
+public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
+	IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper;
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config) {
 		this.mapper = mapper;
-		mapper.setValueBefore(NormalizedSimpleStack.forFluid(FluidRegistry.WATER), CCCInit.finiteWater ? 8e-3 : -Double.MAX_VALUE);
+		mapper.setValueBefore(NormalizedSimpleStack.forFluid(FluidRegistry.WATER), CCCInit.finiteWater ? ExactEMC.parse("0.008") : moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic.FREE);
 
 		// 1 Bucket of Lava = 1 Block of Obsidian
 		// 替换 Arrays.asList 为 Collections.singletonList 减少内存分配
@@ -33,7 +35,7 @@ public class FluidMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
 
 		// Add Conversion in case MFR is not present and milk is not an actual fluid
 		NormalizedSimpleStack fakeMilkFluid = NormalizedSimpleStack.forFake("fakeMilkFluid");
-		mapper.setValueBefore(fakeMilkFluid, 16.0);
+		mapper.setValueBefore(fakeMilkFluid, ExactEMC.of(16));
 		mapper.addConversion(1, NormalizedSimpleStack.forItem(Items.milk_bucket), Arrays.asList(NormalizedSimpleStack.forItem(Items.bucket), fakeMilkFluid));
 
 		Fluid milkFluid = FluidRegistry.getFluid("milk");

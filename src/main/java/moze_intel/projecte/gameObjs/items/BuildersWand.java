@@ -1,5 +1,7 @@
 package moze_intel.projecte.gameObjs.items;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.EMCHelper;
@@ -46,7 +48,7 @@ public class BuildersWand extends Item {
 
 		// 【优化】循环外部 O(1) 预计算 EMC 和知识状态
 		boolean hasKnowledge = Transmutation.hasKnowledgeForStack(targetStack, player);
-		double emcCost = EMCHelper.getEmcValue(targetStack);
+		ExactEMC emcCost = EMCHelper.getEmcValueExact(targetStack);
 
 		for (ChunkCoordinates coord : blocks) {
 			// 传入预计算的值

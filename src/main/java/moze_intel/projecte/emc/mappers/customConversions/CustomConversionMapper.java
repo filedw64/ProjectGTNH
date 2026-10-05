@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers.customConversions;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,7 +32,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, Double>
+public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC>
 {
 	public static final ImmutableList<String> defaultfilenames = ImmutableList.of("metals", "example", "ODdefaults");
 
@@ -62,7 +64,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config)
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config)
 	{
 		File customConversionFolder = getCustomConversionFolder();
 		if (customConversionFolder.isDirectory() || customConversionFolder.mkdir()) {
@@ -99,11 +101,11 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		return new File(PECore.CONFIG_DIR, "customConversions");
 	}
 
-	public static void addMappingsFromFile(Reader json, IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+	public static void addMappingsFromFile(Reader json, IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper) {
 		addMappingsFromFile(parseJson(json), mapper);
 	}
 
-	public static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, Double> mapper) {
+	public static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper) {
 		Map<String, NormalizedSimpleStack> fakes = new HashMap<>();
 
 		for (Map.Entry<String, ConversionGroup> entry : file.groups.entrySet()) {
@@ -124,7 +126,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		try {
 			if (file.values == null) return;
 			if (file.values.setValueBefore != null) {
-				for (Map.Entry<String, Double> entry : file.values.setValueBefore.entrySet()) {
+				for (Map.Entry<String, ExactEMC> entry : file.values.setValueBefore.entrySet()) {
 					NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 					mapper.setValueBefore(something, entry.getValue());
 					if (!(something instanceof NormalizedSimpleStack.NSSOreDictionary nssOD))
@@ -134,7 +136,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 				}
 			}
 			if (file.values.setValueAfter != null) {
-				for (Map.Entry<String, Double> entry : file.values.setValueAfter.entrySet()) {
+				for (Map.Entry<String, ExactEMC> entry : file.values.setValueAfter.entrySet()) {
 					NormalizedSimpleStack something = getNSSfromJsonString(entry.getKey(), fakes);
 					mapper.setValueAfter(something, entry.getValue());
 					if (!(something instanceof NormalizedSimpleStack.NSSOreDictionary nssOD))

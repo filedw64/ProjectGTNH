@@ -1,5 +1,7 @@
 package moze_intel.projecte.emc.mappers.customConversions.json;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.collect.Maps;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -34,23 +36,23 @@ public class FixedValuesDeserializer implements JsonDeserializer<FixedValues>
 		return fixed;
 	}
 
-	Map<String, Double> parseSetValueMapFromObject(JsonObject o, String key) {
+	Map<String, ExactEMC> parseSetValueMapFromObject(JsonObject o, String key) {
 		if (o.has(key)) {
 			return parseSetValueMap(o.getAsJsonObject(key));
 		}
 		return Maps.newHashMap();
 	}
 
-	Map<String, Double> parseSetValueMap(JsonObject o) {
-		Map<String, Double> out = Maps.newHashMap();
+	Map<String, ExactEMC> parseSetValueMap(JsonObject o) {
+		Map<String, ExactEMC> out = Maps.newHashMap();
 		for (Map.Entry<String, JsonElement> entry: o.entrySet()) {
 			JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
 			if (primitive.isNumber()) {
-				out.put(entry.getKey(),  primitive.getAsDouble());
+				out.put(entry.getKey(),  ExactEMC.parse(primitive.getAsString()));
 				continue;
 			} else if (primitive.isString()) {
 				if (primitive.getAsString().equalsIgnoreCase("free")) {
-					out.put(entry.getKey(), -Double.MAX_VALUE);
+					out.put(entry.getKey(), moze_intel.projecte.emc.arithmetics.ExactEMCArithmetic.FREE);
 					continue;
 				}
 			}

@@ -31,7 +31,8 @@ public class KnowledgeSyncPKT implements IMessage {
 	public static class Handler implements IMessageHandler<KnowledgeSyncPKT, IMessage> {
 		@Override
 		public IMessage onMessage(final KnowledgeSyncPKT message, MessageContext ctx) {
-			PECore.proxy.getClientTransmutationProps().readFromPacket(message.nbt);
+			moze_intel.projecte.network.ClientEMCUpdates.enqueue(
+                () -> PECore.proxy.getClientTransmutationProps().readFromPacket(message.nbt));
 			PELogger.logDebug("** RECEIVED TRANSMUTATION DATA CLIENTSIDE **");
 			return null;
 		}

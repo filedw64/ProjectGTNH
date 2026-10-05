@@ -1,5 +1,7 @@
 package moze_intel.projecte.api.proxy;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -8,6 +10,10 @@ import java.util.Map;
 
 public interface IEMCProxy
 {
+    void registerCustomEMCExact(ItemStack stack, ExactEMC value);
+    void registerCustomEMCExact(Object object, ExactEMC value);
+    ExactEMC getValueExact(ItemStack stack);
+
     /**
      * Registers a custom EMC value for this ItemStack
      * Call this during any of the main loading phases (Preinit, Init, Postinit)

@@ -33,9 +33,14 @@ public class SearchUpdatePKT implements IMessage {
 	public static class Handler implements IMessageHandler<SearchUpdatePKT, IMessage> {
 		@Override
 		public IMessage onMessage(final SearchUpdatePKT pkt, final MessageContext ctx) {
-			if (ctx.getServerHandler().playerEntity.openContainer instanceof TransmutationContainer container) {
+            final net.minecraft.entity.player.EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            final net.minecraft.inventory.Container expected = player.openContainer;
+            moze_intel.projecte.network.ServerEMCUpdates.enqueue(() -> {
+            if (player.isDead || player.openContainer != expected || pkt.slot < 10 || pkt.slot > 25) return;
+			if (player.openContainer instanceof TransmutationContainer container) {
                 container.transmutationInventory.writeIntoOutputSlot(pkt.slot, pkt.itemStack);
 			}
+            });
 			return null;
 		}
 	}

@@ -29,6 +29,9 @@ public class ArcaneTabletButtonPKT implements IMessage, IMessageHandler<ArcaneTa
 	@Override
 	public IMessage onMessage(ArcaneTabletButtonPKT message, MessageContext ctx) {
 		EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+        final net.minecraft.inventory.Container expected = player.openContainer;
+        moze_intel.projecte.network.ServerEMCUpdates.enqueue(() -> {
+        if (player.isDead || player.openContainer != expected) return;
 		if (player.openContainer instanceof ArcaneTransmutationContainer) {
 			ArcaneTransmutationContainer container = (ArcaneTransmutationContainer) player.openContainer;
 			switch (message.actionId) {
@@ -39,6 +42,7 @@ public class ArcaneTabletButtonPKT implements IMessage, IMessageHandler<ArcaneTa
 				case 4: container.clearCrafting(player); break;
 			}
 		}
+        });
 		return null;
 	}
 }

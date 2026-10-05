@@ -1,5 +1,7 @@
 package moze_intel.projecte.impl;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import com.google.common.base.Preconditions;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.LoaderState;
@@ -16,6 +18,28 @@ public class EMCProxyImpl implements IEMCProxy
     public static final IEMCProxy instance = new EMCProxyImpl();
 
     private EMCProxyImpl() {}
+    private void checkRegistrationPhase() {
+        boolean allowed = Loader.instance().isInState(LoaderState.PREINITIALIZATION)
+            || Loader.instance().isInState(LoaderState.INITIALIZATION)
+            || Loader.instance().isInState(LoaderState.POSTINITIALIZATION);
+        Preconditions.checkState(allowed, "Invalid phase for exact EMC registration");
+    }
+    @Override
+    public void registerCustomEMCExact(ItemStack stack, ExactEMC value) {
+        Preconditions.checkNotNull(stack); checkRegistrationPhase();
+        APICustomEMCMapper.instance.registerCustomEMCExact(stack, value);
+    }
+    @Override
+    public void registerCustomEMCExact(Object object, ExactEMC value) {
+        Preconditions.checkNotNull(object); checkRegistrationPhase();
+        APICustomEMCMapper.instance.registerCustomEMCExact(object, value);
+    }
+    @Override
+    public ExactEMC getValueExact(ItemStack stack) {
+        Preconditions.checkNotNull(stack);
+        return EMCHelper.getEmcValueExact(stack);
+    }
+
 
     @Override
     public void registerCustomEMC(ItemStack stack, double value)

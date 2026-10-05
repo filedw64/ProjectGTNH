@@ -22,6 +22,8 @@ public class GUIArcaneTransmutation extends GuiContainer {
 	private static final ResourceLocation texture = new ResourceLocation(PECore.MODID.toLowerCase(), "textures/gui/arcane_transmutation_tablet.png");
 	private final ArcaneTransmutationContainer container;
 	private GuiTextField textBoxFilter;
+	private final moze_intel.projecte.math.ExactEMCFormatter.Cache emcDisplay =
+		new moze_intel.projecte.math.ExactEMCFormatter.Cache();
 
 	public GUIArcaneTransmutation(InventoryPlayer invPlayer, EntityPlayer player) {
 		super(new ArcaneTransmutationContainer(invPlayer, player));
@@ -135,7 +137,7 @@ public class GUIArcaneTransmutation extends GuiContainer {
 
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		String emc = "EMC: " + Constants.EMC_FORMATTER.format(container.transmutationInventory.emc);
+		String emc = "EMC: " + emcDisplay.format(container.transmutationInventory.getEmcExact());
 		int fontWidth = this.fontRendererObj.getStringWidth(emc);
 		this.fontRendererObj.drawString(emc, 76 + (176 - fontWidth) / 2, -10, 0xFFFFFF);
 	}
@@ -157,6 +159,7 @@ public class GUIArcaneTransmutation extends GuiContainer {
 			tooltip.add("Focus Search Box");
 		else if (isMouseOver(mouseX, mouseY, guiLeft + 5, guiTop + 61, 9, 9))
 			tooltip.add("Clear Crafting Grid");
+
 
 		if (!tooltip.isEmpty())
 			this.drawHoveringText(tooltip, mouseX, mouseY, this.fontRendererObj);

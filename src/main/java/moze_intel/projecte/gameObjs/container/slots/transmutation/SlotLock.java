@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import moze_intel.projecte.api.item.IItemEmc;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 
 public class SlotLock extends Slot {
@@ -31,9 +30,7 @@ public class SlotLock extends Slot {
 			inv.searchpage = 0; // 只有当放入的物品改变时才刷新页码
 
 		if (stack.getItem() instanceof IItemEmc itemEmc) {
-			double toRemove = Math.min(Constants.TILE_MAX_EMC - inv.emc, itemEmc.getStoredEmc(stack));
-			itemEmc.extractEmc(stack, toRemove);
-			inv.addEmc(toRemove);
+			moze_intel.projecte.utils.LegacyEMCTransfer.discharge(inv, stack, itemEmc);
 			inv.updateOutputs(); // 避免 return 后 emc 改变但未更新
 		}
 

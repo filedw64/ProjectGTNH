@@ -1,14 +1,16 @@
 package moze_intel.projecte.emc.mappers;
 
+import moze_intel.projecte.math.ExactEMC;
+
 import moze_intel.projecte.emc.IngredientMap;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.emc.collector.IMappingCollector;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraftforge.common.config.Configuration;
 
-public class SmeltingMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+public class SmeltingMapper implements IEMCMapper<NormalizedSimpleStack, ExactEMC> {
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, ExactEMC> mapper, Configuration config) {
 		FurnaceRecipes.smelting().getSmeltingList().forEach((input, output) -> {
 			if (input == null || output == null) {
 				return;
