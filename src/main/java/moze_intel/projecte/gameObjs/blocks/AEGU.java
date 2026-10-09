@@ -71,20 +71,21 @@ public class AEGU extends BlockContainer
 	{
 		if (world.isRemote) return true;
 
-		if (player.getHeldItem() != null && player.getHeldItem().getItem() == ObjHandler.philosStone)
+		ItemStack stack = player.getHeldItem();
+		if (stack != null && stack.getItem() == ObjHandler.philosStone)
 		{
 			TileEntity tile = world.getTileEntity(x, y, z);
-			if (tile instanceof AEGUTile)
+			if (tile instanceof AEGUTile aegu)
 			{
-				if (!((AEGUTile) tile).hasCollectorBelow()) {
+				if (!aegu.hasCollectorBelow()) {
 					player.addChatMessage(new ChatComponentTranslation("pe.aegu.nocollector"));
 					return true;
 				}
 
-				player.getHeldItem().stackTagCompound.setInteger("aegu_bind_x", x);
-				player.getHeldItem().stackTagCompound.setInteger("aegu_bind_y", y);
-				player.getHeldItem().stackTagCompound.setInteger("aegu_bind_z", z);
-				player.getHeldItem().stackTagCompound.setInteger("aegu_bind_dim", world.provider.dimensionId);
+				stack.stackTagCompound.setInteger("aegu_bind_x", x);
+				stack.stackTagCompound.setInteger("aegu_bind_y", y);
+				stack.stackTagCompound.setInteger("aegu_bind_z", z);
+				stack.stackTagCompound.setInteger("aegu_bind_dim", world.provider.dimensionId);
 
 				player.addChatMessage(new ChatComponentTranslation("pe.aegu.selected"));
 			}
