@@ -31,6 +31,7 @@ import moze_intel.projecte.gameObjs.entity.EntityLootBall;
 import moze_intel.projecte.gameObjs.entity.EntityMobRandomizer;
 import moze_intel.projecte.gameObjs.entity.EntityNovaCataclysmPrimed;
 import moze_intel.projecte.gameObjs.entity.EntityNovaCatalystPrimed;
+import moze_intel.projecte.gameObjs.entity.EntityPEArrow;
 import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
@@ -96,13 +97,16 @@ import moze_intel.projecte.gameObjs.items.rings.SoulStone;
 import moze_intel.projecte.gameObjs.items.rings.VoidRing;
 import moze_intel.projecte.gameObjs.items.rings.Zero;
 import moze_intel.projecte.gameObjs.items.tools.DarkAxe;
+import moze_intel.projecte.gameObjs.items.tools.DarkBow;
 import moze_intel.projecte.gameObjs.items.tools.DarkHammer;
 import moze_intel.projecte.gameObjs.items.tools.DarkHoe;
 import moze_intel.projecte.gameObjs.items.tools.DarkPick;
 import moze_intel.projecte.gameObjs.items.tools.DarkShears;
 import moze_intel.projecte.gameObjs.items.tools.DarkShovel;
 import moze_intel.projecte.gameObjs.items.tools.DarkSword;
+import moze_intel.projecte.gameObjs.items.tools.GemBow;
 import moze_intel.projecte.gameObjs.items.tools.RedAxe;
+import moze_intel.projecte.gameObjs.items.tools.RedBow;
 import moze_intel.projecte.gameObjs.items.tools.RedHammer;
 import moze_intel.projecte.gameObjs.items.tools.RedHoe;
 import moze_intel.projecte.gameObjs.items.tools.RedKatar;
@@ -262,6 +266,10 @@ public class ObjHandler
 	public static Item buildersWand = new BuildersWand();
 	public static Item rodOfHarmony = new RodOfHarmony();
 
+	public static Item dmBow = new DarkBow();
+	public static Item rmBow = new RedBow();
+	public static Item stormBow = new GemBow();
+
 	public static void register() {
 		// Blocks without ItemBlock
 		GameRegistry.registerBlock(confuseTorch, "interdiction_torch");
@@ -289,6 +297,10 @@ public class ObjHandler
 		GameRegistry.registerBlock(relay, ItemRelayBlock.class, "relay_mk1");
 		GameRegistry.registerBlock(relayMK2, ItemRelayBlock.class, "relay_mk2");
 		GameRegistry.registerBlock(relayMK3, ItemRelayBlock.class, "relay_mk3");
+
+		GameRegistry.registerItem(dmBow, dmBow.getUnlocalizedName());
+		GameRegistry.registerItem(rmBow, rmBow.getUnlocalizedName());
+		GameRegistry.registerItem(stormBow, stormBow.getUnlocalizedName());
 
 		//Items
 		GameRegistry.registerItem(philosStone, philosStone.getUnlocalizedName());
@@ -435,6 +447,8 @@ public class ObjHandler
 		EntityRegistry.registerModEntity(EntityHomingArrow.class, "HomingArrow", 8, PECore.instance, 256, 10, true);
 		EntityRegistry.registerModEntity(EntityFireProjectile.class, "FireProjectile", 9, PECore.instance, 256, 10, true);
 		EntityRegistry.registerModEntity(EntitySWRGProjectile.class, "LightningProjectile", 10, PECore.instance, 256, 10, true);
+
+		EntityRegistry.registerModEntity(EntityPEArrow.class, "PEArrow", 11, PECore.instance, 256, 20, true);
 	}
 
 	public static void addRecipes()
