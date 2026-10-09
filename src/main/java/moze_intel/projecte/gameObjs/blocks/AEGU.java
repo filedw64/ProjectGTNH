@@ -51,9 +51,9 @@ public class AEGU extends BlockContainer
 	@SideOnly(Side.CLIENT)
 	public void registerBlockIcons(IIconRegister register)
 	{
-		this.iconError = register.registerIcon("projecte:aegu_error");
-		this.iconIdle = register.registerIcon("projecte:aegu_idle");
-		this.iconActive = register.registerIcon("projecte:aegu_active");
+		this.iconError = register.registerIcon("projecte:aegu/error");
+		this.blockIcon = this.iconIdle = register.registerIcon("projecte:aegu/idle");
+		this.iconActive = register.registerIcon("projecte:aegu/active");
 	}
 
 	@Override
