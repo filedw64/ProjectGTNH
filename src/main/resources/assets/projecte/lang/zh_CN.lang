@@ -99,6 +99,7 @@ item.pe_arcane_transmutation_tablet.name=奥术转化桌
 item.pe_infinite_fuel.name=“无限”燃料
 item.pe_infinite_steak.name=“无限”牛排
 item.pe_emc_builders_wand.name=EMC建筑之杖
+item.pe_rod_of_harmony.name=和谐传送杖
 
 pe.manual.tooltip1=卷二
 
@@ -123,6 +124,7 @@ tile.pe_fuel_block_0.name=炼金煤炭块
 tile.pe_fuel_block_1.name=莫比乌斯燃料块
 tile.pe_fuel_block_2.name=永恒燃料块
 tile.pe_dmPedestal.name=暗物质台座
+tile.pe_aegu.name=AEGU 高级能量阵列
 
 achievement.pe_phil_stone=炼金术师的挚友
 achievement.pe_phil_stone.desc=用贤者之石开启你的炼金之旅!
@@ -342,6 +344,18 @@ pe.timewatch.pedestal1=以%d倍加快附近方块的刷新及运作速度
 pe.timewatch.pedestal2=以%.3f倍降低附近生物的活动速度
 
 pe.tome.tooltip1=放入转化桌可习得全部转化知识.(创造专属)
+
+pe.harmony.voiddanger=§c传送取消！墙后没有落脚点，下方为虚空！
+pe.harmony.voidcancel=§c传送取消！飞行路线的终点位于虚空之中！
+pe.harmony.toothick=§c传送取消！墙壁太厚或未找到安全的落脚点！
+pe.harmony.noemc=§c传送取消！您的个人 EMC 余额不足 (本次传送需要 %s EMC)。
+
+pe.aegu.nocollector=§c绑定失败：AEGU 必须放置在能量收集器的正上方！
+pe.aegu.selected=§a已选中 AEGU。请使用贤者之石右键点击能量凝聚器进行绑定。
+pe.aegu.wrongdim=§c绑定失败：禁止跨维度绑定！
+pe.aegu.toofar=§c绑定失败：距离能量凝聚器太远！
+pe.aegu.bindsuccess=§a绑定成功！AEGU 将开始向该凝聚阵注入能量。
+pe.aegu.bindfull=§c绑定失败：该 AEGU 已绑定过此凝聚阵，或已达到绑定上限。
 
 pe.transmutation.already_using=有人正在使用这个转化桌!
 pe.transmutation.transmute=转化桌
