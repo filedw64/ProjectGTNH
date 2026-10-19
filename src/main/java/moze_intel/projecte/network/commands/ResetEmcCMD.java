@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import moze_intel.projecte.config.CustomEMCParser;
+import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.utils.MathUtils;
 
 public class ResetEmcCMD extends ProjectEBaseCMD
@@ -62,14 +63,12 @@ public class ResetEmcCMD extends ProjectEBaseCMD
 			}
 		}
 
-		if (CustomEMCParser.removeFromFile(name, meta))
-		{
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.reset.success", name));
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.reload.notice"));
-		}
-		else
-		{
-			sendError(sender, new ChatComponentTranslation("pe.command.reset.nochange", name, meta));
-		}
+		final String target = name;
+		final int targetMeta = meta;
+		CustomEMCParser.UpdateResult result = CustomEMCParser.updateAndApply(
+			() -> CustomEMCParser.removeFromFile(target, targetMeta), EMCMapper::reloadCustomEmc);
+		EmcCommandUpdate.finish(sender, result,
+			new ChatComponentTranslation("pe.command.reset.success", name),
+			new ChatComponentTranslation("pe.command.reset.nochange", name, meta));
 	}
 }

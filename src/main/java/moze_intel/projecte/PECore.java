@@ -22,6 +22,7 @@ import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import moze_intel.projecte.config.CustomEMCParser;
 import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.emc.EMCHotReload;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.events.ConnectionHandler;
 import moze_intel.projecte.events.PlayerEvents;
@@ -133,10 +134,12 @@ public class PECore
 		PELogger.logInfo("Starting server-side EMC mapping.");
 		EMCMapper.map();
 		PELogger.logInfo("Registered %d EMC values. (took %.3fs)", EMCMapper.emc.size(), (System.currentTimeMillis() - start) / 1e3);
+		EMCHotReload.init();
 	}
 
 	@EventHandler
 	public void serverStopping(FMLServerStoppingEvent event) {
+		EMCHotReload.shutdown();
 		TransmutationOffline.cleanAll();
 	}
 

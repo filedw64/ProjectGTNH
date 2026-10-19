@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import moze_intel.projecte.config.CustomEMCParser;
+import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.utils.MathUtils;
 
 public class RemoveEmcCMD extends ProjectEBaseCMD
@@ -62,14 +63,12 @@ public class RemoveEmcCMD extends ProjectEBaseCMD
 			}
 		}
 
-		if (CustomEMCParser.addToFile(name, meta, 0))
-		{
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.remove.success", name));
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.reload.notice"));
-		}
-		else
-		{
-			sendError(sender, new ChatComponentTranslation("pe.command.remove.invaliditem", name));
-		}
+		final String target = name;
+		final int targetMeta = meta;
+		CustomEMCParser.UpdateResult result = CustomEMCParser.updateAndApply(
+			() -> CustomEMCParser.addToFile(target, targetMeta, 0), EMCMapper::reloadCustomEmc);
+		EmcCommandUpdate.finish(sender, result,
+			new ChatComponentTranslation("pe.command.remove.success", name),
+			new ChatComponentTranslation("pe.command.remove.invaliditem", name));
 	}
 }
