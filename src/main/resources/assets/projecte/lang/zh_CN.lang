@@ -176,10 +176,10 @@ pe.archangel.pedestal2=每%s射击一次
 pe.bhb.pedestal1=收集附近的掉落物
 pe.bhb.pedestal2=可存入邻近的容器中
 
-pe.body.pedestal1=恢复附近玩家的饥饿值
-pe.body.pedestal2=每%s恢复半格饥饿值
+pe.body.pedestal1=恢复附近玩家的饥饿值与营养值
+pe.body.pedestal2=每%s恢复半格饥饿值，并补充大量营养值
 
-pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, reloadEMC, removeEMC, resetEMC>
+pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, removeEMC, resetEMC>
 
 pe.command.changelog.uptodate=当前使用的 ProjectGTNH 为最新版本.
 pe.command.clearknowledge.error=无法清空玩家 %s 的转化知识.
@@ -188,9 +188,8 @@ pe.command.clearknowledge.playernotfound=未找到名为"%s"的玩家.
 pe.command.clearknowledge.success=成功清空玩家 %s 的转化知识.
 pe.command.clearknowledge.usage=/projecte clearKnowledge [玩家名] (不加参数则对自己有效)
 
-pe.command.reload.started=正在刷新EMC值...
-pe.command.reload.success=刷新完成！更新数据已发送至客户端。
-pe.command.reload.notice=刷新完成后，请重启游戏或使用"/projecte reloadEMC"指令。
+pe.command.emc.applied=EMC值已立即更新，并同步至客户端。
+pe.command.emc.apply_failed=EMC重算失败，已回滚到修改前的值。请查看服务端日志。
 
 pe.command.remove.invaliditem=错误：未找到物品"%s"！
 pe.command.remove.invalidmeta=错误：meta数据"%s"无效.
@@ -282,8 +281,8 @@ pe.key.extra_function=其他功能
 pe.key.fire_projectile=发射宝珠
 pe.key.mode=转换模式
 
-pe.life.pedestal1=恢复生命与饥饿度
-pe.life.pedestal2=每%s恢复半格生命值及饥饿值
+pe.life.pedestal1=恢复生命、饥饿度与营养值
+pe.life.pedestal2=每%s恢复半格生命值及饥饿值，并补充大量营养值
 
 pe.mind.pedestal1=将周围的经验球吸入念之宝石
 
@@ -379,3 +378,18 @@ pe.debug.metainvalid.name=metadata参数设置无效
 
 pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
+
+# 奥数转化平板按键
+pe.arcane_tablet.rotate=旋转
+pe.arcane_tablet.rotate.shift=逆时针旋转
+pe.arcane_tablet.balance=平衡
+pe.arcane_tablet.balance.shift=散布
+pe.arcane_tablet.focus_search=聚焦搜索框
+pe.arcane_tablet.clear=清空合成网格
+pe.arcane_tablet.page_prev=上一页
+pe.arcane_tablet.page_next=下一页
+
+pe.command.emc.rolled_back=EMC 应用失败，已撤销本次命令的文件修改，继续使用原 EMC 值。
+pe.command.emc.restore_failed=EMC 应用失败且无法恢复文件，内存仍使用原值。请检查 custom_emc.cfg 与服务端日志。
+pe.command.emc.refresh_failed=EMC 已生效，但客户端或凝聚器刷新失败，请检查服务端日志。
+pe.command.emc.external_failed=外部 EMC 重载失败，继续使用原值。相同内容不会自动重试；请修正 custom_emc.cfg 并保存不同内容，详情见服务端日志。
