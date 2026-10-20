@@ -32,5 +32,5 @@ public final class ConfiguratorItem extends ItemPE {
         if (!w.isRemote && !player.isSneaking()) player.openGui(PECore.instance, PLAYER_GUI, w, 0, 0, 0);
         return stack;
     }
-    @Override public void addInformation(ItemStack s, EntityPlayer p, List lines, boolean advanced) { lines.add(net.minecraft.util.StatCollector.translateToLocal("pe.primordial.configurator_help")); }
+    @Override public void addInformation(ItemStack s, EntityPlayer p, List<String> lines, boolean advanced) { lines.add(net.minecraft.util.StatCollector.translateToLocal("pe.primordial.configurator_help")); }
 }

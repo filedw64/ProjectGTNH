@@ -24,7 +24,7 @@ public final class EmcAcceleratorItem extends ItemPE {
     @Override public boolean itemInteractionForEntity(ItemStack s, EntityPlayer p, net.minecraft.entity.EntityLivingBase entity) {
         if (!p.worldObj.isRemote) { AccelerationService.bindEntity(s, p, entity); p.openGui(PECore.instance, GUI, p.worldObj, 0, 0, 0); } return true;
     }
-    @Override public void addInformation(ItemStack s, EntityPlayer p, List lines, boolean advanced) {
+    @Override public void addInformation(ItemStack s, EntityPlayer p, List<String> lines, boolean advanced) {
         lines.add(StatCollector.translateToLocal("pe.primordial.mode") + ": " + AccelerationSettings.kind(s));
         lines.add(AccelerationSettings.rate(s) + "x / " + AccelerationSettings.targets(s).tagCount());
         lines.add(StatCollector.translateToLocal("pe.primordial.accelerator_help"));
