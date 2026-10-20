@@ -65,6 +65,8 @@ public final class PacketHandler
 		HANDLER.registerMessage(KnowledgeChangePKT.Handler.class, KnowledgeChangePKT.class, 18, Side.CLIENT);
 		HANDLER.registerMessage(ArcaneTabletButtonPKT.class, ArcaneTabletButtonPKT.class, 19, Side.SERVER);
 		HANDLER.registerMessage(ArcaneRecipeTransferPKT.class, ArcaneRecipeTransferPKT.class, 20, Side.SERVER);
+        HANDLER.registerMessage(moze_intel.projecte.primordial.PrimordialActionPacket.class, moze_intel.projecte.primordial.PrimordialActionPacket.class, 21, Side.SERVER);
+        HANDLER.registerMessage(moze_intel.projecte.primordial.PrimordialSyncPacket.class, moze_intel.projecte.primordial.PrimordialSyncPacket.class, 22, Side.CLIENT);
 
 
 	}

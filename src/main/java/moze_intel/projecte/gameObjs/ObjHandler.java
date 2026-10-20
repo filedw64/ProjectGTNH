@@ -149,6 +149,9 @@ public class ObjHandler
 			return ObjHandler.philosStone;
 		}
 	};
+    public static Item configurator = new moze_intel.projecte.primordial.ConfiguratorItem();
+    public static Item emcAccelerator = new moze_intel.projecte.primordial.EmcAcceleratorItem();
+    public static Block primordialBlackhole = new moze_intel.projecte.primordial.BlackholeBlock();
 	public static Block alchChest = new AlchemicalChest();
 	public static Block confuseTorch = new InterdictionTorch();
 	public static Block transmuteStone = new TransmutationStone();
@@ -263,6 +266,10 @@ public class ObjHandler
 	public static Item rodOfHarmony = new RodOfHarmony();
 
 	public static void register() {
+        GameRegistry.registerItem(configurator, "configurator");
+        GameRegistry.registerItem(emcAccelerator, "emc_accelerator");
+        GameRegistry.registerBlock(primordialBlackhole, "primordial_blackhole");
+        GameRegistry.registerTileEntity(moze_intel.projecte.primordial.BlackholeTile.class, "ProjectEPrimordialBlackhole");
 		// Blocks without ItemBlock
 		GameRegistry.registerBlock(confuseTorch, "interdiction_torch");
 		GameRegistry.registerBlock(condenserMk2, "condenser_mk2");
@@ -439,6 +446,9 @@ public class ObjHandler
 
 	public static void addRecipes()
 	{
+        GameRegistry.addShapedRecipe(new ItemStack(configurator), "ABA", "CDC", "AEA", 'A', Items.diamond, 'B', Items.ender_eye, 'C', new ItemStack(matter, 1, 0), 'D', new ItemStack(matter, 1, 1), 'E', Items.nether_star);
+        GameRegistry.addShapedRecipe(new ItemStack(emcAccelerator), "DED", "EKE", "DED", 'D', Blocks.diamond_block, 'E', Items.ender_pearl, 'K', timeWatch);
+        GameRegistry.addShapedRecipe(new ItemStack(primordialBlackhole), "ABA", "CDC", "AEA", 'A', new ItemStack(matter, 1, 1), 'B', Items.nether_star, 'C', new ItemStack(matterBlock, 1, 0), 'D', transmuteStone, 'E', Items.ender_eye);
 		ItemStack diamondReplacement = new ItemStack(Items.diamond);
 		ItemStack diamondBlockReplacement = new ItemStack(Blocks.diamond_block);
 
