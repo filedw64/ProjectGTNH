@@ -59,6 +59,8 @@ import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
 public class GuiHandler implements IGuiHandler {
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        if (ID == 81 || ID == 82) return new moze_intel.projecte.primordial.ConfiguratorContainer(player, x, y, z, ID == 82);
+        if (ID == 83 && player.getHeldItem() != null && player.getHeldItem().getItem() instanceof moze_intel.projecte.primordial.EmcAcceleratorItem) return new moze_intel.projecte.primordial.AccelerationContainer(player);
 		TileEntity tile = world.getTileEntity(x, y, z);
 
 		switch (ID) {
@@ -139,6 +141,8 @@ public class GuiHandler implements IGuiHandler {
 
 	@Override
 	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        if (ID == 81 || ID == 82) return new moze_intel.projecte.primordial.GuiConfigurator(player, x, y, z, ID == 82);
+        if (ID == 83) return new moze_intel.projecte.primordial.GuiAcceleration(player);
 		TileEntity tile = world.getTileEntity(x, y, z);
 
 		switch (ID) {

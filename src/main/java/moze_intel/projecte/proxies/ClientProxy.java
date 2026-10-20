@@ -112,6 +112,9 @@ public class ClientProxy implements IProxy
 		FMLCommonHandler.instance().bus().register(pr);
 
 		MinecraftForge.EVENT_BUS.register(new WandRenderer());
+        moze_intel.projecte.primordial.AccelerationClientEvents acceleration = new moze_intel.projecte.primordial.AccelerationClientEvents();
+        MinecraftForge.EVENT_BUS.register(acceleration);
+        FMLCommonHandler.instance().bus().register(acceleration);
 	}
 
 	@Override

@@ -38,6 +38,8 @@ import moze_intel.projecte.network.ThreadCheckUpdate;
 import moze_intel.projecte.network.commands.ProjectECMD;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.playerData.TransmutationOffline;
+import moze_intel.projecte.primordial.PrimordialConfig;
+import moze_intel.projecte.primordial.PrimordialEvents;
 import moze_intel.projecte.proxies.IProxy;
 import moze_intel.projecte.utils.AchievementHandler;
 import moze_intel.projecte.utils.Constants;
@@ -74,6 +76,7 @@ public class PECore
 			PELogger.logWarn("Cannot create dir \"config/ProjectE\"!");
 
 		ProjectEConfig.init(new File(CONFIG_DIR, "ProjectE.cfg"));
+		PrimordialConfig.init(CONFIG_DIR);
 
 		// 修改点：使用 Forge Event Bus 注册原生 BetterQuesting 事件监听器
 		if (Loader.isModLoaded("betterquesting"))
@@ -91,6 +94,7 @@ public class PECore
 		EventBus FMLBus = FMLCommonHandler.instance().bus();
 		FMLBus.register(pe);
 		FMLBus.register(new TickEvents());
+		FMLBus.register(new PrimordialEvents());
 		FMLBus.register(new ConnectionHandler());
 
 		proxy.registerClientOnlyEvents();
@@ -137,6 +141,7 @@ public class PECore
 
 	@EventHandler
 	public void serverStopping(FMLServerStoppingEvent event) {
+		PrimordialEvents.clear();
 		TransmutationOffline.cleanAll();
 	}
 
