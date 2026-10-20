@@ -1,10 +1,14 @@
 package moze_intel.projecte.primordial;
 
-import java.util.*;
-import moze_intel.projecte.emc.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import moze_intel.projecte.emc.EMCMapper;
+import moze_intel.projecte.emc.FluidSimpleStack;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.utils.EMCHelper;
-import net.minecraft.entity.player.*;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 

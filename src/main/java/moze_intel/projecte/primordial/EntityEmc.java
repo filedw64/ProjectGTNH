@@ -1,6 +1,8 @@
 package moze_intel.projecte.primordial;
 
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.boss.EntityDragon;

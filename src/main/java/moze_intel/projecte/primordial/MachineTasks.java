@@ -1,6 +1,7 @@
 package moze_intel.projecte.primordial;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import moze_intel.projecte.playerData.Transmutation;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -11,7 +12,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 
 public final class MachineTasks {
     private static int cursor;

@@ -2,7 +2,8 @@ package moze_intel.projecte.primordial;
 
 import java.util.UUID;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.fluids.FluidStack;
 
 public final class MachineConfig {

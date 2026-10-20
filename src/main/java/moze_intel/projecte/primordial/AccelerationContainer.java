@@ -1,9 +1,11 @@
 package moze_intel.projecte.primordial;
 
-import net.minecraft.entity.player.*;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import moze_intel.projecte.network.PacketHandler;
 
 public final class AccelerationContainer extends Container {

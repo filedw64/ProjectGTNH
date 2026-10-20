@@ -1,7 +1,8 @@
 package moze_intel.projecte.primordial;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 public final class AccelerationSettings {
     public enum Kind { BLOCK, ENTITY, AREA, DAYTIME, WEATHER, AREA_FILTER, IDLE_FILTER }
