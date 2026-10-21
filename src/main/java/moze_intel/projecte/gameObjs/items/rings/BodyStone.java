@@ -7,6 +7,7 @@ import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
 import moze_intel.projecte.handlers.PlayerTimers;
+import moze_intel.projecte.integration.helpers.NutritionHelper;
 import moze_intel.projecte.utils.MathUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -50,6 +51,7 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 
 			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
 			player.getFoodStats().addStats(2, 10);
+			NutritionHelper.addNutrition(player, 2);
 			removeEmc(stack, 64);
 		}
 	}
@@ -118,6 +120,7 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 
 			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
 			player.getFoodStats().addStats(1, 1); // 1/2 shank
+			NutritionHelper.addPedestalNutrition(player, 1);
 		}
 
 		tile.setActivityCooldown(ProjectEConfig.bodyPedCooldown);

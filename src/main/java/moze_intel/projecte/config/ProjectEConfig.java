@@ -63,6 +63,11 @@ public final class ProjectEConfig {
 
 	// GTNH Integration Config
 	public static boolean questMode;
+	public static boolean enableNutritionIntegration;
+
+	// emc 热重载
+	public static boolean emcAutoReload;
+	public static boolean verifyIncrementalEMC;
 
 	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
@@ -80,6 +85,10 @@ public final class ProjectEConfig {
 
 			// Load GTNH Integration config
 			questMode = config.getBoolean("questMode", "integration", true, "Whether to add quest when BetterQuesting is loaded");
+			enableNutritionIntegration = config.getBoolean("enableNutritionIntegration", "nutrition", true, "If true and the Nutrition mod is loaded, the Body and Life Stones will also restore Nutrition nutrient values when they restore hunger.");
+
+			emcAutoReload = config.getBoolean("autoReloadEMC", "emc", true, "Watch config/ProjectE/custom_emc.cfg for external changes and hot reload the EMC values incrementally.");
+			verifyIncrementalEMC = config.getBoolean("verifyIncrementalEMC", "emc", false, "Verify incremental EMC with a full remap at most once per 60 seconds. Debug only: runs synchronously on the server thread and may stall ticks. Does not save mapping.cfg. Verification failure rolls back the update.");
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
