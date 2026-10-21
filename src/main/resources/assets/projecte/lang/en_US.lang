@@ -24,6 +24,7 @@ item.pe_body_stone.name=Body Stone
 item.pe_soul_stone.name=Soul Stone
 item.pe_mind_stone.name=Mind Stone
 item.pe_life_stone.name=Life Stone
+pe.stone.always_edible=Eating is not limited by hunger while carried
 item.pe_evertide_amulet.name=Evertide Amulet
 item.pe_volcanite_amulet.name=Volcanite Amulet
 item.pe_swrg.name=Swiftwolf's Rending Gale

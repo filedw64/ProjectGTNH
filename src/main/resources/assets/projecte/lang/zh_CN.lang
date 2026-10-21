@@ -42,6 +42,7 @@ item.pe_body_stone.name=身之宝石
 item.pe_soul_stone.name=灵魂宝石
 item.pe_mind_stone.name=念之宝石
 item.pe_life_stone.name=生命宝石
+pe.stone.always_edible=携带时进食不受饱食度限制
 item.pe_evertide_amulet.name=潮汐护符
 item.pe_volcanite_amulet.name=熔焰护符
 item.pe_swrg.name=疾风戒指

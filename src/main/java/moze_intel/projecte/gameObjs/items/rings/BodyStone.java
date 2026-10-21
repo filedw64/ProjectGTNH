@@ -6,6 +6,7 @@ import cpw.mods.fml.common.Optional;
 import moze_intel.projecte.api.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.tiles.DMPedestalTile;
+import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.handlers.PlayerTimers;
 import moze_intel.projecte.integration.helpers.NutritionHelper;
 import moze_intel.projecte.utils.MathUtils;
@@ -46,7 +47,7 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 			stack.setItemDamage(0);
 		else {
 			PlayerTimers.activateFeed(player);
-			if (!player.getFoodStats().needFood() || !PlayerTimers.canFeed(player))
+			if (!PlayerChecks.isHungerBarNotFull(player) || !PlayerTimers.canFeed(player))
 				return;
 
 			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
@@ -116,7 +117,7 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 		AxisAlignedBB bounds = tile.getEffectBounds();
 		for (Object obj : world.playerEntities) {
 			if (!(obj instanceof EntityPlayerMP player)) continue;
-			if (!player.boundingBox.intersectsWith(bounds) || !player.getFoodStats().needFood()) continue;
+			if (!player.boundingBox.intersectsWith(bounds) || !PlayerChecks.isHungerBarNotFull(player)) continue;
 
 			world.playSoundAtEntity(player, "projecte:item.peheal", 1.0F, 1.0F);
 			player.getFoodStats().addStats(1, 1); // 1/2 shank
@@ -124,6 +125,13 @@ public class BodyStone extends RingToggle implements IBauble, IPedestalItem
 		}
 
 		tile.setActivityCooldown(ProjectEConfig.bodyPedCooldown);
+	}
+
+	@Override
+	public void addInformation(ItemStack stack, EntityPlayer player, List<String> list, boolean b)
+	{
+		if (ProjectEConfig.enableStoneAlwaysEdible)
+			list.add(EnumChatFormatting.BLUE + StatCollector.translateToLocal("pe.stone.always_edible"));
 	}
 
 	@Override

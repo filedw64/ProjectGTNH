@@ -4,6 +4,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
+import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.handlers.PlayerTimers;
 import moze_intel.projecte.utils.EnumArmorType;
 import moze_intel.projecte.utils.WorldHelper;
@@ -54,7 +55,7 @@ public class GemChest extends GemArmorBase implements IFireProtector
 		}
 		else if (player instanceof EntityPlayerMP playerMP) {
 			PlayerTimers.activateFeed(playerMP);
-			if (player.getFoodStats().needFood() && PlayerTimers.canFeed(playerMP))
+			if (PlayerChecks.isHungerBarNotFull(player) && PlayerTimers.canFeed(playerMP))
 				player.getFoodStats().addStats(2, 10);
 		}
 	}

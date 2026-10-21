@@ -26,6 +26,7 @@ public final class ProjectEConfig {
 	public static boolean enableBuildersWand;
 	public static boolean enableRodOfHarmony;
 	public static boolean enableAEGU;
+	public static boolean enableStoneAlwaysEdible;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;
@@ -111,6 +112,7 @@ public final class ProjectEConfig {
 			enableBuildersWand = config.getBoolean("enableBuildersWand", "items", true, "Enable EMC Builders Wand");
 			enableRodOfHarmony = config.getBoolean("enableRodOfHarmony", "items", true, "Enable Rod of Harmony");
 			enableAEGU = config.getBoolean("enableAEGU", "items", true, "Enable Alchemical Energy Generating Unit");
+			enableStoneAlwaysEdible = config.getBoolean("enableStoneAlwaysEdible", "items", true, "If true, carrying a Body Stone or Life Stone in the main inventory or a Baubles slot lets you keep eating while your hunger bar is full. Does not consume EMC.");
 
 			ignitionRingIgniteBlocks = config.getBoolean("ignitionRingIgniteBlocks", "items", false, "If true, the Ignition Ring will passively ignite surrounding blocks.");
 			zeroRingPlaceSnow = config.getBoolean("zeroRingPlaceSnow", "items", false, "If true, the Zero Ring will passively freeze water and place snow around the player.");
