@@ -68,9 +68,6 @@ public class TransmutationInventory implements IInventory {
 			}
 			else {
 				Transmutation.addKnowledge(is, player);
-				/*if (!player.worldObj.isRemote) {
-					Transmutation.syncIncremental(player, is, false); // 发送增量更新
-				}*/
 			}
 		}
 
@@ -121,9 +118,6 @@ public class TransmutationInventory implements IInventory {
 			knowledgeDirty = true;
 
 			Transmutation.removeKnowledge(is, player);
-			/*if (!player.worldObj.isRemote) {
-				Transmutation.syncIncremental(player, is, true); // 发送增量更新
-			}*/
 		}
 
 		updateOutputs();
