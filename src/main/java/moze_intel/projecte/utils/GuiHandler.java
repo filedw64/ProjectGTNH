@@ -4,6 +4,7 @@ import cpw.mods.fml.common.network.IGuiHandler;
 import moze_intel.projecte.gameObjs.container.ArcaneTransmutationContainer;
 import moze_intel.projecte.gameObjs.gui.GUIArcaneTransmutation;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
@@ -55,8 +56,17 @@ import moze_intel.projecte.gameObjs.tiles.RMFurnaceTile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK1Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
+import moze_intel.projecte.gameObjs.container.transport.ContainerMatterInterface;
+import moze_intel.projecte.gameObjs.gui.transport.GUIMatterInterface;
+import moze_intel.projecte.gameObjs.gui.transport.nei.GUIMatterInterfaceNei;
+import moze_intel.projecte.gameObjs.tiles.transport.TileMatterInterface;
+import moze_intel.projecte.integration.Integration;
+import moze_intel.projecte.transport.TransportType;
 
 public class GuiHandler implements IGuiHandler {
+	/** NEI 适配子类加载失败过一次就不再尝试，也不再重复刷日志 */
+	private static boolean neiAdapterFailed;
+
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
 		TileEntity tile = world.getTileEntity(x, y, z);
@@ -132,6 +142,14 @@ public class GuiHandler implements IGuiHandler {
 				return new TransmutationContainer(player.inventory, new TransmutationInventory(player), true);
 			case Constants.ARCANE_TABLET_GUI:
 				return new ArcaneTransmutationContainer(player.inventory, player);
+			case Constants.MATTER_INTERFACE_ITEM_GUI:
+				if (tile instanceof TileMatterInterface itemInterface && itemInterface.getTransportType() == TransportType.ITEM)
+					return new ContainerMatterInterface(player.inventory, itemInterface);
+				break;
+			case Constants.MATTER_INTERFACE_FLUID_GUI:
+				if (tile instanceof TileMatterInterface fluidInterface && fluidInterface.getTransportType() == TransportType.FLUID)
+					return new ContainerMatterInterface(player.inventory, fluidInterface);
+				break;
 		}
 
 		return null;
@@ -212,8 +230,40 @@ public class GuiHandler implements IGuiHandler {
 				return new GUITransmutation(player.inventory, new TransmutationInventory(player), true);
 			case Constants.ARCANE_TABLET_GUI:
 				return new GUIArcaneTransmutation(player.inventory, player);
+			case Constants.MATTER_INTERFACE_ITEM_GUI:
+				if (tile instanceof TileMatterInterface itemInterface && itemInterface.getTransportType() == TransportType.ITEM)
+					return createMatterInterfaceGui(player.inventory, itemInterface);
+				break;
+			case Constants.MATTER_INTERFACE_FLUID_GUI:
+				if (tile instanceof TileMatterInterface fluidInterface && fluidInterface.getTransportType() == TransportType.FLUID)
+					return createMatterInterfaceGui(player.inventory, fluidInterface);
+				break;
 		}
 
 		return null;
+	}
+
+	/**
+	 * 物质接口 GUI 的条件构造：只有 NEI 在场才挂 NEI 适配子类，否则返回普通 GUI。
+	 *
+	 * 为什么分支必须写在这里而不是 GUIMatterInterface 里：那个分支的字节码必须引用 GUIMatterInterfaceNei，
+	 * 而后者 implements INEIGuiHandler —— 一旦 GUIMatterInterface 自己引用了它，无 NEI 的整合包又会类加载失败。
+	 * NEI 判定复用项目统一的开关 Integration.NEI（Integration.modChecks 里 Loader.isModLoaded 的收口），
+	 * 并用 catch (Throwable) 兜住 NoClassDefFoundError / LinkageError：加载失败也只是少一个拖放功能。
+	 *
+	 * 返回类型刻意是 Object（调用方 getClientGuiElement 本来就返回 Object）：这样这里不需要对
+	 * GUIMatterInterfaceNei 做赋值校验，类加载推迟到真正 new 的那一刻，异常才能被本方法捕获。
+	 */
+	private static Object createMatterInterfaceGui(InventoryPlayer invPlayer, TileMatterInterface tile) {
+		if (Integration.NEI && !neiAdapterFailed) {
+			try {
+				return new GUIMatterInterfaceNei(invPlayer, tile);
+			} catch (Throwable t) {
+				neiAdapterFailed = true;
+				PELogger.logDebug("NEI GUI adapter unavailable for GUIMatterInterface, falling back to the plain GUI: %s", t.toString());
+			}
+		}
+
+		return new GUIMatterInterface(invPlayer, tile);
 	}
 }

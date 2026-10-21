@@ -1,0 +1,190 @@
+// 物质接口贴图生成器：node tools/gen_interface_textures.mjs
+// 输出 64 张 16x16 方块贴图（item/fluid x 16 色 x side/front）与 1 张 176x166 GUI 背景
+import zlib from "node:zlib";
+import fs from "node:fs";
+import path from "node:path";
+
+const BLOCK_DIR = path.join("src", "main", "resources", "assets", "projecte", "textures", "blocks", "transport");
+const GUI_DIR = path.join("src", "main", "resources", "assets", "projecte", "textures", "gui");
+
+// Minecraft 16 色染料基础色
+const DYE_COLORS = [
+	[233, 236, 236], [240, 118, 19], [189, 68, 179], [58, 175, 217],
+	[248, 198, 39], [112, 185, 25], [237, 141, 172], [62, 68, 71],
+	[142, 142, 134], [21, 137, 145], [121, 42, 172], [53, 57, 157],
+	[114, 71, 40], [84, 109, 27], [161, 39, 34], [20, 21, 25]
+];
+
+const PLATE = [52, 40, 78];
+const FRAME = [26, 18, 40];
+
+function clamp(v) {
+	return v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
+}
+
+function mix(a, b, t) {
+	return [clamp(a[0] + (b[0] - a[0]) * t), clamp(a[1] + (b[1] - a[1]) * t), clamp(a[2] + (b[2] - a[2]) * t)];
+}
+
+function scale(c, f) {
+	return [clamp(c[0] * f), clamp(c[1] * f), clamp(c[2] * f)];
+}
+
+function shade(c, d) {
+	return [clamp(c[0] + d), clamp(c[1] + d), clamp(c[2] + d)];
+}
+
+// ---------- 方块贴图 ----------
+
+function sidePixel(x, y, dye) {
+	const tint = mix(mix(DYE_COLORS[dye], [58, 28, 92], 0.5), [0, 0, 0], 0.0);
+
+	if (x === 0 || y === 0 || x === 15 || y === 15)
+		return FRAME;
+
+	const noise = ((x * 5 + y * 11) % 7) - 3;
+
+	// 中央信道色块
+	if (x >= 5 && x <= 10 && y >= 5 && y <= 10) {
+		if (x === 5 || x === 10 || y === 5 || y === 10)
+			return scale(tint, 0.42);
+
+		if (x >= 7 && x <= 8 && y >= 7 && y <= 8)
+			return scale(tint, 1.3);
+
+		return tint;
+	}
+
+	// 四角铆钉
+	if ((x === 2 || x === 13) && (y === 2 || y === 13))
+		return shade(PLATE, 18);
+
+	if ((x === 3 || x === 12) && (y === 2 || y === 13) || (x === 2 || x === 13) && (y === 3 || y === 12))
+		return shade(PLATE, -12);
+
+	if ((x + y) % 7 === 0)
+		return shade(PLATE, 8 + noise);
+
+	if ((x - y + 16) % 7 === 0)
+		return shade(PLATE, -6 + noise);
+
+	return shade(PLATE, noise);
+}
+
+function frontPixel(x, y, dye) {
+	const tint = mix(mix(DYE_COLORS[dye], [58, 28, 92], 0.5), [0, 0, 0], 0.0);
+
+	if (x === 0 || y === 0 || x === 15 || y === 15)
+		return FRAME;
+
+	const noise = ((x * 3 + y * 7) % 5) - 2;
+
+	// 中央进/出口：外环亮、内侧开口
+	if (x >= 2 && x <= 13 && y >= 2 && y <= 13) {
+		if (x >= 6 && x <= 9 && y >= 6 && y <= 9)
+			return scale(FRAME, 1.25);
+
+		if (x === 2 || x === 13 || y === 2 || y === 13)
+			return scale(tint, 0.45);
+
+		if (x >= 4 && x <= 11 && y >= 4 && y <= 11)
+			return tint;
+
+		return scale(tint, 0.7);
+	}
+
+	return shade(scale(PLATE, 0.78), noise);
+}
+
+function blockPixel(x, y, dye, front) {
+	return front ? frontPixel(x, y, dye) : sidePixel(x, y, dye);
+}
+
+// ---------- PNG 编码 ----------
+
+const CRC_TABLE = (() => {
+	const table = new Int32Array(256);
+
+	for (let n = 0; n < 256; n++) {
+		let c = n;
+
+		for (let k = 0; k < 8; k++)
+			c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
+
+		table[n] = c;
+	}
+
+	return table;
+})();
+
+function crc32(buffer) {
+	let c = 0xFFFFFFFF;
+
+	for (let i = 0; i < buffer.length; i++)
+		c = CRC_TABLE[(c ^ buffer[i]) & 0xFF] ^ (c >>> 8);
+
+	return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function signature() {
+	return Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+}
+
+function ihdr(width, height) {
+	const header = Buffer.alloc(13);
+	header.writeUInt32BE(width, 0);
+	header.writeUInt32BE(height, 4);
+	header[8] = 8;
+	header[9] = 6;
+	header[10] = 0;
+	header[11] = 0;
+	header[12] = 0;
+	return header;
+}
+
+function chunk(type, data) {
+	const length = Buffer.alloc(4);
+	length.writeUInt32BE(data.length, 0);
+	const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+	const crc = Buffer.alloc(4);
+	crc.writeUInt32BE(crc32(body), 0);
+	return Buffer.concat([length, body, crc]);
+}
+
+function encodePng(width, height, pixelFn) {
+	const raw = Buffer.alloc((width * 4 + 1) * height);
+
+	for (let y = 0; y < height; y++) {
+		const rowStart = y * (width * 4 + 1);
+		raw[rowStart] = 0;
+
+		for (let x = 0; x < width; x++) {
+			const color = pixelFn(x, y);
+			const offset = rowStart + 1 + x * 4;
+			raw[offset] = color[0];
+			raw[offset + 1] = color[1];
+			raw[offset + 2] = color[2];
+			raw[offset + 3] = 255;
+		}
+	}
+
+	return Buffer.concat([signature(), chunk("IHDR", ihdr(width, height)), chunk("IDAT", zlib.deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
+}
+
+fs.mkdirSync(BLOCK_DIR, { recursive: true });
+fs.mkdirSync(GUI_DIR, { recursive: true });
+
+let blockCount = 0;
+
+for (const type of ["item", "fluid"]) {
+	for (let dye = 0; dye < 16; dye++) {
+		for (const variant of ["side", "front"]) {
+			const file = path.join(BLOCK_DIR, `${type}_interface_${dye}_${variant}.png`);
+			fs.writeFileSync(file, encodePng(16, 16, (x, y) => blockPixel(x, y, dye, variant === "front")));
+			blockCount++;
+		}
+	}
+}
+
+console.log(`generated ${blockCount} block textures into ${BLOCK_DIR}`);
+console.log("gui background is generated by tools/gen_matter_interface_gui_texture.mjs");

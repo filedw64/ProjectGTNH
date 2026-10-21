@@ -1,6 +1,8 @@
 package moze_intel.projecte.gameObjs.tiles;
 
 import moze_intel.projecte.api.item.IPedestalItem;
+import moze_intel.projecte.gameObjs.items.EvertideAmulet;
+import moze_intel.projecte.gameObjs.items.VolcaniteAmulet;
 import moze_intel.projecte.network.PacketHandler;
 import moze_intel.projecte.network.packets.SyncPedestalPKT;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,8 +13,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.Packet;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 
-public class DMPedestalTile extends TileEmc implements IInventory
+public class DMPedestalTile extends TileEmc implements IInventory, IFluidHandler
 {
 	private boolean isActive = false;
 	private ItemStack[] inventory = new ItemStack[1];
@@ -103,6 +111,65 @@ public class DMPedestalTile extends TileEmc implements IInventory
 
 	public ItemStack getItemStack() {
 		return getStackInSlot(0);
+	}
+
+	// 台座内的护符决定可无限抽取的流体种类，无护符时返回 null
+	private Fluid getPedestalFluid()
+	{
+		ItemStack stack = inventory[0];
+		if (stack == null) return null;
+
+		Item item = stack.getItem();
+		if (item instanceof EvertideAmulet) return FluidRegistry.WATER;
+		if (item instanceof VolcaniteAmulet) return FluidRegistry.LAVA;
+		return null;
+	}
+
+	@Override
+	public int fill(ForgeDirection from, FluidStack resource, boolean doFill) {
+		return 0; // 只出不进，避免吞掉玩家或其他模组送来的流体
+	}
+
+	@Override
+	public FluidStack drain(ForgeDirection from, FluidStack resource, boolean doDrain)
+	{
+		if (resource == null) return null;
+
+		Fluid fluid = getPedestalFluid();
+		// 请求的流体必须与护符对应流体一致
+		if (fluid == null || fluid != resource.getFluid()) return null;
+
+		return new FluidStack(fluid, resource.amount);
+	}
+
+	@Override
+	public FluidStack drain(ForgeDirection from, int maxDrain, boolean doDrain)
+	{
+		Fluid fluid = getPedestalFluid();
+		if (fluid == null || maxDrain <= 0) return null;
+
+		return new FluidStack(fluid, maxDrain);
+	}
+
+	@Override
+	public boolean canFill(ForgeDirection from, Fluid fluid) {
+		return false;
+	}
+
+	@Override
+	public boolean canDrain(ForgeDirection from, Fluid fluid)
+	{
+		Fluid stored = getPedestalFluid();
+		return stored != null && (fluid == null || fluid == stored);
+	}
+
+	@Override
+	public FluidTankInfo[] getTankInfo(ForgeDirection from)
+	{
+		Fluid fluid = getPedestalFluid();
+		if (fluid == null) return new FluidTankInfo[] { new FluidTankInfo(null, 0) };
+
+		return new FluidTankInfo[] { new FluidTankInfo(new FluidStack(fluid, Integer.MAX_VALUE / 2), Integer.MAX_VALUE) };
 	}
 
 	public AxisAlignedBB getEffectBounds()

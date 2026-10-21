@@ -406,3 +406,76 @@ pe.manual.introduction.header=Introduction
 
 # ImagePage headers
 pe.manual.img_alchchest.header=alchchest.png
+
+tile.pe_matterPipe_item_dark.name=Dark Matter Item Pipe
+tile.pe_matterPipe_item_red.name=Red Matter Item Pipe
+tile.pe_matterPipe_fluid_dark.name=Dark Matter Fluid Pipe
+tile.pe_matterPipe_fluid_red.name=Red Matter Fluid Pipe
+tile.pe_matterPipe_emc_dark.name=Dark Matter EMC Pipe
+tile.pe_matterPipe_emc_red.name=Red Matter EMC Pipe
+tile.pe_matterPipe_item_gem.name=Gem Item Pipe
+tile.pe_matterPipe_fluid_gem.name=Gem Fluid Pipe
+tile.pe_matterPipe_emc_gem.name=Gem EMC Pipe
+tile.pe_matterInterface_item.name=Item Matter Interface
+tile.pe_matterInterface_fluid.name=Fluid Matter Interface
+pe.matterinterface.title.item=Item Matter Interface
+pe.matterinterface.title.fluid=Fluid Matter Interface
+pe.matterinterface.priority=Priority
+pe.matterinterface.status.connected=Container connected
+pe.matterinterface.status.disconnected=No container
+pe.matterinterface.status.alloff=Container near - L=out R=in
+pe.matterinterface.network.connected=Network: %s pipes
+pe.matterinterface.network.disconnected=Network: not connected
+pe.matterinterface.facing=Facing: %s
+pe.matterinterface.dir.down=down
+pe.matterinterface.dir.up=up
+pe.matterinterface.dir.north=north
+pe.matterinterface.dir.south=south
+pe.matterinterface.dir.west=west
+pe.matterinterface.dir.east=east
+pe.matterinterface.dir.none=-
+pe.matterinterface.side.up=U
+pe.matterinterface.side.north=N
+pe.matterinterface.side.east=E
+pe.matterinterface.side.down=D
+pe.matterinterface.side.south=S
+pe.matterinterface.side.west=W
+pe.matterinterface.role.up=up
+pe.matterinterface.role.down=down
+pe.matterinterface.role.left=left
+pe.matterinterface.role.right=right
+pe.matterinterface.role.front=front
+pe.matterinterface.role.back=back
+pe.matterinterface.picker.extract=Out: click=set, again=clear
+pe.matterinterface.picker.insert=In: click=set, again=clear
+pe.matterinterface.rate=Rate
+pe.matterinterface.interval=Period
+pe.matterinterface.apply=Set
+pe.matterinterface.unit.second=/s
+pe.matterinterface.unit.tick=/tick
+pe.matterinterface.hover=%1$s(%2$s) out %3$s in %4$s
+pe.matterinterface.filter.fluid=Filter: %s
+# Two filter sets (input / output): the tab labels and the "what am I editing" caption
+pe.matterinterface.tab.input=In
+pe.matterinterface.tab.output=Out
+pe.matterinterface.editing=Edit: %s
+# Matter logistics tab and the 16 dye channels (wool order: 0 white ... 15 black)
+pe.tab.logistics=Matter Logistics
+pe.matter.pipe.named=%s (%s)
+pe.matter.color.0=White
+pe.matter.color.1=Orange
+pe.matter.color.2=Magenta
+pe.matter.color.3=Light Blue
+pe.matter.color.4=Yellow
+pe.matter.color.5=Lime
+pe.matter.color.6=Pink
+pe.matter.color.7=Gray
+pe.matter.color.8=Light Gray
+pe.matter.color.9=Cyan
+pe.matter.color.10=Purple
+pe.matter.color.11=Blue
+pe.matter.color.12=Brown
+pe.matter.color.13=Green
+pe.matter.color.14=Red
+pe.matter.color.15=Black
+
