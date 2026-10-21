@@ -4,7 +4,6 @@ import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.SimpleStack;
 import moze_intel.projecte.network.PacketHandler;
-import moze_intel.projecte.network.packets.KnowledgeChangePKT;
 import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
@@ -152,9 +151,4 @@ public final class Transmutation {
 		PELogger.logDebug("** SENT TRANSMUTATION DATA **");
 	}
 
-	public static void syncIncremental(EntityPlayer player, ItemStack stack, boolean isRemove)
-	{
-		PacketHandler.sendTo(new KnowledgeChangePKT(stack, isRemove), (EntityPlayerMP) player);
-		PELogger.logDebug("** SENT INCREMENTAL TRANSMUTATION DATA **");
-	}
 }

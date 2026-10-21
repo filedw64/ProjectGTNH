@@ -26,8 +26,4 @@ public class MercurialClipboard {
 	public static void clearClipboard(UUID playerId) {
 		clipboards.remove(playerId);
 	}
-
-	public static boolean hasClipboard(UUID playerId) {
-		return clipboards.containsKey(playerId);
-	}
 }

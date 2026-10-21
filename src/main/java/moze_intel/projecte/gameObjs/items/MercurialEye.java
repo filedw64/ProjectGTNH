@@ -20,6 +20,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,12 +29,6 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import moze_intel.projecte.PECore;
-import moze_intel.projecte.api.item.IExtraFunction;
-import moze_intel.projecte.playerData.Transmutation;
-import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.EMCHelper;
-import moze_intel.projecte.utils.PlayerHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +39,9 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 	public static final int TRANSMUTATION_MODE = 1;
 	public static final int COPY_PASTE_MODE = 2;
 	public static final int CUT_MOVE_MODE = 3;
+	// 单次粘贴的方块数量上限，与建造路径的体积上限保持同一口径
+	private static final BuildShape[] BUILD_SHAPES = BuildShape.values();
+	private static final int MAX_PASTE_BLOCKS = 8192;
 
 	public MercurialEye() {
 		super("mercurial_eye", (byte)4, new String[] {"Normal", "Transmutation", "Copy/Paste", "Cut/Move"});
@@ -53,8 +51,8 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 	public BuildShape getBuildShape(ItemStack stack) {
 		if (stack.hasTagCompound() && stack.getTagCompound().hasKey("BuildShape")) {
 			int ordinal = stack.getTagCompound().getByte("BuildShape");
-			if (ordinal >= 0 && ordinal < BuildShape.values().length) {
-				return BuildShape.values()[ordinal];
+			if (ordinal >= 0 && ordinal < BUILD_SHAPES.length) {
+				return BUILD_SHAPES[ordinal];
 			}
 		}
 		return BuildShape.CUBE;
@@ -110,32 +108,13 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 			Vec3 lookVec = player.getLookVec();
 			int targetX, targetY, targetZ;
 
+			// 隔空选点统一走 RayTraceMath：命中/未命中都落在 targetX/Y/Z（未命中时已在 getPlaneTarget 内退回前方 5 格）
 			if (!nbt.hasKey("AnchorX")) {
-				targetX = (int) Math.round(eyePos.xCoord + lookVec.xCoord * 5);
-				targetY = (int) Math.round(eyePos.yCoord + lookVec.yCoord * 5);
-				targetZ = (int) Math.round(eyePos.zCoord + lookVec.zCoord * 5);
+				int[] forward = RayTraceMath.getForwardPoint(eyePos, lookVec, 5);
+				targetX = forward[0]; targetY = forward[1]; targetZ = forward[2];
 			} else {
-				int anchorX = nbt.getInteger("AnchorX");
-				int anchorY = nbt.getInteger("AnchorY");
-				int anchorZ = nbt.getInteger("AnchorZ");
-				RayTraceMath.Plane plane;
-				double planeVal;
-				double absX = Math.abs(lookVec.xCoord); double absY = Math.abs(lookVec.yCoord); double absZ = Math.abs(lookVec.zCoord);
-
-				if (absX > absY && absX > absZ) { plane = RayTraceMath.Plane.X; planeVal = anchorX; }
-				else if (absY > absX && absY > absZ) { plane = RayTraceMath.Plane.Y; planeVal = anchorY; }
-				else { plane = RayTraceMath.Plane.Z; planeVal = anchorZ; }
-
-				Vec3 hit = RayTraceMath.getIntersection(eyePos, lookVec, plane, planeVal);
-				if (hit != null) {
-					targetX = (int) Math.round(hit.xCoord);
-					targetY = (int) Math.round(hit.yCoord);
-					targetZ = (int) Math.round(hit.zCoord);
-				} else {
-					targetX = (int) Math.round(eyePos.xCoord + lookVec.xCoord * 5);
-					targetY = (int) Math.round(eyePos.yCoord + lookVec.yCoord * 5);
-					targetZ = (int) Math.round(eyePos.zCoord + lookVec.zCoord * 5);
-				}
+				int[] target = RayTraceMath.getPlaneTarget(eyePos, lookVec, nbt.getInteger("AnchorX"), nbt.getInteger("AnchorY"), nbt.getInteger("AnchorZ"));
+				targetX = target[0]; targetY = target[1]; targetZ = target[2];
 			}
 			this.onItemUse(stack, player, world, targetX, targetY, targetZ, -1, 0, 0, 0);
 		}
@@ -239,12 +218,14 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 		int sizeY = maxY - minY + 1;
 		int sizeZ = maxZ - minZ + 1;
 
-		if (sizeX * sizeY * sizeZ > 100000) {
+		// 先转 long 再相乘：远距离锚点下 int 乘法会溢出成负数从而绕过体积上限
+		if ((long) sizeX * sizeY * sizeZ > 100000L) {
 			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "选区过大！最大允许体积为 100,000。"));
 			return;
 		}
 
 		ClipboardData clipboard = new ClipboardData(sizeX, sizeY, sizeZ);
+		int skipped = 0;
 
 		for (int x = minX; x <= maxX; x++) {
 			for (int y = minY; y <= maxY; y++) {
@@ -252,12 +233,23 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 					Block block = world.getBlock(x, y, z);
 					if (block == Blocks.air) continue;
 
+					if (isCut) {
+						// 没有破坏权限或基岩之类不可破坏的方块：既不捕获也不删除
+						if (!PlayerHelper.hasBreakPermission(player, x, y, z) || block.getBlockHardness(world, x, y, z) < 0.0F) {
+							skipped++;
+							continue;
+						}
+					}
+
 					int meta = world.getBlockMetadata(x, y, z);
-					TileEntity te = world.getTileEntity(x, y, z);
 					NBTTagCompound teData = null;
-					if (te != null) {
-						teData = new NBTTagCompound();
-						te.writeToNBT(teData);
+					// 只有剪切/移动才保存方块实体：源已经删除，不构成复制刷 EMC
+					if (isCut) {
+						TileEntity te = world.getTileEntity(x, y, z);
+						if (te != null) {
+							teData = new NBTTagCompound();
+							te.writeToNBT(teData);
+						}
 					}
 
 					double emcCost = 0;
@@ -271,33 +263,71 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 					clipboard.addBlock(block, meta, teData, x - anchorX, y - anchorY, z - anchorZ, emcCost);
 
 					if (isCut) {
-						if (te != null) world.removeTileEntity(x, y, z);
-						world.setBlock(x, y, z, Blocks.air, 0, 2);
+						world.removeTileEntity(x, y, z);
+						world.setBlock(x, y, z, Blocks.air, 0, 3);
 					}
 				}
 			}
 		}
 
-		MercurialClipboard.saveClipboard(player.getUniqueID(), clipboard);
 		NBTTagCompound nbt = stack.getTagCompound();
+
+		// 所有方块都被跳过（例如整片区域都没有破坏权限）时不落盘，避免留下一个空剪贴板
+		if (clipboard.blocks.isEmpty()) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "选区内没有可捕获的方块。"));
+			nbt.removeTag("AnchorX"); nbt.removeTag("AnchorY"); nbt.removeTag("AnchorZ");
+			nbt.removeTag("AnchorDimID");
+			nbt.removeTag("MidX"); nbt.removeTag("MidY"); nbt.removeTag("MidZ");
+			return;
+		}
+
+		// 以实际进入剪贴板的方块重算局部边界：一旦被数量上限截断，NBT 也不能再声称包含被丢弃的方块
+		ClipboardData.BlockInfo firstBlock = clipboard.blocks.get(0);
+		int clipMinX = firstBlock.localX; int clipMaxX = firstBlock.localX;
+		int clipMinY = firstBlock.localY; int clipMaxY = firstBlock.localY;
+		int clipMinZ = firstBlock.localZ; int clipMaxZ = firstBlock.localZ;
+		for (ClipboardData.BlockInfo bi : clipboard.blocks) {
+			if (bi.localX < clipMinX) clipMinX = bi.localX;
+			if (bi.localX > clipMaxX) clipMaxX = bi.localX;
+			if (bi.localY < clipMinY) clipMinY = bi.localY;
+			if (bi.localY > clipMaxY) clipMaxY = bi.localY;
+			if (bi.localZ < clipMinZ) clipMinZ = bi.localZ;
+			if (bi.localZ > clipMaxZ) clipMaxZ = bi.localZ;
+		}
+
+		MercurialClipboard.saveClipboard(player.getUniqueID(), clipboard);
 		nbt.setBoolean("HasClipboard", true);
 
-		nbt.setInteger("ClipSizeX", sizeX);
-		nbt.setInteger("ClipSizeY", sizeY);
-		nbt.setInteger("ClipSizeZ", sizeZ);
+		nbt.setInteger("ClipSizeX", clipMaxX - clipMinX + 1);
+		nbt.setInteger("ClipSizeY", clipMaxY - clipMinY + 1);
+		nbt.setInteger("ClipSizeZ", clipMaxZ - clipMinZ + 1);
 
-		nbt.setInteger("LocalMinX", minX - anchorX);
-		nbt.setInteger("LocalMaxX", maxX - anchorX);
-		nbt.setInteger("LocalMinY", minY - anchorY);
-		nbt.setInteger("LocalMaxY", maxY - anchorY);
-		nbt.setInteger("LocalMinZ", minZ - anchorZ);
-		nbt.setInteger("LocalMaxZ", maxZ - anchorZ);
+		nbt.setInteger("LocalMinX", clipMinX);
+		nbt.setInteger("LocalMaxX", clipMaxX);
+		nbt.setInteger("LocalMinY", clipMinY);
+		nbt.setInteger("LocalMaxY", clipMaxY);
+		nbt.setInteger("LocalMinZ", clipMinZ);
+		nbt.setInteger("LocalMaxZ", clipMaxZ);
 
 		TransformMatrix matrix = new TransformMatrix();
 		matrix.writeToNBT(nbt);
 
-		player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.AQUA + (isCut ? "剪切" : "复制") + "完毕。"));
+		String doneMsg = (isCut ? "剪切" : "复制") + "完毕，共 " + clipboard.blocks.size() + " 个方块。";
+		if (!isCut) {
+			doneMsg += "方块实体内容不会被复制。";
+		}
+		MercurialHistory.sendNotify(player, doneMsg);
+		if (clipboard.blocks.size() >= ClipboardData.MAX_CLIPBOARD_BLOCKS) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.YELLOW + "选区超过 " + ClipboardData.MAX_CLIPBOARD_BLOCKS + " 个方块，仅记录了前 " + ClipboardData.MAX_CLIPBOARD_BLOCKS + " 个。"));
+		}
+		if (skipped > 0) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.YELLOW + "有 " + skipped + " 个方块因权限不足或无法破坏而未被剪切。"));
+		}
+
+		// 与建造路径保持一致地清锚点：否则 AnchorDimID 残留会让下次切维度时误清剪贴板
 		nbt.removeTag("AnchorX"); nbt.removeTag("AnchorY"); nbt.removeTag("AnchorZ");
+		nbt.removeTag("AnchorDimID");
+		nbt.removeTag("MidX"); nbt.removeTag("MidY"); nbt.removeTag("MidZ");
 	}
 
 	private void executePaste(ItemStack stack, EntityPlayerMP player, World world) {
@@ -316,12 +346,8 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 		TransformMatrix matrix = new TransformMatrix();
 		matrix.readFromNBT(nbt);
 
-		double totalEmcCost = clipboard.getTotalEmcCost() * matrix.stackCount;
-		double currentEmc = Transmutation.getEmc(player);
-		if (currentEmc < totalEmcCost) {
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "EMC 不足！需要: " + totalEmcCost));
-			return;
-		}
+		// 服务端实际使用时再夹紧一次堆叠数，不信任 NBT 里的值
+		int stackCount = Math.min(64, Math.max(1, matrix.stackCount));
 
 		int[] rotBounds = matrix.getRotatedBounds(
 			nbt.getInteger("LocalMinX"), nbt.getInteger("LocalMinY"), nbt.getInteger("LocalMinZ"),
@@ -331,9 +357,16 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 		int rotSizeY = rotBounds[4] - rotBounds[1] + 1;
 		int rotSizeZ = rotBounds[5] - rotBounds[2] + 1;
 
+		// 按实际放下的方块逐块计费，不再一次性预扣
+		double emcLeft = Transmutation.getEmc(player);
+		double totalSpent = 0;
 		int blocksPlaced = 0;
+		boolean emcShortage = false;
+		boolean capped = false;
+		List<MercurialHistory.BlockChange> historyChanges = new ArrayList<>();
 
-		for (int step = 0; step < matrix.stackCount; step++) {
+		outer:
+		for (int step = 0; step < stackCount; step++) {
 			int offsetX = matrix.stackAxis.offsetX * rotSizeX * step;
 			int offsetY = matrix.stackAxis.offsetY * rotSizeY * step;
 			int offsetZ = matrix.stackAxis.offsetZ * rotSizeZ * step;
@@ -359,7 +392,40 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 					rotator.rotateNBT(info.block, rotatedMeta, rotatedNbt, matrix.rotations);
 				}
 
-				world.setBlock(targetX, targetY, targetZ, info.block, rotatedMeta, 2);
+				Block oldBlock = world.getBlock(targetX, targetY, targetZ);
+				int oldMeta = world.getBlockMetadata(targetX, targetY, targetZ);
+
+				// 目标已经是同方块同 metadata：不收费也不重复放置
+				if (oldBlock == info.block && oldMeta == rotatedMeta) continue;
+
+				// 单次粘贴总量上限：64 × 32768 这种合法配置否则会把服务端主线程卡死
+				if (blocksPlaced >= MAX_PASTE_BLOCKS) {
+					capped = true;
+					break outer;
+				}
+
+				// EMC 不够就停在这里，剩下的方块不收费也不放置
+				if (emcLeft < info.emcCost) {
+					emcShortage = true;
+					break outer;
+				}
+
+				// 这里只做只读快照：writeToNBT 不改变世界，放置被拒绝时必须保证世界原样
+				NBTTagCompound oldTeData = null;
+				TileEntity oldTe = world.getTileEntity(targetX, targetY, targetZ);
+				if (oldTe != null) {
+					oldTeData = new NBTTagCompound();
+					oldTe.writeToNBT(oldTeData);
+				}
+
+				// 空气或可替换方块走放置，其余走替换（两者内部都已含权限检查与 PlaceEvent）
+				boolean placed;
+				if (oldBlock == Blocks.air || oldBlock.isReplaceable(world, targetX, targetY, targetZ)) {
+					placed = PlayerHelper.checkedPlaceBlock(player, targetX, targetY, targetZ, info.block, rotatedMeta);
+				} else {
+					placed = PlayerHelper.checkedReplaceBlock(player, targetX, targetY, targetZ, info.block, rotatedMeta);
+				}
+				if (!placed) continue;
 
 				if (rotatedNbt != null) {
 					rotatedNbt.setInteger("x", targetX);
@@ -369,18 +435,35 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 					if (te != null) {
 						world.setTileEntity(targetX, targetY, targetZ, te);
 					}
+				} else if (oldTe != null && !info.block.hasTileEntity(rotatedMeta)) {
+					// 新方块自身没有方块实体：显式清掉旧的，避免残留成新方块底下的幽灵容器
+					// （新方块自己带 TE 时不能清，否则会删掉 setBlock 刚创建的那个）
+					world.removeTileEntity(targetX, targetY, targetZ);
 				}
+
+				emcLeft -= info.emcCost;
+				totalSpent += info.emcCost;
 				blocksPlaced++;
+				historyChanges.add(new MercurialHistory.BlockChange(targetX, targetY, targetZ, oldBlock, oldMeta, info.block, rotatedMeta, info.emcCost, oldTeData));
 			}
 		}
 
-		if (totalEmcCost > 0) {
-			Transmutation.setEmc(player, currentEmc - totalEmcCost);
+		if (blocksPlaced > 0) {
+			Transmutation.setEmc(player, emcLeft);
 			Transmutation.sync(player);
+			// 粘贴造成的破坏必须可以撤销
+			MercurialHistory.addRecord(player, historyChanges);
+			world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
+			MercurialHistory.sendNotify(player, "已放置 " + blocksPlaced + " 个方块，消耗 EMC: " + totalSpent + "。");
 		}
 
-		player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.AQUA + "已放置 " + blocksPlaced + " 个方块。"));
-		world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
+		if (capped) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "单次粘贴上限 " + MAX_PASTE_BLOCKS + " 个方块，已达上限提前停止。"));
+		}
+
+		if (emcShortage) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "EMC 不足，粘贴提前停止。"));
+		}
 
 		if (this.getMode(stack) == CUT_MOVE_MODE) {
 			clearSelection(stack, player);
@@ -398,7 +481,11 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 		int minY = Math.min(startY, endY); int maxY = Math.max(startY, endY);
 		int minZ = Math.min(startZ, endZ); int maxZ = Math.max(startZ, endZ);
 
-		if ((maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1) > 8192) {
+		// 先转 long 再相乘，避免远距离锚点下 int 溢出成负数而绕过体积上限
+		long volumeX = (long) maxX - minX + 1;
+		long volumeY = (long) maxY - minY + 1;
+		long volumeZ = (long) maxZ - minZ + 1;
+		if (volumeX > 8192 || volumeY > 8192 || volumeZ > 8192 || volumeX * volumeY * volumeZ > 8192L) {
 			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "Area too large! Max volume is 8192 blocks."));
 			return;
 		}
@@ -408,80 +495,58 @@ public class MercurialEye extends ItemMode implements IExtraFunction {
 		BuildShape shape = getBuildShape(eye);
 		List<MercurialHistory.BlockChange> historyChanges = new ArrayList<>();
 
-		if (shape == BuildShape.LINE) {
-			int dist = (int) Math.ceil(Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2) + Math.pow(endZ - startZ, 2)));
-			for (int i = 0; i <= dist; i++) {
-				double t = dist == 0 ? 0 : (double) i / dist;
-				int px = (int) Math.round(startX + (endX - startX) * t);
-				int py = (int) Math.round(startY + (endY - startY) * t);
-				int pz = (int) Math.round(startZ + (endZ - startZ) * t);
-				MercurialHistory.BlockChange bc = tryPlaceBlock(world, player, mode, px, py, pz, newBlock, newMeta, reqEmc, currentEmc);
-				if (bc != null) historyChanges.add(bc);
-			}
-		} else {
-			for (int x = minX; x <= maxX; x++) {
-				for (int y = minY; y <= maxY; y++) {
-					for (int z = minZ; z <= maxZ; z++) {
-						if (!shape.isBlockInShape(x, y, z, startX, startY, startZ, endX, endY, endZ)) continue;
-						MercurialHistory.BlockChange bc = tryPlaceBlock(world, player, mode, x, y, z, newBlock, newMeta, reqEmc, currentEmc);
-						if (bc != null) historyChanges.add(bc);
-					}
-				}
-			}
-		}
+		// 形状迭代与客户端预览共用 BuildShape.forEachBlock，避免两处再次分叉
+		shape.forEachBlock(startX, startY, startZ, endX, endY, endZ, (x, y, z) -> {
+			MercurialHistory.BlockChange bc = tryPlaceBlock(world, player, mode, x, y, z, newBlock, newMeta, reqEmc, currentEmc);
+			if (bc != null) historyChanges.add(bc);
+		});
 
 		if (!historyChanges.isEmpty()) {
 			MercurialHistory.addRecord(player, historyChanges);
 			Transmutation.setEmc(player, currentEmc[0]);
 			Transmutation.sync(player);
 			world.playSoundAtEntity(player, "projecte:item.pepower", 1.0F, 1.0F);
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.AQUA + "Placed " + historyChanges.size() + " blocks."));
+			MercurialHistory.sendNotify(player, "Placed " + historyChanges.size() + " blocks.");
 		}
 	}
 
 	private MercurialHistory.BlockChange tryPlaceBlock(World world, EntityPlayerMP player, int mode, int x, int y, int z, Block newBlock, int newMeta, double reqEmc, double[] currentEmc) {
+		if (!world.blockExists(x, y, z)) return null;
 		Block oldBlock = world.getBlock(x, y, z);
 		int oldMeta = world.getBlockMetadata(x, y, z);
 
 		if (mode == NORMAL_MODE) {
 			if (!oldBlock.isReplaceable(world, x, y, z)) return null;
 			if (currentEmc[0] < reqEmc) return null;
-			if (PlayerHelper.hasBreakPermission(player, x, y, z)) {
-				world.setBlock(x, y, z, newBlock, newMeta, 2);
+			// PlayerHelper 内部会触发 PlaceEvent，返回 false 说明被保护插件或事件取消
+			if (PlayerHelper.checkedPlaceBlock(player, x, y, z, newBlock, newMeta)) {
 				currentEmc[0] -= reqEmc;
 				return new MercurialHistory.BlockChange(x, y, z, oldBlock, oldMeta, newBlock, newMeta, reqEmc, null);
 			}
 		} else if (mode == TRANSMUTATION_MODE) {
 			if (oldBlock == Blocks.air || (oldBlock == newBlock && oldMeta == newMeta)) return null;
+			// 带方块实体的方块不参与转化：NBT 内容无法计价，替换等于白送内容
+			if (world.getTileEntity(x, y, z) != null) return null;
 			if (oldBlock.getBlockHardness(world, x, y, z) < 0.0F) return null;
-			double oldEmc = 0;
-			net.minecraft.item.Item oldItem = net.minecraft.item.Item.getItemFromBlock(oldBlock);
-			if (oldItem != null) {
-				ItemStack oldStack = new ItemStack(oldItem, 1, oldMeta);
-				if (EMCHelper.doesItemHaveEmc(oldStack)) {
-					oldEmc = EMCHelper.getEmcValue(oldStack);
-				}
-			}
-			double emcDiff = reqEmc - oldEmc;
+			Item oldItem = Item.getItemFromBlock(oldBlock);
+			if (oldItem == null) return null;
+			ItemStack oldStack = new ItemStack(oldItem, 1, oldMeta);
+			if (!EMCHelper.doesItemHaveEmc(oldStack)) return null;
+			double emcDiff = reqEmc - EMCHelper.getEmcValue(oldStack);
 			if (currentEmc[0] < emcDiff) return null;
-			if (PlayerHelper.hasBreakPermission(player, x, y, z)) {
-				net.minecraft.tileentity.TileEntity oldTe = world.getTileEntity(x, y, z);
-				net.minecraft.nbt.NBTTagCompound oldTeData = null;
-				if (oldTe != null) {
-					oldTeData = new net.minecraft.nbt.NBTTagCompound();
-					oldTe.writeToNBT(oldTeData);
-					world.removeTileEntity(x, y, z);
-				}
-				world.setBlock(x, y, z, newBlock, newMeta, 2);
+			// checkedReplaceBlock 内部已含 hasBreakPermission + PlaceEvent
+			if (PlayerHelper.checkedReplaceBlock(player, x, y, z, newBlock, newMeta)) {
 				currentEmc[0] -= emcDiff;
-				return new MercurialHistory.BlockChange(x, y, z, oldBlock, oldMeta, newBlock, newMeta, emcDiff, oldTeData);
+				return new MercurialHistory.BlockChange(x, y, z, oldBlock, oldMeta, newBlock, newMeta, emcDiff, null);
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public void doExtraFunction(ItemStack stack, EntityPlayer player) {}
+	public void doExtraFunction(ItemStack stack, EntityPlayer player) {
+		// 滚轮 GUI 由客户端 KeyPressEvent 直接打开，服务端无需处理
+	}
 
 	@Override
 	public int getMaxItemUseDuration(ItemStack stack) { return 1; }

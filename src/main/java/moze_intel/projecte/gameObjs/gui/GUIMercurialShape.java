@@ -19,6 +19,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import moze_intel.projecte.utils.mercurial.TransformMatrix;
@@ -46,13 +47,38 @@ public class GUIMercurialShape extends GuiScreen {
 	private final BuildShape[] shapes = BuildShape.values();
 	private final List<ItemStack> usableBlocks = new ArrayList<>();
 	private static final RenderItem renderItem = new RenderItem();
+	private static final double TAU = Math.PI * 2;
+	private static final double INNER_RADIUS = 29;
+	private static final double OUTER_RADIUS = 86;
+	private static final double[][] ICONS = createIcons();
+	private final double[][] ringVertices = new double[BuildShape.values().length][];
+	private int blockPage;
+	private final java.util.Map<String, ItemStack> historyIcons = new java.util.HashMap<>();
 
 	// 静态缓存，存储服务端发来的历史数据
 	public static List<HistorySyncPKT.ClientNode> clientHistoryCache = new ArrayList<>();
 
+	// 堆叠轴的循环顺序，末尾的 UNKNOWN 表示「无」
+	private static final ForgeDirection[] STACK_AXES = {
+		ForgeDirection.DOWN, ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH,
+		ForgeDirection.WEST, ForgeDirection.EAST, ForgeDirection.UNKNOWN
+	};
+
 	public GUIMercurialShape(byte currentShape, ItemStack currentBlock) {
-		this.currentShape = currentShape;
-		this.currentBlock = currentBlock;
+		this.currentShape = currentShape >= 0 && currentShape < shapes.length ? currentShape : (byte) BuildShape.CUBE.ordinal();
+		this.currentBlock = currentBlock == null ? null : currentBlock.copy();
+		for (int i = 0; i < shapes.length; i++) {
+			double[] vertices = new double[9 * 4];
+			double step = TAU / shapes.length;
+			for (int j = 0; j <= 8; j++) {
+				double angle = -Math.PI / 2 + (i - 0.5) * step + 0.015 + (step - 0.03) * j / 8;
+				vertices[j * 4] = Math.cos(angle) * INNER_RADIUS;
+				vertices[j * 4 + 1] = Math.sin(angle) * INNER_RADIUS;
+				vertices[j * 4 + 2] = Math.cos(angle) * OUTER_RADIUS;
+				vertices[j * 4 + 3] = Math.sin(angle) * OUTER_RADIUS;
+			}
+			ringVertices[i] = vertices;
+		}
 	}
 
 	@Override
@@ -82,6 +108,8 @@ public class GUIMercurialShape extends GuiScreen {
 			}
 		}
 		// 读取当前手持物品的剪贴板状态
+		hasClipboard = false;
+		historyIcons.clear();
 		ItemStack held = Minecraft.getMinecraft().thePlayer.getHeldItem();
 		if (held != null && held.getItem() instanceof moze_intel.projecte.gameObjs.items.MercurialEye) {
 			if (held.hasTagCompound() && held.getTagCompound().getBoolean("HasClipboard")) {
@@ -95,85 +123,31 @@ public class GUIMercurialShape extends GuiScreen {
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
 		this.drawGradientRect(0, 0, this.width, this.height, 0xC0000000, 0xC0000000);
 
-		int centerX = this.width / 2;
-		int centerY = this.height / 2 - 30; // 轮盘稍微靠上一点，给底部的方块栏留空间
-		double radius = 60.0;
-
-		double dx = mouseX - centerX;
-		double dy = mouseY - centerY;
-		double mouseDist = Math.sqrt(dx * dx + dy * dy);
-		double mouseAngle = Math.atan2(dy, dx);
-		if (mouseAngle < 0) mouseAngle += Math.PI * 2;
-
-		hoveredShapeIndex = -1;
-		hoveredBlockIndex = -1;
-
-		// 渲染形状轮盘
-		GL11.glPushMatrix();
-		GL11.glEnable(GL11.GL_BLEND);
-		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-		// 绘制中心点
-		drawCircle(centerX, centerY, 3, 0xFFFFFFFF);
-
-		// 判断鼠标是否在轮盘区域
-		if (mouseDist > 15.0 && mouseDist < 120.0) {
-			double segmentAngle = (Math.PI * 2) / shapes.length;
-			double offsetAngle = mouseAngle + (Math.PI / 2) + (segmentAngle / 2);
-			if (offsetAngle >= Math.PI * 2) offsetAngle -= Math.PI * 2;
-			hoveredShapeIndex = (int) (offsetAngle / segmentAngle) % shapes.length;
-		}
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPopMatrix();
-
-		// 渲染轮盘文字
-		for (int i = 0; i < shapes.length; i++) {
-			BuildShape shape = shapes[i];
-			double angle = -Math.PI / 2 + i * ((Math.PI * 2) / shapes.length);
-			int textX = (int) (centerX + Math.cos(angle) * radius);
-			int textY = (int) (centerY + Math.sin(angle) * radius);
-			String text = shape.getDisplayName();
-			int strWidth = this.fontRendererObj.getStringWidth(text);
-
-			textX -= strWidth / 2;
-			textY -= this.fontRendererObj.FONT_HEIGHT / 2;
-
-			if (i == hoveredShapeIndex || (hoveredShapeIndex == -1 && i == currentShape)) {
-				GL11.glPushMatrix();
-				GL11.glTranslatef(textX + strWidth/2f, textY + 4, 0);
-				GL11.glScalef(1.2f, 1.2f, 1.2f);
-				this.fontRendererObj.drawStringWithShadow(EnumChatFormatting.AQUA + text, -strWidth/2, -4, 0xFFFFFF);
-				GL11.glPopMatrix();
-			} else {
-				this.fontRendererObj.drawStringWithShadow(text, textX, textY, 0x888888);
-			}
-		}
+		int centerX = wheelX();
+		int centerY = wheelY();
+		updateHover(mouseX, mouseY);
+		drawWheel(centerX, centerY);
 
 		// 渲染底部可用方块列表
 		if (!usableBlocks.isEmpty()) {
 			int boxSize = 24;
 			int padding = 4;
-			int totalWidth = usableBlocks.size() * boxSize + (usableBlocks.size() - 1) * padding;
+			int first = blockPage * blocksPerPage();
+			int last = Math.min(usableBlocks.size(), first + blocksPerPage());
+			int totalWidth = (last - first) * (boxSize + padding) - padding;
 			int startX = (this.width - totalWidth) / 2;
 			int blockY = this.height - 60;
 
 			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 			RenderHelper.enableGUIStandardItemLighting();
 
-			for (int i = 0; i < usableBlocks.size(); i++) {
+			for (int i = first; i < last; i++) {
 				ItemStack stack = usableBlocks.get(i);
-				int bx = startX + i * (boxSize + padding);
-
-				if (mouseX >= bx && mouseX <= bx + boxSize && mouseY >= blockY && mouseY <= blockY + boxSize) {
-					hoveredBlockIndex = i;
-				}
-
+				int bx = startX + (i - first) * (boxSize + padding);
 				boolean isSelected = (currentBlock != null && currentBlock.isItemEqual(stack)) || i == hoveredBlockIndex;
-
 				drawRect(bx, blockY, bx + boxSize, blockY + boxSize, isSelected ? 0xAA00AAFF : 0x55000000);
 				renderItem.renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), stack, bx + 4, blockY + 4);
+				GL11.glColor4f(1, 1, 1, 1);
 
 				if (i == hoveredBlockIndex) {
 					this.drawCenteredString(this.fontRendererObj, stack.getDisplayName(), this.width / 2, blockY - 15, 0xFFFFFF);
@@ -181,6 +155,9 @@ public class GUIMercurialShape extends GuiScreen {
 			}
 			RenderHelper.disableStandardItemLighting();
 			GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+			if (usableBlocks.size() > blocksPerPage()) {
+				this.drawCenteredString(this.fontRendererObj, (blockPage + 1) + "/" + pageCount() + "  [Mouse Wheel]", this.width / 2, blockY + 29, 0xAAAAAA);
+			}
 		} else {
 			this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.RED + "No valid blocks with EMC found in inventory!", this.width / 2, this.height - 50, 0xFFFFFF);
 		}
@@ -196,7 +173,6 @@ public class GUIMercurialShape extends GuiScreen {
 		this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.WHITE + "UNDO", undoX + undoWidth / 2, undoY + 6, 0xFFFFFF);
 
 		// 渲染左侧树状历史记录
-		hoveredHistoryId = "";
 		if (clientHistoryCache != null && !clientHistoryCache.isEmpty()) {
 			int listX = 20;
 			int startY = 40;
@@ -205,7 +181,7 @@ public class GUIMercurialShape extends GuiScreen {
 			this.drawString(this.fontRendererObj, EnumChatFormatting.GOLD + "Operation History", listX, 20, 0xFFFFFF);
 
 			int index = 0;
-			for (int i = clientHistoryCache.size() - 1; i >= 0; i--) {
+			for (int i = clientHistoryCache.size() - 1; i >= 0 && index < historyRows(); i--) {
 				HistorySyncPKT.ClientNode node = clientHistoryCache.get(i);
 
 				boolean isChild = !node.parentId.isEmpty();
@@ -218,15 +194,21 @@ public class GUIMercurialShape extends GuiScreen {
 
 				int itemX = listX + xOffset + 12;
 
-				if (mouseX >= itemX && mouseX <= itemX + 100 && mouseY >= drawY && mouseY <= drawY + rowHeight) {
-					hoveredHistoryId = node.id;
+				if (node.id.equals(hoveredHistoryId)) {
 					drawRect(itemX - 2, drawY - 2, itemX + 80, drawY + rowHeight - 2, 0x44FFFFFF);
 				}
 
-				ItemStack iconStack = new ItemStack(net.minecraft.block.Block.getBlockById(node.blockId), 1, node.meta);
+				ItemStack iconStack = historyIcons.get(node.id);
+				if (iconStack == null) {
+					net.minecraft.block.Block block = net.minecraft.block.Block.getBlockById(node.blockId);
+					if (block != null && net.minecraft.item.Item.getItemFromBlock(block) != null) {
+						iconStack = new ItemStack(block, 1, node.meta);
+						historyIcons.put(node.id, iconStack);
+					}
+				}
 				GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 				RenderHelper.enableGUIStandardItemLighting();
-				renderItem.renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), iconStack, itemX, drawY);
+				if (iconStack != null) renderItem.renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), iconStack, itemX, drawY);
 				RenderHelper.disableStandardItemLighting();
 				GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 
@@ -241,7 +223,7 @@ public class GUIMercurialShape extends GuiScreen {
 			int panelHeight = 60;
 			// 计算右下角坐标，留出 15 像素边距
 			int panelX = this.width - panelWidth - 15;
-			int panelY = this.height - panelHeight - 15;
+			int panelY = matrixY();
 
 			this.drawString(this.fontRendererObj, EnumChatFormatting.LIGHT_PURPLE + "矩阵控制台", panelX + 15, panelY - 12, 0xFFFFFF);
 
@@ -267,6 +249,7 @@ public class GUIMercurialShape extends GuiScreen {
 
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+		updateHover(mouseX, mouseY);
 		if (mouseButton == 0) {
 
 			// 响应矩阵控制台点击
@@ -274,7 +257,7 @@ public class GUIMercurialShape extends GuiScreen {
 				int panelWidth = 100;
 				int panelHeight = 60;
 				int panelX = this.width - panelWidth - 15;
-				int panelY = this.height - panelHeight - 15;
+				int panelY = matrixY();
 				boolean matrixChanged = false;
 
 				// 点击旋转
@@ -284,9 +267,7 @@ public class GUIMercurialShape extends GuiScreen {
 				}
 				// 点击切换堆叠轴
 				else if (mouseX >= panelX && mouseX <= panelX + 90 && mouseY >= panelY + 20 && mouseY <= panelY + 35) {
-					int nextOrd = (currentMatrix.stackAxis.ordinal() + 1) % 7; // 0~6
-					currentMatrix.stackAxis = ForgeDirection.VALID_DIRECTIONS[nextOrd == 6 ? 0 : nextOrd];
-					if(nextOrd == 6) currentMatrix.stackAxis = ForgeDirection.UNKNOWN;
+					currentMatrix.stackAxis = STACK_AXES[(currentMatrix.stackAxis.ordinal() + 1) % STACK_AXES.length];
 					matrixChanged = true;
 				}
 				// 点击数量 -
@@ -362,18 +343,179 @@ public class GUIMercurialShape extends GuiScreen {
 	@Override
 	public boolean doesGuiPauseGame() { return false; }
 
-	private void drawCircle(double x, double y, double radius, int color) {
-		float a = (float)(color >> 24 & 255) / 255.0F;
-		float r = (float)(color >> 16 & 255) / 255.0F;
-		float g = (float)(color >> 8 & 255) / 255.0F;
-		float b = (float)(color & 255) / 255.0F;
-		Tessellator tessellator = Tessellator.instance;
-		GL11.glColor4f(r, g, b, a);
-		tessellator.startDrawing(GL11.GL_POLYGON);
-		for (int i = 0; i <= 360; i += 10) {
-			double angle = i * Math.PI / 180.0;
-			tessellator.addVertex(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 0);
-		}
-		tessellator.draw();
+	private int wheelX() { return width < 440 ? width - 100 : width / 2; }
+	private int wheelY() { return Math.max(92, Math.min(height / 2 - 20, height - 165)); }
+	private int matrixY() { return height >= 330 ? 40 : height - 75; }
+	private int blocksPerPage() { return Math.max(1, (width - (hasClipboard && height < 330 ? 240 : 32)) / 28); }
+	private int pageCount() { return Math.max(1, (usableBlocks.size() + blocksPerPage() - 1) / blocksPerPage()); }
+	private int historyRows() { return Math.max(0, (height - 120) / 22); }
+
+	@Override
+	public void handleMouseInput() {
+		super.handleMouseInput();
+		int scroll = Mouse.getEventDWheel();
+		if (scroll != 0) blockPage = (blockPage + (scroll < 0 ? 1 : pageCount() - 1)) % pageCount();
 	}
+
+	private void updateHover(int mouseX, int mouseY) {
+		blockPage = Math.min(blockPage, pageCount() - 1);
+		hoveredShapeIndex = -1;
+		hoveredBlockIndex = -1;
+		hoveredHistoryId = "";
+		hoveredUndo = mouseX >= width - 70 && mouseX < width - 10 && mouseY >= 10 && mouseY < 30;
+		double dx = mouseX - wheelX();
+		double dy = mouseY - wheelY();
+		double distance = dx * dx + dy * dy;
+		if (distance >= INNER_RADIUS * INNER_RADIUS && distance <= OUTER_RADIUS * OUTER_RADIUS) {
+			double step = TAU / shapes.length;
+			double angle = (Math.atan2(dy, dx) + Math.PI / 2 + step / 2 + TAU) % TAU;
+			int index = (int) (angle / step);
+			// Match the tessellated sector, including the narrow gaps and straight outer edges.
+			double[] v = ringVertices[index];
+			for (int j = 0; j < 8; j++) {
+				int a = j * 4, b = a + 4;
+				if (inTriangle(dx, dy, v[a], v[a+1], v[a+2], v[a+3], v[b+2], v[b+3])
+					|| inTriangle(dx, dy, v[a], v[a+1], v[b+2], v[b+3], v[b], v[b+1])) {
+					hoveredShapeIndex = index;
+					break;
+				}
+			}
+		}
+		int first = blockPage * blocksPerPage();
+		int count = Math.min(blocksPerPage(), usableBlocks.size() - first);
+		int start = (width - (count * 28 - 4)) / 2;
+		if (mouseY >= height - 60 && mouseY < height - 36 && mouseX >= start) {
+			int offset = mouseX - start;
+			if (offset / 28 < count && offset % 28 < 24) hoveredBlockIndex = first + offset / 28;
+		}
+		if (clientHistoryCache != null) {
+			int row = (mouseY - 40) / 22;
+			if (mouseY >= 40 && row < historyRows() && row < clientHistoryCache.size()) {
+				HistorySyncPKT.ClientNode node = clientHistoryCache.get(clientHistoryCache.size() - 1 - row);
+				int x = 32 + (node.parentId.isEmpty() ? 0 : 15);
+				if (mouseX >= x && mouseX < x + 100) hoveredHistoryId = node.id;
+			}
+		}
+	}
+
+	private static boolean inTriangle(double x, double y, double ax, double ay, double bx, double by, double cx, double cy) {
+		double a = (x - bx) * (ay - by) - (ax - bx) * (y - by);
+		double b = (x - cx) * (by - cy) - (bx - cx) * (y - cy);
+		double c = (x - ax) * (cy - ay) - (cx - ax) * (y - ay);
+		return !((a < 0 || b < 0 || c < 0) && (a > 0 || b > 0 || c > 0));
+	}
+
+	private void drawWheel(int x, int y) {
+		GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_CURRENT_BIT | GL11.GL_LINE_BIT);
+		try {
+			GL11.glEnable(GL11.GL_BLEND);
+			OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+			GL11.glDisable(GL11.GL_LIGHTING);
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			Tessellator tess = Tessellator.instance;
+			tess.startDrawingQuads();
+			for (int i = 0; i < shapes.length; i++) {
+				boolean hover = i == hoveredShapeIndex;
+				boolean selected = i == currentShape;
+				tess.setColorRGBA(hover ? 32 : 14, hover ? 135 : selected ? 78 : 24, hover ? 180 : selected ? 105 : 35, hover ? 230 : 205);
+				double[] v = ringVertices[i];
+				for (int j = 0; j < 8; j++) {
+					int a = j * 4, b = a + 4;
+					tess.addVertex(x + v[a], y + v[a+1], 0);
+					tess.addVertex(x + v[b], y + v[b+1], 0);
+					tess.addVertex(x + v[b+2], y + v[b+3], 0);
+					tess.addVertex(x + v[a+2], y + v[a+3], 0);
+				}
+			}
+			tess.draw();
+			GL11.glLineWidth(1.5F);
+			tess.startDrawing(GL11.GL_LINES);
+			for (int i = 0; i < shapes.length; i++) {
+				double angle = -Math.PI / 2 + i * TAU / shapes.length;
+				double ix = x + Math.cos(angle) * 58;
+				double iy = y + Math.sin(angle) * 58;
+				tess.setColorRGBA(i == currentShape || i == hoveredShapeIndex ? 120 : 195, 230, 255, 255);
+				double[] icon = ICONS[i];
+				for (int p = 0; p < icon.length; p += 2) tess.addVertex(ix + icon[p], iy + icon[p + 1], 0);
+				if (i == currentShape) {
+					double[] v = ringVertices[i];
+					for (int j = 0; j < 8; j++) {
+						tess.addVertex(x + v[j*4], y + v[j*4+1], 0);
+						tess.addVertex(x + v[j*4+4], y + v[j*4+5], 0);
+					}
+				}
+			}
+			tess.draw();
+		} finally {
+			GL11.glPopAttrib();
+		}
+		int index = hoveredShapeIndex < 0 ? currentShape : hoveredShapeIndex;
+		drawCenteredString(fontRendererObj, shapes[index].getDisplayName(), x, y + 91, 0xA9ECFF);
+		drawCenteredString(fontRendererObj, Integer.toString(shapes[index].getRequiredClicks()), x, y - 4, 0xFFFFFF);
+	}
+
+	// Original procedural line art: each pair of points is a line segment, never a texture.
+	private static double[][] createIcons() {
+		double[][] icons = new double[BuildShape.values().length][];
+		for (BuildShape shape : BuildShape.values()) {
+			List<Double> lines = new ArrayList<>();
+			switch (shape) {
+				case LINE: line(lines, -9, 8, 9, -8); break;
+				case WALL:
+				case FLOOR:
+					for (int n = 0; n <= 2; n++) {
+						if (shape == BuildShape.WALL) {
+							line(lines, -9 + n * 9, -8, -9 + n * 9, 8);
+							line(lines, -9, -8 + n * 8, 9, -8 + n * 8);
+						} else {
+							line(lines, -10 + n * 5, n * 3, n * 5, -6 + n * 3);
+							line(lines, -10 + n * 5, -n * 3, n * 5, 6 - n * 3);
+						}
+					}
+					break;
+				case SPHERE:
+				case SPHERE_HOLLOW:
+					ellipse(lines, 0, 0, 10, 10);
+					ellipse(lines, 0, 0, 10, 3);
+					if (shape == BuildShape.SPHERE) ellipse(lines, 0, 0, 4, 10);
+					break;
+				case CYLINDER:
+				case CYLINDER_HOLLOW:
+					ellipse(lines, 0, -7, 9, 3);
+					ellipse(lines, 0, 7, 9, 3);
+					line(lines, -9, -7, -9, 7); line(lines, 9, -7, 9, 7);
+					if (shape == BuildShape.CYLINDER) line(lines, 0, -4, 0, 7);
+					break;
+				case SLOPE:
+					line(lines, -10, 8, 8, -9); line(lines, 8, -9, 8, 8); line(lines, 8, 8, -10, 8);
+					line(lines, -5, 8, 8, -4); line(lines, 0, 8, 8, 1);
+					break;
+				default:
+					line(lines, -9, -4, 0, -10); line(lines, 0, -10, 9, -4); line(lines, 9, -4, 0, 2); line(lines, 0, 2, -9, -4);
+					line(lines, -9, -4, -9, 6); line(lines, 9, -4, 9, 6); line(lines, 0, 2, 0, 12);
+					line(lines, -9, 6, 0, 12); line(lines, 0, 12, 9, 6);
+					if (shape == BuildShape.CUBE) {
+						line(lines, -6, 0, -6, 6); line(lines, -3, 2, -3, 8);
+					} else if (shape == BuildShape.CUBE_HOLLOW) {
+						line(lines, 3, 3, 7, 0); line(lines, 7, 0, 7, 5); line(lines, 7, 5, 3, 8); line(lines, 3, 8, 3, 3);
+					}
+			}
+			icons[shape.ordinal()] = new double[lines.size()];
+			for (int p = 0; p < lines.size(); p++) icons[shape.ordinal()][p] = lines.get(p);
+		}
+		return icons;
+	}
+
+	private static void line(List<Double> v, double x1, double y1, double x2, double y2) {
+		v.add(x1); v.add(y1); v.add(x2); v.add(y2);
+	}
+
+	private static void ellipse(List<Double> v, double x, double y, double rx, double ry) {
+		for (int n = 0; n < 24; n++) {
+			double a = n * TAU / 24, b = (n + 1) * TAU / 24;
+			line(v, x + Math.cos(a) * rx, y + Math.sin(a) * ry, x + Math.cos(b) * rx, y + Math.sin(b) * ry);
+		}
+	}
+
 }

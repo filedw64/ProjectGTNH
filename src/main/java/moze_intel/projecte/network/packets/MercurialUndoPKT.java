@@ -6,6 +6,7 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
 import moze_intel.projecte.utils.MercurialHistory;
+import moze_intel.projecte.utils.PELogger;
 import net.minecraft.entity.player.EntityPlayerMP;
 import java.util.UUID;
 
@@ -28,7 +29,14 @@ public class MercurialUndoPKT implements IMessage, IMessageHandler<MercurialUndo
 			if (message.targetId.isEmpty()) {
 				MercurialHistory.tryUndo(player, player.worldObj); // 快捷撤销最新一条
 			} else {
-				MercurialHistory.doUndo(player, player.worldObj, UUID.fromString(message.targetId), false); // 精准撤销某一条
+				UUID target;
+				try {
+					target = UUID.fromString(message.targetId); // 客户端字符串必须先校验，非法包直接丢弃 (F16)
+				} catch (IllegalArgumentException e) {
+					PELogger.logDebug("MercurialUndoPKT: ignored malformed uuid " + message.targetId);
+					return null;
+				}
+				MercurialHistory.doUndo(player, player.worldObj, target, false); // 精准撤销某一条
 			}
 		}
 		return null;

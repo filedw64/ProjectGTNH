@@ -9,6 +9,9 @@ import java.util.List;
  * 暂存在服务端内存中的选区剪贴板数据
  */
 public class ClipboardData {
+	// 单个剪贴板的方块数量上限，防止超大选区长期占用服务端内存
+	public static final int MAX_CLIPBOARD_BLOCKS = 32768;
+
 	public final int sizeX;
 	public final int sizeY;
 	public final int sizeZ;
@@ -21,6 +24,7 @@ public class ClipboardData {
 	}
 
 	public void addBlock(Block block, int meta, NBTTagCompound nbt, int localX, int localY, int localZ, double emcCost) {
+		if (blocks.size() >= MAX_CLIPBOARD_BLOCKS) return;
 		blocks.add(new BlockInfo(block, meta, nbt, localX, localY, localZ, emcCost));
 	}
 

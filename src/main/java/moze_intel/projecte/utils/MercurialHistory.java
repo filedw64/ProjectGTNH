@@ -9,9 +9,11 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class MercurialHistory {
@@ -45,11 +47,26 @@ public class MercurialHistory {
 	public static class HistoryRecord {
 		public final UUID id = UUID.randomUUID();
 		public final List<BlockChange> changes;
-		public final long timestamp = System.currentTimeMillis();
+		public final int dimensionId; // 记录产生时所在的维度
+		// 坐标索引，避免为了查一个方块而遍历整条 changes
+		private final Set<Long> positions = new HashSet<>();
 		public UUID parentId = null; // 用于构建 UI 树状图的直接依赖
 
-		public HistoryRecord(List<BlockChange> changes) {
+		public HistoryRecord(List<BlockChange> changes, int dimensionId) {
 			this.changes = changes;
+			this.dimensionId = dimensionId;
+			for (BlockChange bc : changes) {
+				positions.add(pack(bc.x, bc.y, bc.z));
+			}
+		}
+
+		public boolean containsPosition(int x, int y, int z) {
+			return positions.contains(pack(x, y, z));
+		}
+
+		// x/z 各取 26 位、y 取 12 位压进一个 long
+		private static long pack(int x, int y, int z) {
+			return (((long) (x & 0x3FFFFFF)) << 38) | (((long) (z & 0x3FFFFFF)) << 12) | (y & 0xFFF);
 		}
 	}
 
@@ -61,17 +78,15 @@ public class MercurialHistory {
 		UUID pid = player.getUniqueID();
 		LinkedList<HistoryRecord> list = historyMap.computeIfAbsent(pid, k -> new LinkedList<>());
 
-		HistoryRecord newRecord = new HistoryRecord(changes);
+		HistoryRecord newRecord = new HistoryRecord(changes, player.worldObj.provider.dimensionId);
 
 		// 计算树状图依赖 (查找最近一次修改过相同坐标的记录)
 		outer:
 		for (BlockChange bc : changes) {
 			for (HistoryRecord old : list) {
-				for (BlockChange oldBc : old.changes) {
-					if (oldBc.x == bc.x && oldBc.y == bc.y && oldBc.z == bc.z) {
-						newRecord.parentId = old.id; // 确立父子关系
-						break outer;
-					}
+				if (old.containsPosition(bc.x, bc.y, bc.z)) {
+					newRecord.parentId = old.id; // 确立父子关系
+					break outer;
 				}
 			}
 		}
@@ -84,6 +99,14 @@ public class MercurialHistory {
 	// 新增一个获取玩家所有记录的方法，供网络包调用
 	public static List<HistoryRecord> getRecords(EntityPlayerMP player) {
 		return historyMap.getOrDefault(player.getUniqueID(), new LinkedList<>());
+	}
+
+	/**
+	 * 玩家退出时清理其全部服务端缓存，避免静态 Map 永久持有记录
+	 */
+	public static void clearPlayer(UUID playerId) {
+		historyMap.remove(playerId);
+		pendingConfirmations.remove(playerId);
 	}
 
 	/**
@@ -105,7 +128,7 @@ public class MercurialHistory {
 			return;
 		}
 
-		// 否则尝试撤销最上面的一条记录
+		// 否则尝试撤销最上面的一条记录（维度校验交给 doUndo）
 		doUndo(player, world, list.getFirst().id, false);
 	}
 
@@ -127,6 +150,12 @@ public class MercurialHistory {
 			return;
 		}
 
+		// 记录只在它的产生维度内有效，跨维度撤销会写到完全无关的坐标上
+		if (target.dimensionId != world.provider.dimensionId) {
+			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "该记录属于其他维度，无法在此撤销。"));
+			return;
+		}
+
 		// 冲突检测引擎
 		List<HistoryRecord> conflicts = new ArrayList<>();
 		for (BlockChange bc : target.changes) {
@@ -135,13 +164,11 @@ public class MercurialHistory {
 
 			// 如果方块状态与建造时不符，说明被后续操作修改过
 			if (currentBlock != bc.newBlock || currentMeta != bc.newMeta) {
-				// 遍历比 target 更新的记录 (位于链表前方)
+				// 遍历比 target 更新的记录 (位于链表前方)，只做坐标集合查找
 				for (HistoryRecord newer : list) {
 					if (newer == target) break;
-					for (BlockChange nbc : newer.changes) {
-						if (nbc.x == bc.x && nbc.y == bc.y && nbc.z == bc.z) {
-							if (!conflicts.contains(newer)) conflicts.add(newer);
-						}
+					if (newer.containsPosition(bc.x, bc.y, bc.z) && !conflicts.contains(newer)) {
+						conflicts.add(newer);
 					}
 				}
 			}
@@ -174,8 +201,16 @@ public class MercurialHistory {
 	private static void revertRecord(EntityPlayerMP player, World world, HistoryRecord record) {
 		double emcToRefund = 0;
 		int blocksRestored = 0;
+		int blocksSkipped = 0;
 
 		for (BlockChange bc : record.changes) {
+			// 逐块校验：只有当前方块仍然是我们放下的那一个才允许回滚，
+			// 否则跳过，既不写方块也不退款，避免覆盖他人的改动和刷 EMC
+			if (world.getBlock(bc.x, bc.y, bc.z) != bc.newBlock || world.getBlockMetadata(bc.x, bc.y, bc.z) != bc.newMeta) {
+				blocksSkipped++;
+				continue;
+			}
+
 			world.setBlock(bc.x, bc.y, bc.z, bc.oldBlock, bc.oldMeta, 2);
 
 			// 精确回溯 NBT (如果原来是机器/箱子)
@@ -200,5 +235,7 @@ public class MercurialHistory {
 			Transmutation.setEmc(player, currentEmc + emcToRefund);
 			Transmutation.sync(player);
 		}
+
+		sendNotify(player, "恢复了 " + blocksRestored + " 个方块，跳过 " + blocksSkipped + " 个（已被外部改动）。");
 	}
 }

@@ -45,4 +45,36 @@ public class RayTraceMath {
 			eyePos.zCoord + lookVec.zCoord * t
 		);
 	}
+
+	/**
+	 * 视线前方固定距离处的取整坐标，射线求交失败时的兜底点
+	 * @return {x, y, z}
+	 */
+	public static int[] getForwardPoint(Vec3 eyePos, Vec3 lookVec, double distance) {
+		return new int[] {
+			(int) Math.round(eyePos.xCoord + lookVec.xCoord * distance),
+			(int) Math.round(eyePos.yCoord + lookVec.yCoord * distance),
+			(int) Math.round(eyePos.zCoord + lookVec.zCoord * distance)
+		};
+	}
+
+	/**
+	 * 按视线主轴选平面求交，命中返回交点取整坐标，未命中退回视线前方 5 格。
+	 * 主轴判定用严格大于，与改动前的内联实现保持一致（平局时落到 Z 平面）。
+	 * @return {x, y, z}
+	 */
+	public static int[] getPlaneTarget(Vec3 eyePos, Vec3 lookVec, int anchorX, int anchorY, int anchorZ) {
+		double absX = Math.abs(lookVec.xCoord); double absY = Math.abs(lookVec.yCoord); double absZ = Math.abs(lookVec.zCoord);
+		Plane plane; double planeVal;
+
+		if (absX > absY && absX > absZ) { plane = Plane.X; planeVal = anchorX; }
+		else if (absY > absX && absY > absZ) { plane = Plane.Y; planeVal = anchorY; }
+		else { plane = Plane.Z; planeVal = anchorZ; }
+
+		Vec3 hit = getIntersection(eyePos, lookVec, plane, planeVal);
+		if (hit != null) {
+			return new int[] { (int) Math.round(hit.xCoord), (int) Math.round(hit.yCoord), (int) Math.round(hit.zCoord) };
+		}
+		return getForwardPoint(eyePos, lookVec, 5);
+	}
 }

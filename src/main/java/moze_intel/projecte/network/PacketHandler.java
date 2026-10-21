@@ -19,6 +19,7 @@ import moze_intel.projecte.network.packets.HistorySyncPKT;
 import moze_intel.projecte.network.packets.KeyPressPKT;
 import moze_intel.projecte.network.packets.KnowledgeClearPKT;
 import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
+import moze_intel.projecte.network.packets.MercurialNotifyPKT;
 import moze_intel.projecte.network.packets.MercurialShapePKT;
 import moze_intel.projecte.network.packets.MercurialTransformPKT;
 import moze_intel.projecte.network.packets.MercurialUndoPKT;
@@ -73,6 +74,7 @@ public final class PacketHandler
 		HANDLER.registerMessage(HistoryRequestPKT.class, HistoryRequestPKT.class, 22, Side.SERVER);
 		HANDLER.registerMessage(HistorySyncPKT.class, HistorySyncPKT.class, 23, Side.CLIENT);
 		HANDLER.registerMessage(MercurialTransformPKT.class, MercurialTransformPKT.class, 24, Side.SERVER);
+		HANDLER.registerMessage(MercurialNotifyPKT.class, MercurialNotifyPKT.class, 25, Side.CLIENT);
 	}
 
 	public static Packet getMCPacket(IMessage message)

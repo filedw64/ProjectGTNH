@@ -6,6 +6,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
 import moze_intel.projecte.utils.BuildShape;
 import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.utils.PELogger;
 import moze_intel.projecte.utils.RayTraceMath;
 import moze_intel.projecte.utils.mercurial.TransformMatrix;
 import net.minecraft.block.Block;
@@ -27,14 +28,27 @@ import org.lwjgl.opengl.GL11;
 @SideOnly(Side.CLIENT)
 public class MercurialEyeRenderer {
 
+	// setBlockBoundsBasedOnState 失败的累计次数，用于日志节流
+	private static int blockBoundsFailures = 0;
+	private final java.util.List<AxisAlignedBB> previewBoxes = new java.util.ArrayList<>();
+	private String previewKey;
+	private World previewWorld;
+
 	@SubscribeEvent
 	public void onWorldRenderLast(RenderWorldLastEvent event) {
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityPlayer player = mc.thePlayer;
+		if (player == null || player.worldObj == null) {
+			previewBoxes.clear(); previewKey = null; previewWorld = null;
+			return;
+		}
 		World world = player.worldObj;
 		ItemStack held = player.getHeldItem();
 
-		if (held == null || !(held.getItem() instanceof MercurialEye)) return;
+		if (held == null || !(held.getItem() instanceof MercurialEye)) {
+			previewBoxes.clear(); previewKey = null; previewWorld = null;
+			return;
+		}
 		NBTTagCompound nbt = held.getTagCompound();
 		if (nbt == null) return;
 
@@ -42,7 +56,9 @@ public class MercurialEyeRenderer {
 		double py = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.partialTicks;
 		double pz = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * event.partialTicks;
 
+		GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_LINE_BIT | GL11.GL_CURRENT_BIT);
 		GL11.glPushMatrix();
+		try {
 		GL11.glEnable(GL11.GL_BLEND);
 		OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -84,7 +100,7 @@ public class MercurialEyeRenderer {
 					else GL11.glColor4f(0.8F, 0.2F, 1.0F, 0.6F);
 
 					tess.startDrawing(GL11.GL_LINES);
-					for (int step = 0; step < matrix.stackCount; step++) {
+					for (int step = 0; step < Math.min(64, matrix.stackCount); step++) {
 						int offsetX = matrix.stackAxis.offsetX * rotSizeX * step;
 						int offsetY = matrix.stackAxis.offsetY * rotSizeY * step;
 						int offsetZ = matrix.stackAxis.offsetZ * rotSizeZ * step;
@@ -127,14 +143,6 @@ public class MercurialEyeRenderer {
 		// 恢复原版的 Normal / Transmutation 模式渲染
 		else {
 			if (!nbt.hasKey("AnchorX")) {
-				// 原版代码中，如果连第一个锚点都没点，什么都不画
-				// (清理残留的 OpenGL 状态)
-				tess.setTranslation(0, 0, 0);
-				GL11.glDepthMask(true);
-				GL11.glEnable(GL11.GL_DEPTH_TEST);
-				GL11.glEnable(GL11.GL_TEXTURE_2D);
-				GL11.glDisable(GL11.GL_BLEND);
-				GL11.glPopMatrix();
 				return;
 			}
 
@@ -145,40 +153,16 @@ public class MercurialEyeRenderer {
 			if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
 				endX = mop.blockX; endY = mop.blockY; endZ = mop.blockZ;
 			} else {
+				// 与服务端共用同一套隔空选点（含未命中时退回前方 5 格）
 				Vec3 eyePos = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
 				Vec3 lookVec = player.getLookVec();
-				int anchorX = nbt.getInteger("AnchorX");
-				int anchorY = nbt.getInteger("AnchorY");
-				int anchorZ = nbt.getInteger("AnchorZ");
-				double absX = Math.abs(lookVec.xCoord); double absY = Math.abs(lookVec.yCoord); double absZ = Math.abs(lookVec.zCoord);
-				RayTraceMath.Plane plane; double planeVal;
-
-				if (absX > absY && absX > absZ) { plane = RayTraceMath.Plane.X; planeVal = anchorX; }
-				else if (absY > absX && absY > absZ) { plane = RayTraceMath.Plane.Y; planeVal = anchorY; }
-				else { plane = RayTraceMath.Plane.Z; planeVal = anchorZ; }
-
-				Vec3 hit = RayTraceMath.getIntersection(eyePos, lookVec, plane, planeVal);
-				if (hit != null) {
-					endX = (int) Math.round(hit.xCoord);
-					endY = (int) Math.round(hit.yCoord);
-					endZ = (int) Math.round(hit.zCoord);
-				} else {
-					endX = (int) Math.round(eyePos.xCoord + lookVec.xCoord * 5);
-					endY = (int) Math.round(eyePos.yCoord + lookVec.yCoord * 5);
-					endZ = (int) Math.round(eyePos.zCoord + lookVec.zCoord * 5);
-				}
+				int[] target = RayTraceMath.getPlaneTarget(eyePos, lookVec, nbt.getInteger("AnchorX"), nbt.getInteger("AnchorY"), nbt.getInteger("AnchorZ"));
+				endX = target[0]; endY = target[1]; endZ = target[2];
 			}
 
 			BuildShape shape = eyeItem.getBuildShape(held);
 			ItemStack targetItem = nbt.hasKey("TargetItem") ? ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("TargetItem")) : null;
-			if (targetItem == null) {
-				// 清理并退出
-				tess.setTranslation(0, 0, 0);
-				GL11.glDepthMask(true);
-				GL11.glEnable(GL11.GL_DEPTH_TEST);
-				GL11.glEnable(GL11.GL_TEXTURE_2D);
-				GL11.glDisable(GL11.GL_BLEND);
-				GL11.glPopMatrix();
+			if (targetItem == null || !(targetItem.getItem() instanceof net.minecraft.item.ItemBlock)) {
 				return;
 			}
 
@@ -193,7 +177,7 @@ public class MercurialEyeRenderer {
 					int midX = nbt.getInteger("MidX"); int midZ = nbt.getInteger("MidZ");
 					startX = Math.min(startX, midX); startZ = Math.min(startZ, midZ);
 					endX = Math.max(nbt.getInteger("AnchorX"), midX); endZ = Math.max(nbt.getInteger("AnchorZ"), midZ);
-					startY = nbt.getInteger("AnchorY"); endY = mop != null ? mop.blockY : endY;
+					startY = nbt.getInteger("AnchorY");
 				}
 			}
 
@@ -201,41 +185,36 @@ public class MercurialEyeRenderer {
 			int minY = Math.min(startY, endY); int maxY = Math.max(startY, endY);
 			int minZ = Math.min(startZ, endZ); int maxZ = Math.max(startZ, endZ);
 
-			if ((maxX - minX) * (maxY - minY) * (maxZ - minZ) <= 8192) {
+			// 用 long 计算方块个数，避免远距离锚点 int 溢出成负数后进入渲染循环；与服务端口径一致（含两端）
+			long sizeX = (long) maxX - minX + 1;
+			long sizeY = (long) maxY - minY + 1;
+			long sizeZ = (long) maxZ - minZ + 1;
+			if (sizeX <= 8192 && sizeY <= 8192 && sizeZ <= 8192 && sizeX * sizeY * sizeZ <= 8192L) {
 				if (mode == MercurialEye.NORMAL_MODE) GL11.glColor4f(0.2F, 0.8F, 1.0F, 0.6F);
 				else GL11.glColor4f(1.0F, 0.2F, 0.2F, 0.6F);
 
-				tess.startDrawing(GL11.GL_LINES);
-
-				if (shape == BuildShape.LINE) {
-					int dist = (int) Math.ceil(Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2) + Math.pow(endZ - startZ, 2)));
-					for (int i = 0; i <= dist; i++) {
-						double t = dist == 0 ? 0 : (double) i / dist;
-						int x = (int) Math.round(startX + (endX - startX) * t);
-						int y = (int) Math.round(startY + (endY - startY) * t);
-						int z = (int) Math.round(startZ + (endZ - startZ) * t);
-						renderBlockOutline(world, x, y, z, newBlock, newMeta, mode, tess);
-					}
-				} else {
-					for (int x = minX; x <= maxX; x++) {
-						for (int y = minY; y <= maxY; y++) {
-							for (int z = minZ; z <= maxZ; z++) {
-								if (!shape.isBlockInShape(x, y, z, startX, startY, startZ, endX, endY, endZ)) continue;
-								renderBlockOutline(world, x, y, z, newBlock, newMeta, mode, tess);
-							}
-						}
-					}
+				String key = world.getTotalWorldTime() + ":" + startX + ":" + startY + ":" + startZ
+					+ ":" + endX + ":" + endY + ":" + endZ + ":" + shape.ordinal() + ":" + mode
+					+ ":" + Block.getIdFromBlock(newBlock) + ":" + newMeta;
+				if (previewWorld != world || !key.equals(previewKey)) {
+					previewKey = null;
+					previewBoxes.clear();
+					shape.forEachBlock(startX, startY, startZ, endX, endY, endZ,
+						(x, y, z) -> renderBlockOutline(world, x, y, z, newBlock, newMeta, mode));
+					previewWorld = world;
+					previewKey = key;
 				}
+				tess.startDrawing(GL11.GL_LINES);
+				for (AxisAlignedBB box : previewBoxes) drawWireframe(tess, box);
 				tess.draw();
 			}
 		}
 
-		tess.setTranslation(0, 0, 0);
-		GL11.glDepthMask(true);
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPopMatrix();
+		} finally {
+			Tessellator.instance.setTranslation(0, 0, 0);
+			GL11.glPopMatrix();
+			GL11.glPopAttrib();
+		}
 	}
 
 	private void drawWireframe(Tessellator tess, AxisAlignedBB bb) {
@@ -255,7 +234,8 @@ public class MercurialEyeRenderer {
 		tess.addVertex(bb.minX, bb.minY, bb.maxZ); tess.addVertex(bb.minX, bb.maxY, bb.maxZ);
 	}
 
-	private void renderBlockOutline(World world, int x, int y, int z, Block newBlock, int newMeta, int mode, Tessellator tess) {
+	private void renderBlockOutline(World world, int x, int y, int z, Block newBlock, int newMeta, int mode) {
+		if (!world.blockExists(x, y, z)) return;
 		Block oldBlock = world.getBlock(x, y, z);
 		int oldMeta = world.getBlockMetadata(x, y, z);
 		boolean willModify = false;
@@ -263,18 +243,35 @@ public class MercurialEyeRenderer {
 		if (mode == MercurialEye.NORMAL_MODE) {
 			if (oldBlock.isReplaceable(world, x, y, z)) willModify = true;
 		} else {
-			if (oldBlock != Blocks.air && oldBlock != newBlock && world.getTileEntity(x, y, z) == null) {
+			if (oldBlock != Blocks.air && (oldBlock != newBlock || oldMeta != newMeta) && world.getTileEntity(x, y, z) == null
+				&& net.minecraft.item.Item.getItemFromBlock(oldBlock) != null) {
 				ItemStack oldStack = new ItemStack(oldBlock, 1, oldMeta);
-				if (EMCHelper.doesItemHaveEmc(oldStack)) willModify = true;
+				// 与服务端转化模式一致：无 EMC 或硬度 < 0（不可破坏）的方块不会被转化
+				if (EMCHelper.doesItemHaveEmc(oldStack) && oldBlock.getBlockHardness(world, x, y, z) >= 0.0F) willModify = true;
 			}
 		}
 
 		if (willModify) {
-			try { newBlock.setBlockBoundsBasedOnState(world, x, y, z); } catch (Exception e) {}
+			double originalMinX = newBlock.getBlockBoundsMinX(), originalMinY = newBlock.getBlockBoundsMinY(), originalMinZ = newBlock.getBlockBoundsMinZ();
+			double originalMaxX = newBlock.getBlockBoundsMaxX(), originalMaxY = newBlock.getBlockBoundsMaxY(), originalMaxZ = newBlock.getBlockBoundsMaxZ();
+			try {
+			try {
+				newBlock.setBlockBoundsBasedOnState(world, x, y, z);
+			} catch (Exception e) {
+				// 节流：第 1 次以及之后每 200 次失败记录一条，避免逐帧刷屏
+				newBlock.setBlockBounds(0, 0, 0, 1, 1, 1);
+				blockBoundsFailures++;
+				if (blockBoundsFailures % 200 == 1)
+					PELogger.logDebug("Mercurial Eye 预览：%s 设置包围盒失败（%d, %d, %d），第 %d 次，%s: %s",
+						newBlock.getUnlocalizedName(), x, y, z, blockBoundsFailures, e.getClass().getName(), e.getMessage());
+			}
 			double bMinX = newBlock.getBlockBoundsMinX(); double bMinY = newBlock.getBlockBoundsMinY(); double bMinZ = newBlock.getBlockBoundsMinZ();
 			double bMaxX = newBlock.getBlockBoundsMaxX(); double bMaxY = newBlock.getBlockBoundsMaxY(); double bMaxZ = newBlock.getBlockBoundsMaxZ();
-			AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(x + bMinX, y + bMinY, z + bMinZ, x + bMaxX, y + bMaxY, z + bMaxZ);
-			drawWireframe(tess, bb);
+			previewBoxes.add(AxisAlignedBB.getBoundingBox(x + bMinX, y + bMinY, z + bMinZ, x + bMaxX, y + bMaxY, z + bMaxZ));
+			} finally {
+				newBlock.setBlockBounds((float) originalMinX, (float) originalMinY, (float) originalMinZ,
+					(float) originalMaxX, (float) originalMaxY, (float) originalMaxZ);
+			}
 		}
 	}
 }

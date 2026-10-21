@@ -27,6 +27,43 @@ public enum BuildShape {
 	public String getDisplayName() { return displayName; }
 	public int getRequiredClicks() { return requiredClicks; }
 
+	/** 形状遍历回调：服务端批量建造与客户端线框预览共用同一套迭代顺序 */
+	public interface BlockVisitor {
+		void visit(int x, int y, int z);
+	}
+
+	/**
+	 * 统一的形状遍历入口。服务端放置与客户端预览都必须走这里，避免两处迭代逻辑再次分叉。
+	 * 迭代顺序固定：LINE 用 Bresenham 式步进（i = 0..dist），其余形状为 x -> y -> z 三层正序循环（含端点）。
+	 */
+	public void forEachBlock(int startX, int startY, int startZ, int endX, int endY, int endZ, BlockVisitor visitor) {
+		if (this == LINE) {
+			// 直线由自己的步进处理，不经过 isBlockInShape
+			int dist = (int) Math.ceil(Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2) + Math.pow(endZ - startZ, 2)));
+			for (int i = 0; i <= dist; i++) {
+				double t = dist == 0 ? 0 : (double) i / dist;
+				int px = (int) Math.round(startX + (endX - startX) * t);
+				int py = (int) Math.round(startY + (endY - startY) * t);
+				int pz = (int) Math.round(startZ + (endZ - startZ) * t);
+				visitor.visit(px, py, pz);
+			}
+			return;
+		}
+
+		int minX = Math.min(startX, endX); int maxX = Math.max(startX, endX);
+		int minY = Math.min(startY, endY); int maxY = Math.max(startY, endY);
+		int minZ = Math.min(startZ, endZ); int maxZ = Math.max(startZ, endZ);
+
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				for (int z = minZ; z <= maxZ; z++) {
+					if (!isBlockInShape(x, y, z, startX, startY, startZ, endX, endY, endZ)) continue;
+					visitor.visit(x, y, z);
+				}
+			}
+		}
+	}
+
 	public boolean isBlockInShape(int x, int y, int z, int startX, int startY, int startZ, int endX, int endY, int endZ) {
 		int minX = Math.min(startX, endX); int maxX = Math.max(startX, endX);
 		int minY = Math.min(startY, endY); int maxY = Math.max(startY, endY);
