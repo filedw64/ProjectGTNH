@@ -379,3 +379,76 @@ pe.debug.metainvalid.name=metadata参数设置无效
 
 pe.nei.worldtransmute=世界转化
 pe.nei.philo=贤者之石的转化
+
+tile.pe_matterPipe_item_dark.name=暗物质物品管道
+tile.pe_matterPipe_item_red.name=红物质物品管道
+tile.pe_matterPipe_fluid_dark.name=暗物质流体管道
+tile.pe_matterPipe_fluid_red.name=红物质流体管道
+tile.pe_matterPipe_emc_dark.name=暗物质 EMC 管道
+tile.pe_matterPipe_emc_red.name=红物质 EMC 管道
+tile.pe_matterPipe_item_gem.name=Gem 物品管道
+tile.pe_matterPipe_fluid_gem.name=Gem 流体管道
+tile.pe_matterPipe_emc_gem.name=Gem EMC 管道
+tile.pe_matterInterface_item.name=物品物质接口
+tile.pe_matterInterface_fluid.name=流体物质接口
+pe.matterinterface.title.item=物品物质接口
+pe.matterinterface.title.fluid=流体物质接口
+pe.matterinterface.priority=优先级
+pe.matterinterface.status.connected=已连接容器
+pe.matterinterface.status.disconnected=未连接容器
+pe.matterinterface.status.alloff=容器已就位：左键抽出 右键推入
+pe.matterinterface.network.connected=网络：已连接 %s 根管道
+pe.matterinterface.network.disconnected=网络：未连接
+pe.matterinterface.facing=朝向：%s
+pe.matterinterface.dir.down=下方
+pe.matterinterface.dir.up=上方
+pe.matterinterface.dir.north=北
+pe.matterinterface.dir.south=南
+pe.matterinterface.dir.west=西
+pe.matterinterface.dir.east=东
+pe.matterinterface.dir.none=无
+pe.matterinterface.side.up=上
+pe.matterinterface.side.north=北
+pe.matterinterface.side.east=东
+pe.matterinterface.side.down=下
+pe.matterinterface.side.south=南
+pe.matterinterface.side.west=西
+pe.matterinterface.role.up=上
+pe.matterinterface.role.down=下
+pe.matterinterface.role.left=左
+pe.matterinterface.role.right=右
+pe.matterinterface.role.front=前
+pe.matterinterface.role.back=后
+pe.matterinterface.picker.extract=抽：点=设置 再点=清除
+pe.matterinterface.picker.insert=推：点=设置 再点=清除
+pe.matterinterface.rate=速率
+pe.matterinterface.interval=周期
+pe.matterinterface.apply=应用
+pe.matterinterface.unit.second=/s
+pe.matterinterface.unit.tick=/tick
+pe.matterinterface.hover=面：%1$s(%2$s) 抽：%3$s 推：%4$s
+pe.matterinterface.filter.fluid=标记：%s
+# 两套过滤表（抽入 / 推出）：标签按钮文案 + 「正在编辑哪一套」小字
+pe.matterinterface.tab.input=抽入
+pe.matterinterface.tab.output=推出
+pe.matterinterface.editing=编辑：%s
+# 物质物流页与 16 色信道（羊毛色序：0 白 … 15 黑）
+pe.tab.logistics=物质物流
+pe.matter.pipe.named=%s（%s）
+pe.matter.color.0=白
+pe.matter.color.1=橙
+pe.matter.color.2=品红
+pe.matter.color.3=浅蓝
+pe.matter.color.4=黄
+pe.matter.color.5=黄绿
+pe.matter.color.6=粉
+pe.matter.color.7=灰
+pe.matter.color.8=浅灰
+pe.matter.color.9=青
+pe.matter.color.10=紫
+pe.matter.color.11=蓝
+pe.matter.color.12=棕
+pe.matter.color.13=绿
+pe.matter.color.14=红
+pe.matter.color.15=黑
+

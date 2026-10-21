@@ -7,12 +7,15 @@ import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.tiles.AEGUTile;
 import moze_intel.projecte.gameObjs.tiles.CondenserTile;
+import moze_intel.projecte.gameObjs.tiles.RMFurnaceTile;
+import moze_intel.projecte.gameObjs.tiles.transport.TileMatterPipe;
 import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.playerData.AlchBagProps;
 import moze_intel.projecte.playerData.AlchemicalBags;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.playerData.TransmutationOffline;
 import moze_intel.projecte.playerData.TransmutationProps;
+import moze_intel.projecte.transport.TransportType;
 import moze_intel.projecte.utils.ChatHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
@@ -171,7 +174,8 @@ public class PlayerEvents {
 		{
 			TileEntity targetTile = event.world.getTileEntity(event.x, event.y, event.z);
 
-			if (targetTile instanceof CondenserTile)
+			// 绑定目标：凝聚器、物质熔炉，或 EMC 类型的物质管道（AEGU 无线注入 EMC 管网）
+			if (isDirectAcceptor(targetTile) || isBindableEmcPipe(targetTile))
 			{
 				int aeguX = heldItem.stackTagCompound.getInteger("aegu_bind_x");
 				int aeguY = heldItem.stackTagCompound.getInteger("aegu_bind_y");
@@ -185,12 +189,17 @@ public class PlayerEvents {
 					return;
 				}
 
-				double distSq = Math.pow(aeguX - event.x, 2) + Math.pow(aeguY - event.y, 2) + Math.pow(aeguZ - event.z, 2);
-				if (distSq > 64.0)
+				// 距离校验按目标类型分流：EMC 管道允许无限远（靠 AEGUTile 里的距离衰减抵偿），
+				// 凝聚器与物质熔炉仍是原先的 8 格内直连限制（两者都是 IEmcAcceptor，不衰减）
+				if (!isBindableEmcPipe(targetTile))
 				{
-					player.addChatMessage(new ChatComponentTranslation("pe.aegu.toofar"));
-					event.setCanceled(true);
-					return;
+					double distSq = Math.pow(aeguX - event.x, 2) + Math.pow(aeguY - event.y, 2) + Math.pow(aeguZ - event.z, 2);
+					if (distSq > 64.0)
+					{
+						player.addChatMessage(new ChatComponentTranslation("pe.aegu.toofar"));
+						event.setCanceled(true);
+						return;
+					}
 				}
 
 				TileEntity tile = event.world.getTileEntity(aeguX, aeguY, aeguZ);
@@ -204,5 +213,24 @@ public class PlayerEvents {
 				event.setCanceled(true);
 			}
 		}
+	}
+
+	/**
+	 * 只能近距离直连的受体：凝聚器与物质熔炉。
+	 * DMFurnaceTile 继承 RMFurnaceTile，所以按父类型 RMFurnaceTile 判断即可同时覆盖 RM / DM 熔炉
+	 * （两者都实现了 IEmcAcceptor，注入路径不需要额外代码）。
+	 */
+	private static boolean isDirectAcceptor(TileEntity tile)
+	{
+		return tile instanceof CondenserTile || tile instanceof RMFurnaceTile;
+	}
+
+	/**
+	 * 只有 EMC 类型的物质管道能作为 AEGU 的无线注入目标。
+	 * 物品 / 流体管道根本不是 EMC 受体，绑上也收不到东西，所以静默忽略（不进绑定流程、不提示、不动语言文件）。
+	 */
+	private static boolean isBindableEmcPipe(TileEntity tile)
+	{
+		return tile instanceof TileMatterPipe && ((TileMatterPipe) tile).getTransportType() == TransportType.EMC;
 	}
 }

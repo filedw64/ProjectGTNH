@@ -19,6 +19,8 @@ import moze_intel.projecte.gameObjs.blocks.NovaCatalyst;
 import moze_intel.projecte.gameObjs.blocks.Pedestal;
 import moze_intel.projecte.gameObjs.blocks.Relay;
 import moze_intel.projecte.gameObjs.blocks.TransmutationStone;
+import moze_intel.projecte.gameObjs.blocks.transport.BlockMatterInterface;
+import moze_intel.projecte.gameObjs.blocks.transport.BlockMatterPipe;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeAlchemyBag;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeCovalenceRepair;
 import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessExpansionStar;
@@ -124,8 +126,13 @@ import moze_intel.projecte.gameObjs.tiles.RMFurnaceTile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK1Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK2Tile;
 import moze_intel.projecte.gameObjs.tiles.RelayMK3Tile;
+import moze_intel.projecte.gameObjs.tiles.transport.TileMatterInterfaceFluid;
+import moze_intel.projecte.gameObjs.tiles.transport.TileMatterInterfaceItem;
+import moze_intel.projecte.gameObjs.tiles.transport.TileMatterPipe;
+import moze_intel.projecte.transport.TransportType;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EnumArmorType;
+import moze_intel.projecte.utils.MatterColorHelper;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
@@ -134,6 +141,7 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.util.StatCollector;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.RecipeSorter;
 import net.minecraftforge.oredict.RecipeSorter.Category;
@@ -147,6 +155,19 @@ public class ObjHandler
 		@Override
 		public Item getTabIconItem() {
 			return ObjHandler.philosStone;
+		}
+	};
+	/** 物质物流页：9 种管道 + 2 种接口，每种 16 色都放这里 */
+	public static final CreativeTabs tabLogistics = new CreativeTabs("pe.tab.logistics") {
+		@Override
+		public Item getTabIconItem() {
+			return Item.getItemFromBlock(ObjHandler.matterPipeItemGem);
+		}
+
+		/** 标签文字直接用 pe.tab.logistics，不套 vanilla 的 itemGroup.<label> 前缀 */
+		@Override
+		public String getTranslatedTabLabel() {
+			return StatCollector.translateToLocal("pe.tab.logistics");
 		}
 	};
 	public static Block alchChest = new AlchemicalChest();
@@ -170,6 +191,17 @@ public class ObjHandler
 	public static Block novaCatalyst = new NovaCatalyst();
 	public static Block novaCataclysm = new NovaCataclysm();
 	public static Block aegu = new AEGU();
+	public static Block matterPipeItemDark = new BlockMatterPipe(TransportType.ITEM, 0);
+	public static Block matterPipeItemRed = new BlockMatterPipe(TransportType.ITEM, 1);
+	public static Block matterPipeFluidDark = new BlockMatterPipe(TransportType.FLUID, 0);
+	public static Block matterPipeFluidRed = new BlockMatterPipe(TransportType.FLUID, 1);
+	public static Block matterPipeEmcDark = new BlockMatterPipe(TransportType.EMC, 0);
+	public static Block matterPipeEmcRed = new BlockMatterPipe(TransportType.EMC, 1);
+	public static Block matterPipeItemGem = new BlockMatterPipe(TransportType.ITEM, 2);
+	public static Block matterPipeFluidGem = new BlockMatterPipe(TransportType.FLUID, 2);
+	public static Block matterPipeEmcGem = new BlockMatterPipe(TransportType.EMC, 2);
+	public static Block matterInterfaceItem = new BlockMatterInterface(TransportType.ITEM);
+	public static Block matterInterfaceFluid = new BlockMatterInterface(TransportType.FLUID);
 
 	public static Item philosStone = new PhilosophersStone();
 	public static Item alchBag = new AlchemicalBag();
@@ -289,6 +321,17 @@ public class ObjHandler
 		GameRegistry.registerBlock(relay, ItemRelayBlock.class, "relay_mk1");
 		GameRegistry.registerBlock(relayMK2, ItemRelayBlock.class, "relay_mk2");
 		GameRegistry.registerBlock(relayMK3, ItemRelayBlock.class, "relay_mk3");
+		GameRegistry.registerBlock(matterPipeItemDark, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_item_dark");
+		GameRegistry.registerBlock(matterPipeItemRed, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_item_red");
+		GameRegistry.registerBlock(matterPipeFluidDark, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_fluid_dark");
+		GameRegistry.registerBlock(matterPipeFluidRed, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_fluid_red");
+		GameRegistry.registerBlock(matterPipeEmcDark, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_emc_dark");
+		GameRegistry.registerBlock(matterPipeEmcRed, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_emc_red");
+		GameRegistry.registerBlock(matterPipeItemGem, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_item_gem");
+		GameRegistry.registerBlock(matterPipeFluidGem, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_fluid_gem");
+		GameRegistry.registerBlock(matterPipeEmcGem, BlockMatterPipe.ItemMatterPipe.class, "pe_matterPipe_emc_gem");
+		GameRegistry.registerBlock(matterInterfaceItem, BlockMatterInterface.ItemMatterInterface.class, "pe_matterInterface_item");
+		GameRegistry.registerBlock(matterInterfaceFluid, BlockMatterInterface.ItemMatterInterface.class, "pe_matterInterface_fluid");
 
 		//Items
 		GameRegistry.registerItem(philosStone, philosStone.getUnlocalizedName());
@@ -423,6 +466,9 @@ public class ObjHandler
 		GameRegistry.registerTileEntityWithAlternatives(RelayMK2Tile.class, "RelayMK2Tile", "AM Relay MK2 Tile");
 		GameRegistry.registerTileEntityWithAlternatives(RelayMK3Tile.class, "RelayMK3Tile", "AM Relay MK3 Tile");
 		GameRegistry.registerTileEntityWithAlternatives(DMPedestalTile.class, "DMPedestalTile", "DM Pedestal Tile");
+		GameRegistry.registerTileEntityWithAlternatives(TileMatterPipe.class, "TileMatterPipe", "Matter Pipe Tile");
+		GameRegistry.registerTileEntityWithAlternatives(TileMatterInterfaceItem.class, "TileMatterInterfaceItem", "Matter Interface Item Tile");
+		GameRegistry.registerTileEntityWithAlternatives(TileMatterInterfaceFluid.class, "TileMatterInterfaceFluid", "Matter Interface Fluid Tile");
 
 		//Entities
 		EntityRegistry.registerModEntity(EntityWaterProjectile.class, "WaterProjectile", 1, PECore.instance, 256, 10, true);
@@ -667,9 +713,63 @@ public class ObjHandler
 		if (ProjectEConfig.enableInfiniteSteak) // 无限牛排：转化桌外面一圈牛排
 			GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(infiniteSteak), "MMM", "MTM", "MMM", 'M', Items.cooked_beef, 'T', transmutationTablet));
 
+		// AEGU：与方块注册同一门控（enableAEGU 关闭时方块未注册，配方不能引用它）
+		// 4 下界之星 + 1 龙蛋 + 4 红物质块
+		if (ProjectEConfig.enableAEGU)
+			GameRegistry.addShapedRecipe(new ItemStack(aegu), "RNR", "NEN", "RNR",
+					'R', new ItemStack(matterBlock, 1, 1), 'N', Items.nether_star, 'E', Blocks.dragon_egg);
+
 		RecipeSorter.register("Alchemical Bag Recipes", RecipeAlchemyBag.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Covalence Repair Recipes", RecipeCovalenceRepair.class, Category.SHAPELESS, "before:minecraft:shaped");
 		RecipeSorter.register("Klein Star Recipes", RecipeShapelessHidden.class, Category.SHAPELESS, "before:minecraft:shaped");
+
+		// 物质管道：主材 + 类型标识物（箱/桶/红石）。同档三种管道的材料与形状必须互不相同，
+		// 否则三条配方撞成一条，NEI 里显示三份同样的配方而工作台只产出其中一种。
+		if (ProjectEConfig.enableMatterPipesRecipe)
+		{
+			ItemStack pipeDarkMatter = new ItemStack(matter, 1, 0);
+			ItemStack pipeRedMatter = new ItemStack(matter, 1, 1);
+			// Gem 档主材：Klein Star Ein（与 GemArmor 同源），吞吐 2^30/s
+			ItemStack pipeGemStar = new ItemStack(kleinStars, 1, 5);
+
+			// 物品管道：主材 箱 主材
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeItemDark, 8), "MCM", 'M', pipeDarkMatter, 'C', Blocks.chest);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeItemRed, 8), "MCM", 'M', pipeRedMatter, 'C', Blocks.chest);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeItemGem, 8), "MCM", 'M', pipeGemStar, 'C', Blocks.chest);
+
+			// 流体管道：主材 桶 主材
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeFluidDark, 8), "MBM", 'M', pipeDarkMatter, 'B', Items.bucket);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeFluidRed, 8), "MBM", 'M', pipeRedMatter, 'B', Items.bucket);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeFluidGem, 8), "MBM", 'M', pipeGemStar, 'B', Items.bucket);
+
+			// EMC 管道：主材 红石 主材
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeEmcDark, 8), "MRM", 'M', pipeDarkMatter, 'R', Items.redstone);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeEmcRed, 8), "MRM", 'M', pipeRedMatter, 'R', Items.redstone);
+			GameRegistry.addShapedRecipe(new ItemStack(matterPipeEmcGem, 8), "MRM", 'M', pipeGemStar, 'R', Items.redstone);
+
+			// 物质接口：暗物质 + 目标容器。竖排三格——横排 "MCM"/"MBM" 与暗物质物品/流体管道
+			// 逐格相同（同为暗物质+容器），会被优先注册的管道配方吃掉，故改为同材料的竖向形状。
+			GameRegistry.addShapedRecipe(new ItemStack(matterInterfaceItem), "M", "C", "M", 'M', pipeDarkMatter, 'C', Blocks.chest);
+			GameRegistry.addShapedRecipe(new ItemStack(matterInterfaceFluid), "M", "B", "M", 'M', pipeDarkMatter, 'B', Items.bucket);
+
+			// 颜色信道配方：基础方块(meta 0) + 染料 -> 同方块 meta=颜色，11 种方块 x 15 色 = 165 条。
+			// 玩家在世界里右键也能染色，这里额外注册一遍是为了让 CraftingMapper 按输出的 damage
+			// 推导出每个 meta 的 EMC —— 否则只有 meta 0 有 EMC，另外 15 色在 JEI / 转化桌里全是无价值物品。
+			// 颜色 0 不注册：meta 0 就是上面合成出来的默认白，没有从白到白的配方。
+			Block[] colorableBlocks = new Block[] {
+					matterPipeItemDark, matterPipeItemRed, matterPipeFluidDark, matterPipeFluidRed,
+					matterPipeEmcDark, matterPipeEmcRed, matterPipeItemGem, matterPipeFluidGem,
+					matterPipeEmcGem, matterInterfaceItem, matterInterfaceFluid};
+
+			for (Block colorableBlock : colorableBlocks)
+			{
+				for (int color = 1; color < MatterColorHelper.COLOR_COUNT; color++)
+				{
+					GameRegistry.addShapelessRecipe(new ItemStack(colorableBlock, 1, color),
+							new ItemStack(colorableBlock, 1, 0), MatterColorHelper.getDyeStack(color));
+				}
+			}
+		}
 
 		//Fuel Values
 		GameRegistry.registerFuelHandler(new FuelHandler());

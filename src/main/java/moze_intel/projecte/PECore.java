@@ -39,6 +39,8 @@ import moze_intel.projecte.network.commands.ProjectECMD;
 import moze_intel.projecte.playerData.Transmutation;
 import moze_intel.projecte.playerData.TransmutationOffline;
 import moze_intel.projecte.proxies.IProxy;
+import moze_intel.projecte.transport.MatterNetworkManager;
+import moze_intel.projecte.transport.TransportTickHandler;
 import moze_intel.projecte.utils.AchievementHandler;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.GuiHandler;
@@ -93,6 +95,10 @@ public class PECore
 		FMLBus.register(new TickEvents());
 		FMLBus.register(new ConnectionHandler());
 
+		TransportTickHandler transportTicks = new TransportTickHandler();
+		FMLBus.register(transportTicks);
+		MinecraftForge.EVENT_BUS.register(transportTicks);
+
 		proxy.registerClientOnlyEvents();
 
 		ObjHandler.register();
@@ -144,6 +150,9 @@ public class PECore
 	public void serverQuit(FMLServerStoppedEvent event) {
 		TileEntityHandler.clearAll();
 		PELogger.logDebug("Cleared tile entity maps.");
+
+		MatterNetworkManager.INSTANCE.clearAll();
+		PELogger.logDebug("Cleared matter pipe networks.");
 
 		Transmutation.clearCache();
 		PELogger.logDebug("Cleared cached tome knowledge.");

@@ -61,6 +61,11 @@ public final class ProjectEConfig {
 	public static boolean ignitionRingIgniteBlocks;
 	public static boolean zeroRingPlaceSnow;
 
+	// 物质物流
+	public static int pipeTickInterval;
+	public static boolean dynamicLogisticsInterval;
+	public static boolean enableMatterPipesRecipe;
+
 	// GTNH Integration Config
 	public static boolean questMode;
 
@@ -105,6 +110,11 @@ public final class ProjectEConfig {
 
 			ignitionRingIgniteBlocks = config.getBoolean("ignitionRingIgniteBlocks", "items", false, "If true, the Ignition Ring will passively ignite surrounding blocks.");
 			zeroRingPlaceSnow = config.getBoolean("zeroRingPlaceSnow", "items", false, "If true, the Zero Ring will passively freeze water and place snow around the player.");
+
+			// 物质物流
+			pipeTickInterval = config.getInt("pipeTickInterval", "logistics", 5, 1, 100, "Ticks between two delivery operations of a matter pipe network. Only used when dynamicLogisticsInterval is false.");
+			dynamicLogisticsInterval = config.getBoolean("dynamicLogisticsInterval", "logistics", true, "When true, matter pipe networks use LogisticsScheduler.getInterval() with hysteresis: 1 tick while MSPT < 20 (the only way back to every tick), 5 ticks for 35 < MSPT < 50, 20 ticks (once per second) while MSPT >= 50 (TPS below 20), and 20..35 keeps the current step. Ignores every kind of time acceleration. When false, pipeTickInterval is used instead (old reproducible behaviour).");
+			enableMatterPipesRecipe = config.getBoolean("enableMatterPipesRecipe", "logistics", true, "Enable crafting recipes for matter pipes.");
 
 			craftableTome = config.getBoolean("craftableTome", "difficulty", false, "The Tome of Knowledge can be crafted.");
 			altCraftingMat = config.getBoolean("altCraftingMat", "difficulty", false, "If true some ProjectE items require a nether star instead of a diamond.");
