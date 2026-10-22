@@ -1,6 +1,7 @@
 package moze_intel.projecte.gameObjs.entity;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -18,6 +19,7 @@ import java.util.List;
 public class EntityPEArrow extends EntityArrow {
 	private static final int DW_TARGET_ID = 31;
 	private static final int NO_TARGET = -1;
+	private static final int MAX_LIFE_TICKS = 1200;
 
 	private boolean ignoreGravity = false;
 	private boolean spawnLightning = false;
@@ -26,25 +28,24 @@ public class EntityPEArrow extends EntityArrow {
 	private int homingTier = 0;
 	private int newTargetCooldown = 0;
 
-	// 用于反射获取原版箭矢的飞行时间，以实现“穿透射出者”
+	// 反射获取原版箭矢的飞行时间（用于穿透射出者）；取不到就静默跳过
 	private static Field ticksInAirField;
 
 	static {
 		try {
-			// field_70257_an 是 1.7.10 中 ticksInAir 的混淆名
 			ticksInAirField = ReflectionHelper.findField(EntityArrow.class, "ticksInAir", "field_70257_an");
 			ticksInAirField.setAccessible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		} catch (Exception ignored) {}
 	}
 
 	public EntityPEArrow(World world) {
 		super(world);
+		this.canBePickedUp = 0;
 	}
 
 	public EntityPEArrow(World world, EntityLivingBase shooter, float velocity) {
 		super(world, shooter, velocity);
+		this.canBePickedUp = 0;
 	}
 
 	@Override
@@ -59,7 +60,18 @@ public class EntityPEArrow extends EntityArrow {
 
 	@Override
 	public void onUpdate() {
-		// 永远将 ticksInAir 设为 0
+		if (worldObj == null) {
+			return;
+		}
+
+		// ticksInAir 被常驻清零，原版靠它计数的飞行寿命判定永不触发；这里补 1200 tick（60 秒）硬上限，防止实体泄漏
+		if (this.ticksExisted > MAX_LIFE_TICKS) {
+			if (!this.worldObj.isRemote) {
+				this.setDead();
+			}
+			return;
+		}
+
 		if (ticksInAirField != null) {
 			try {
 				ticksInAirField.setInt(this, 0);
@@ -70,68 +82,75 @@ public class EntityPEArrow extends EntityArrow {
 
 		boolean inGround = WorldHelper.isArrowInGround(this);
 
-		// 1. 处理无视重力
+		// 1. 无视重力
 		if (this.ignoreGravity && !inGround && this.ticksExisted > 1) {
 			this.motionY += 0.05D;
 		}
 
-		// 2. 索敌与追踪逻辑
+		// 2. 索敌与追踪（homingTier <= 0 时整段不执行）
 		if (this.homingTier > 0 && !inGround) {
 			if (!worldObj.isRemote && this.ticksExisted > 3) {
-				if (hasTarget() && !getTarget().isEntityAlive()) {
+				EntityLiving current = getTarget();
+				if (current != null && !current.isEntityAlive()) {
 					dataWatcher.updateObject(DW_TARGET_ID, NO_TARGET);
+					current = null;
 				}
-				if (!hasTarget() && newTargetCooldown <= 0) {
+				if (current == null && newTargetCooldown <= 0) {
 					findNewTarget();
 				} else {
 					newTargetCooldown--;
 				}
 			}
 
-			if (this.ticksExisted > 3 && hasTarget()) {
-				// 绘制追踪轨迹粒子
-				this.worldObj.spawnParticle("flame", this.posX + this.motionX / 4.0D, this.posY + this.motionY / 4.0D, this.posZ + this.motionZ / 4.0D, -this.motionX / 2, -this.motionY / 2 + 0.2D, -this.motionZ / 2);
-
-				Entity target = getTarget();
+			if (this.ticksExisted > 3) {
+				EntityLiving target = getTarget();
 				if (target != null) {
-					Vector3d arrowLoc = new Vector3d(posX, posY, posZ);
-					Vector3d targetLoc = new Vector3d(target.posX, target.boundingBox.minY + target.height / 2.0D, target.posZ);
+					// 追踪轨迹粒子：隔 tick 生成，降低客户端开销
+					if (this.ticksExisted % 2 == 0) {
+						this.worldObj.spawnParticle("flame", this.posX + this.motionX / 4.0D, this.posY + this.motionY / 4.0D, this.posZ + this.motionZ / 4.0D, -this.motionX / 2, -this.motionY / 2 + 0.2D, -this.motionZ / 2);
+					}
 
-					Vector3d lookVec = new Vector3d(targetLoc);
-					lookVec.sub(arrowLoc);
-					Vector3d arrowMotion = new Vector3d(this.motionX, this.motionY, this.motionZ);
+					// setThrowableHeading 的标量参数是速度，会把箭速重设；这里沿用当前速率，避免追踪时箭速骤降
+					double speed = Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
+					if (speed > 0.0D) {
+						Vector3d arrowLoc = new Vector3d(posX, posY, posZ);
+						Vector3d targetLoc = new Vector3d(target.posX, target.boundingBox.minY + target.height / 2.0D, target.posZ);
 
-					double theta = wrap180Radian(arrowMotion.angle(lookVec));
+						Vector3d lookVec = new Vector3d(targetLoc);
+						lookVec.sub(arrowLoc);
+						Vector3d arrowMotion = new Vector3d(this.motionX, this.motionY, this.motionZ);
 
-					// 根据 Tier 限制最大转角
-					double maxAngle = (Math.PI / 8.0D) * this.homingTier;
-					if (this.homingTier >= 3) maxAngle = Math.PI;
+						double theta = wrap180Radian(arrowMotion.angle(lookVec));
 
-					theta = clampAbs(theta, maxAngle);
+						// 根据 Tier 限制最大转角
+						double maxAngle = (Math.PI / 8.0D) * this.homingTier;
+						if (this.homingTier >= 3) maxAngle = Math.PI;
 
-					Vector3d crossProduct = new Vector3d();
-					crossProduct.cross(arrowMotion, lookVec);
-					crossProduct.normalize();
+						theta = clampAbs(theta, maxAngle);
 
-					Matrix4d transform = new Matrix4d();
-					transform.set(new AxisAngle4d(crossProduct, theta));
+						Vector3d crossProduct = new Vector3d();
+						crossProduct.cross(arrowMotion, lookVec);
+						crossProduct.normalize();
 
-					Vector3d adjustedLookVec = new Vector3d(arrowMotion);
-					transform.transform(arrowMotion, adjustedLookVec);
+						Matrix4d transform = new Matrix4d();
+						transform.set(new AxisAngle4d(crossProduct, theta));
 
-					setThrowableHeading(adjustedLookVec.x, adjustedLookVec.y, adjustedLookVec.z, 1.0F, 0);
+						Vector3d adjustedLookVec = new Vector3d(arrowMotion);
+						transform.transform(arrowMotion, adjustedLookVec);
+
+						setThrowableHeading(adjustedLookVec.x, adjustedLookVec.y, adjustedLookVec.z, (float) speed, 0);
+					}
 				}
 			}
 		}
 
-		// 3. 落地/命中实体 直接消失 (包含落雷逻辑)
+		// 3. 落地或命中实体（命中后速度归零）算一次命中：落雷一次并消失
 		if (inGround || (this.ticksExisted > 3 && this.motionX == 0 && this.motionY == 0 && this.motionZ == 0)) {
-			if (!worldObj.isRemote && this.spawnLightning && !this.hasHit) {
-				this.hasHit = true;
-				EntityLightningBolt lightning = new EntityLightningBolt(worldObj, this.posX, this.posY, this.posZ);
-				worldObj.spawnEntityInWorld(lightning);
-			}
 			if (!worldObj.isRemote) {
+				if (this.spawnLightning && ProjectEConfig.bowLightningEnabled && !this.hasHit) {
+					this.hasHit = true;
+					worldObj.spawnEntityInWorld(new EntityLightningBolt(worldObj, this.posX, this.posY, this.posZ));
+				}
 				this.setDead();
 			}
 		}
@@ -139,25 +158,35 @@ public class EntityPEArrow extends EntityArrow {
 
 	private void findNewTarget() {
 		double radius = 16.0D * this.homingTier;
-		List<EntityLiving> candidates = worldObj.getEntitiesWithinAABB(EntityLiving.class, this.boundingBox.expand(radius, radius, radius));
+		List<Entity> nearby = worldObj.getEntitiesWithinAABB(Entity.class, this.boundingBox.expand(radius, radius, radius));
 
-		candidates.sort((o1, o2) -> {
-			double dist = EntityPEArrow.this.getDistanceSqToEntity(o1) - EntityPEArrow.this.getDistanceSqToEntity(o2);
-			return Double.compare(dist, 0.0);
-		});
+		EntityLiving nearest = null;
+		double nearestDistSq = Double.MAX_VALUE;
 
-		if (!candidates.isEmpty()) {
-			dataWatcher.updateObject(DW_TARGET_ID, candidates.get(0).getEntityId());
+		for (Entity candidate : nearby) {
+			if (!(candidate instanceof EntityLiving) || candidate instanceof EntityPEArrow) {
+				continue;
+			}
+			if (candidate == this.shootingEntity || !candidate.isEntityAlive()) {
+				continue;
+			}
+
+			double distSq = this.getDistanceSqToEntity(candidate);
+			if (distSq < nearestDistSq) {
+				nearestDistSq = distSq;
+				nearest = (EntityLiving) candidate;
+			}
+		}
+
+		if (nearest != null) {
+			dataWatcher.updateObject(DW_TARGET_ID, nearest.getEntityId());
 		}
 		newTargetCooldown = 5;
 	}
 
 	private EntityLiving getTarget() {
-		return (EntityLiving) worldObj.getEntityByID(dataWatcher.getWatchableObjectInt(DW_TARGET_ID));
-	}
-
-	private boolean hasTarget() {
-		return getTarget() != null;
+		Entity target = worldObj.getEntityByID(dataWatcher.getWatchableObjectInt(DW_TARGET_ID));
+		return target instanceof EntityLiving ? (EntityLiving) target : null;
 	}
 
 	private double wrap180Radian(double radian) {
