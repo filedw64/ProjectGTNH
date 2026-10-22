@@ -578,9 +578,8 @@ public class ObjHandler
 		GameRegistry.addShapedRecipe(new ItemStack(fuelBlock, 1, 1), "FFF", "FFF", "FFF", 'F', new ItemStack(fuels, 1, 1));
 		GameRegistry.addShapedRecipe(new ItemStack(fuelBlock, 1, 2), "FFF", "FFF", "FFF", 'F', new ItemStack(fuels, 1, 2));
 
-		//Tome
-		if (ProjectEConfig.craftableTome)
-			GameRegistry.addShapedRecipe(new ItemStack(tome), "HML", "KBK", "LMH", 'L', new ItemStack(covalence, 1, 0), 'M', new ItemStack(covalence, 1, 1), 'H', new ItemStack(covalence, 1, 2), 'B', Items.book, 'K', new ItemStack(kleinStars, 1, 5));
+		// The Tome's hidden random recipe is registered at load-complete,
+		// after optional mods have finished registering their items and ore names.
 
 		//Manual
 		//GameRegistry.addShapelessRecipe(new ItemStack(manual, 1, 0), Items.book, new ItemStack(covalence, 1, 0));

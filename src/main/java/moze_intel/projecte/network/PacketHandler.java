@@ -34,6 +34,7 @@ import moze_intel.projecte.network.packets.SwingItemPKT;
 import moze_intel.projecte.network.packets.SyncBagDataPKT;
 import moze_intel.projecte.network.packets.SyncEmcPKT;
 import moze_intel.projecte.network.packets.SyncPedestalPKT;
+import moze_intel.projecte.network.packets.TomeRecipeSyncPKT;
 import moze_intel.projecte.network.packets.UpdateGemModePKT;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -76,6 +77,7 @@ public final class PacketHandler
 		HANDLER.registerMessage(HistorySyncPKT.class, HistorySyncPKT.class, 23, Side.CLIENT);
 		HANDLER.registerMessage(MercurialTransformPKT.class, MercurialTransformPKT.class, 24, Side.SERVER);
 		HANDLER.registerMessage(MercurialNotifyPKT.class, MercurialNotifyPKT.class, 25, Side.CLIENT);
+		HANDLER.registerMessage(TomeRecipeSyncPKT.class, TomeRecipeSyncPKT.class, 27, Side.CLIENT);
 		HANDLER.registerMessage(ArcaneTransmutationEmcPKT.class, ArcaneTransmutationEmcPKT.class, 26, Side.CLIENT);
 	}
 
