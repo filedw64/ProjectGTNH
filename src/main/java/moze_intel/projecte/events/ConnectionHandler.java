@@ -7,7 +7,9 @@ import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.handlers.PlayerTimers;
 import moze_intel.projecte.network.PacketHandler;
 import moze_intel.projecte.network.packets.CheckUpdatePKT;
+import moze_intel.projecte.utils.MercurialHistory;
 import moze_intel.projecte.utils.PELogger;
+import moze_intel.projecte.utils.mercurial.MercurialClipboard;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 
@@ -31,7 +33,11 @@ public class ConnectionHandler {
 		PELogger.logInfo(String.format("Removing %s from scheduled timers: Player disconnected.", player.getCommandSenderName()));
 
 		// 增加类型校验，防止假玩家导致的潜在强转崩溃
-		if (player instanceof EntityPlayerMP playerMP)
+		if (player instanceof EntityPlayerMP playerMP) {
 			PlayerChecks.removePlayerFromLists(playerMP);
+			// 清理该玩家留在服务端静态 Map 里的历史记录与剪贴板，防止内存泄漏
+			MercurialHistory.clearPlayer(playerMP.getUniqueID());
+			MercurialClipboard.clearClipboard(playerMP.getUniqueID());
+		}
 	}
 }

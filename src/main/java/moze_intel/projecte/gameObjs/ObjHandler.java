@@ -5,6 +5,7 @@ import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.blocks.AEGU;
 import moze_intel.projecte.gameObjs.blocks.AlchemicalChest;
 import moze_intel.projecte.gameObjs.blocks.Collector;
 import moze_intel.projecte.gameObjs.blocks.Condenser;
@@ -55,6 +56,7 @@ import moze_intel.projecte.gameObjs.items.MercurialEye;
 import moze_intel.projecte.gameObjs.items.PEManual;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.RepairTalisman;
+import moze_intel.projecte.gameObjs.items.RodOfHarmony;
 import moze_intel.projecte.gameObjs.items.TimeWatch;
 import moze_intel.projecte.gameObjs.items.Tome;
 import moze_intel.projecte.gameObjs.items.TransmutationTablet;
@@ -171,6 +173,7 @@ public class ObjHandler
 	public static Block relayMK3 = new Relay(3);
 	public static Block novaCatalyst = new NovaCatalyst();
 	public static Block novaCataclysm = new NovaCataclysm();
+	public static Block aegu = new AEGU();
 
 	public static Item philosStone = new PhilosophersStone();
 	public static Item alchBag = new AlchemicalBag();
@@ -260,7 +263,8 @@ public class ObjHandler
 	public static Item manual = new PEManual();
 
 	public static Item arcaneTablet = new ArcaneTransmutationTablet();
-	public static Item builderswand = new BuildersWand();
+	public static Item buildersWand = new BuildersWand();
+	public static Item rodOfHarmony = new RodOfHarmony();
 
 	public static Item dmBow = new DarkBow();
 	public static Item rmBow = new RedBow();
@@ -275,6 +279,9 @@ public class ObjHandler
 		GameRegistry.registerBlock(dmPedestal, "dm_pedestal");
 		GameRegistry.registerBlock(novaCatalyst, "nova_catalyst");
 		GameRegistry.registerBlock(novaCataclysm, "nova_cataclysm");
+
+		if (ProjectEConfig.enableAEGU)
+			GameRegistry.registerBlock(aegu, "aegu");
 
 		// Blocks with ItemBlock
 		GameRegistry.registerBlock(alchChest, ItemAlchemyChestBlock.class, "alchemical_chest");
@@ -409,7 +416,10 @@ public class ObjHandler
 			GameRegistry.registerItem(infiniteSteak, infiniteSteak.getUnlocalizedName());
 
 		if (ProjectEConfig.enableBuildersWand)
-			GameRegistry.registerItem(builderswand, builderswand.getUnlocalizedName());
+			GameRegistry.registerItem(buildersWand, buildersWand.getUnlocalizedName());
+
+		if (ProjectEConfig.enableRodOfHarmony)
+			GameRegistry.registerItem(rodOfHarmony, rodOfHarmony.getUnlocalizedName());
 
 		//Tile Entities
 		GameRegistry.registerTileEntityWithAlternatives(AlchChestTile.class, "AlchChestTile", "Alchemical Chest Tile");
@@ -663,7 +673,7 @@ public class ObjHandler
 			GameRegistry.addShapelessRecipe(new ItemStack(arcaneTablet), transmutationTablet, Blocks.crafting_table);
 
 		if (ProjectEConfig.enableBuildersWand)
-			GameRegistry.addShapedRecipe(new ItemStack(builderswand), "XXP", "XSX", "OXX", 'P', philosStone, 'S', new ItemStack(kleinStars, 1, 5), 'O', kleinStars);
+			GameRegistry.addShapedRecipe(new ItemStack(buildersWand), "XXP", "XSX", "OXX", 'P', philosStone, 'S', new ItemStack(kleinStars, 1, 5), 'O', kleinStars);
 
 		if (ProjectEConfig.enableInfiniteFuel) // 无限燃料：转化桌外面一圈木炭/煤炭
 			GameRegistry.addShapedRecipe(new ItemStack(infiniteFuel), "CCC", "CTC", "CCC", 'C', new ItemStack(Items.coal, 1, OreDictionary.WILDCARD_VALUE), 'T', transmutationTablet);

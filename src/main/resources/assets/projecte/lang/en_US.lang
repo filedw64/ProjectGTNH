@@ -24,6 +24,7 @@ item.pe_body_stone.name=Body Stone
 item.pe_soul_stone.name=Soul Stone
 item.pe_mind_stone.name=Mind Stone
 item.pe_life_stone.name=Life Stone
+pe.stone.always_edible=Eating is not limited by hunger while carried
 item.pe_evertide_amulet.name=Evertide Amulet
 item.pe_volcanite_amulet.name=Volcanite Amulet
 item.pe_swrg.name=Swiftwolf's Rending Gale
@@ -74,6 +75,7 @@ item.pe_void_ring.name=Void Ring
 item.pe_zero_ring.name=Zero Ring
 item.pe_tome.name=Tome of Knowledge
 item.pe_transmutation_tablet.name=Transmutation Tablet
+item.pe_arcane_transmutation_tablet.name=Arcane Transmutation Tablet
 item.pe_manual.name=Book of the Alchemist [WIP]
 
 pe.manual.tooltip1=Vol. 2
@@ -139,12 +141,21 @@ achievement.klein.desc=Storing EMC for a rainy day.
 achievement.klein_big=BIG EMC Batteries
 achievement.klein_big.desc=Holding the universe in your pocket.
 
-pe.arcana.mode=Mode: 
+pe.arcana.mode=Mode:
 pe.arcana.mode.0=Zero
 pe.arcana.mode.1=Ignition
 pe.arcana.mode.2=Harvest
 pe.arcana.mode.3=SWRG
 pe.arcana.inactive=Inactive!
+
+pe.arcane_tablet.rotate=Rotate (Clockwise)
+pe.arcane_tablet.rotate.shift=Rotate (Counter-Clockwise)
+pe.arcane_tablet.balance=Balance
+pe.arcane_tablet.balance.shift=Spread
+pe.arcane_tablet.focus_search=Focus Search Box
+pe.arcane_tablet.clear=Clear Crafting Grid
+pe.arcane_tablet.page_prev=Previous Page
+pe.arcane_tablet.page_next=Next Page
 
 pe.archangel.pedestal1=Fires arrows at nearby mobs
 pe.archangel.pedestal2=Triggers every %s
@@ -152,10 +163,10 @@ pe.archangel.pedestal2=Triggers every %s
 pe.bhb.pedestal1=Sucks in nearby item drops
 pe.bhb.pedestal2=Dumps in adjacent inventories
 
-pe.body.pedestal1=Restores nearby players' hunger
-pe.body.pedestal2=Half a shank every %s
+pe.body.pedestal1=Restores nearby players' hunger and Nutrition values
+pe.body.pedestal2=Half a shank and extra Nutrition every %s
 
-pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, reloadEMC, removeEMC, resetEMC>
+pe.command.main.usage=/projecte <changelog, clearKnowledge, setEMC, removeEMC, resetEMC>
 
 pe.command.changelog.uptodate=ProjectE is up to date.
 pe.command.clearknowledge.error=Couldn't clear knowledge for: %s
@@ -164,9 +175,8 @@ pe.command.clearknowledge.playernotfound=Couldn't find player named: %s
 pe.command.clearknowledge.success=Cleared knowledge for: %s
 pe.command.clearknowledge.usage=/projecte clearKnowledge [username] (no params to target self)
 
-pe.command.reload.started=Reloading EMC values, expect lag.
-pe.command.reload.success=EMC reload complete. Sending updated data to clients.
-pe.command.reload.notice=Restart or use "/projecte reloadEMC" when all changes are complete.
+pe.command.emc.applied=EMC values updated and synced to clients.
+pe.command.emc.apply_failed=Recalculating the EMC values failed, the previous values were restored. See the server log for details.
 
 pe.command.remove.invaliditem=Error: The item "%s" was not found!
 pe.command.remove.invalidmeta=Error: The meta value "%s" is not valid!
@@ -258,8 +268,8 @@ pe.key.extra_function=Extra Function
 pe.key.fire_projectile=Fire Projectile
 pe.key.mode=Change Mode
 
-pe.life.pedestal1=Restores both hunger and hearts
-pe.life.pedestal2=Half a heart and shank every %s
+pe.life.pedestal1=Restores health, hunger and Nutrition values
+pe.life.pedestal2=Half a heart, half a shank and extra Nutrition every %s
 
 pe.mind.pedestal1=Sucks nearby XP orbs into the Mind Stone
 
@@ -390,7 +400,7 @@ pe.manual.pe_condenser=Transmutation Tables are great for turning one thing into
 
 pe.manual.pe_condenser_mk2=The Energy Condenser MK2 has all the features of the MK1, but splits the inventory to have a separate input and output.
 
-pe.manual.pe_interdiction_torch=The Interdiction Torch is more than just a stylish alternative to coal and twigs, any mob that approaches it will be pushed away, as a wise man once said... NONE SHALL PASS! 
+pe.manual.pe_interdiction_torch=The Interdiction Torch is more than just a stylish alternative to coal and twigs, any mob that approaches it will be pushed away, as a wise man once said... NONE SHALL PASS!
 
 pe.manual.pe_fuel_block_0=Like other solid fuels Mobius Fuel can be compressed into block form. Use it as a efficient fuel, or a poor mans Red Matter for decor.
 
@@ -406,3 +416,18 @@ pe.manual.introduction.header=Introduction
 
 # ImagePage headers
 pe.manual.img_alchchest.header=alchchest.png
+
+# Arcane Transmutation Tablet buttons
+pe.arcane_tablet.rotate=Rotate
+pe.arcane_tablet.rotate.shift=Rotate Counter-Clockwise
+pe.arcane_tablet.balance=Balance
+pe.arcane_tablet.balance.shift=Spread
+pe.arcane_tablet.focus_search=Focus Search Box
+pe.arcane_tablet.clear=Clear Crafting Grid
+pe.arcane_tablet.page_prev=Previous Page
+pe.arcane_tablet.page_next=Next Page
+
+pe.command.emc.rolled_back=EMC update failed. The command's file changes were rolled back; previous EMC values remain active.
+pe.command.emc.restore_failed=EMC update failed and the file could not be restored. Memory still uses previous values; check custom_emc.cfg and server logs.
+pe.command.emc.refresh_failed=EMC values were applied, but client/condenser refresh failed. Check server logs.
+pe.command.emc.external_failed=External EMC reload failed; previous values remain active. This content will not be retried automatically. Fix custom_emc.cfg, save different content, and check server logs.

@@ -15,7 +15,6 @@ import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.CondenserMK2Container;
 import moze_intel.projecte.gameObjs.container.DMFurnaceContainer;
 import moze_intel.projecte.gameObjs.container.EternalDensityContainer;
-import moze_intel.projecte.gameObjs.container.MercurialEyeContainer;
 import moze_intel.projecte.gameObjs.container.PedestalContainer;
 import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.container.RMFurnaceContainer;
@@ -25,7 +24,6 @@ import moze_intel.projecte.gameObjs.container.RelayMK3Container;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.AlchBagInventory;
 import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
-import moze_intel.projecte.gameObjs.container.inventory.MercurialEyeInventory;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.gui.GUIAlchChest;
 import moze_intel.projecte.gameObjs.gui.GUICollectorMK1;
@@ -35,7 +33,6 @@ import moze_intel.projecte.gameObjs.gui.GUICondenser;
 import moze_intel.projecte.gameObjs.gui.GUICondenserMK2;
 import moze_intel.projecte.gameObjs.gui.GUIDMFurnace;
 import moze_intel.projecte.gameObjs.gui.GUIEternalDensity;
-import moze_intel.projecte.gameObjs.gui.GUIMercurialEye;
 import moze_intel.projecte.gameObjs.gui.GUIPedestal;
 import moze_intel.projecte.gameObjs.gui.GUIPhilosStone;
 import moze_intel.projecte.gameObjs.gui.GUIRMFurnace;
@@ -105,10 +102,6 @@ public class GuiHandler implements IGuiHandler {
 			case Constants.RELAY3_GUI:
 				if (tile instanceof RelayMK3Tile)
 					return new RelayMK3Container(player.inventory, (RelayMK3Tile) tile);
-				break;
-			case Constants.MERCURIAL_GUI:
-				if (player.getHeldItem() != null)
-					return new MercurialEyeContainer(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
 				break;
 			case Constants.PHILOS_STONE_GUI:
 				return new PhilosStoneContainer(player.inventory);
@@ -185,10 +178,6 @@ public class GuiHandler implements IGuiHandler {
 			case Constants.RELAY3_GUI:
 				if (tile instanceof RelayMK3Tile)
 					return new GUIRelayMK3(player.inventory, (RelayMK3Tile) tile);
-				break;
-			case Constants.MERCURIAL_GUI:
-				if (player.getHeldItem() != null)
-					return new GUIMercurialEye(player.inventory, new MercurialEyeInventory(player.getHeldItem()));
 				break;
 			case Constants.PHILOS_STONE_GUI:
 				return new GUIPhilosStone(player.inventory);

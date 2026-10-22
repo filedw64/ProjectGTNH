@@ -23,22 +23,18 @@ public class SlotOutput extends Slot
 		stack.stackSize = amount;
 		double emcValue = amount * EMCHelper.getEmcValue(stack);
 		if (emcValue > inv.emc) {
+			//Requesting more emc than available
+			//Can not return `null` here or NPE in Container! Container expects stacksize=0-Itemstack for 'nothing'
 			stack.stackSize = 0;
 			return stack;
 		}
 		inv.removeEmc(emcValue);
-		inv.updateOutputs();
+		inv.updateOutputs(); // emc 减少了就该刷新输出
 		return stack;
 	}
 
 	@Override
-	public void putStack(ItemStack stack) {
-		// NEI 在模拟拿取失败退回物品时，必须将预扣除的 EMC 返还
-		if (stack != null) {
-			inv.addEmc(EMCHelper.getEmcValue(stack) * stack.stackSize);
-			inv.updateOutputs();
-		}
-	}
+	public void putStack(ItemStack stack) {}
 
 	@Override
 	public boolean isItemValid(ItemStack stack)
@@ -49,9 +45,9 @@ public class SlotOutput extends Slot
 	@Override
 	public boolean canTakeStack(EntityPlayer player)
 	{
-		if (getHasStack()) {
-			return EMCHelper.getEmcValue(getStack()) <= inv.emc;
-		}
+		ItemStack stack = getStack();
+		if (stack != null)
+			return EMCHelper.getEmcValue(stack) <= inv.emc;
 		return true;
 	}
 }

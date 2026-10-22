@@ -24,6 +24,9 @@ public final class ProjectEConfig {
 	public static boolean enableInfiniteFuel;
 	public static boolean enableInfiniteSteak;
 	public static boolean enableBuildersWand;
+	public static boolean enableRodOfHarmony;
+	public static boolean enableAEGU;
+	public static boolean enableStoneAlwaysEdible;
 
 	public static boolean craftableTome;
 	public static boolean altCraftingMat;
@@ -61,6 +64,11 @@ public final class ProjectEConfig {
 
 	// GTNH Integration Config
 	public static boolean questMode;
+	public static boolean enableNutritionIntegration;
+
+	// emc 热重载
+	public static boolean emcAutoReload;
+	public static boolean verifyIncrementalEMC;
 
 	// nbt 白名单 与 动态 nbt emc 计算
 	public static String[] nbtWhitelistConfig;
@@ -78,6 +86,10 @@ public final class ProjectEConfig {
 
 			// Load GTNH Integration config
 			questMode = config.getBoolean("questMode", "integration", true, "Whether to add quest when BetterQuesting is loaded");
+			enableNutritionIntegration = config.getBoolean("enableNutritionIntegration", "nutrition", true, "If true and the Nutrition mod is loaded, the Body and Life Stones will also restore Nutrition nutrient values when they restore hunger.");
+
+			emcAutoReload = config.getBoolean("autoReloadEMC", "emc", true, "Watch config/ProjectE/custom_emc.cfg for external changes and hot reload the EMC values incrementally.");
+			verifyIncrementalEMC = config.getBoolean("verifyIncrementalEMC", "emc", false, "Verify incremental EMC with a full remap at most once per 60 seconds. Debug only: runs synchronously on the server thread and may stall ticks. Does not save mapping.cfg. Verification failure rolls back the update.");
 
 			showUnlocalizedNames = config.getBoolean("unToolTips", "misc", false, "Show item unlocalized names in tooltips (useful for custom EMC registration)");
 			showODNames = config.getBoolean("odToolTips", "misc", false, "Show item Ore Dictionary names in tooltips (useful for custom EMC registration)");
@@ -98,6 +110,9 @@ public final class ProjectEConfig {
 			enableInfiniteFuel = config.getBoolean("enableInfiniteFuel", "items", true, "Enable Infinite Fuel backported from Project Expansion");
 			enableInfiniteSteak = config.getBoolean("enableInfiniteSteak", "items", true, "Enable Infinite Steak backported from Project Expansion");
 			enableBuildersWand = config.getBoolean("enableBuildersWand", "items", true, "Enable EMC Builders Wand");
+			enableRodOfHarmony = config.getBoolean("enableRodOfHarmony", "items", true, "Enable Rod of Harmony");
+			enableAEGU = config.getBoolean("enableAEGU", "items", true, "Enable Alchemical Energy Generating Unit");
+			enableStoneAlwaysEdible = config.getBoolean("enableStoneAlwaysEdible", "items", true, "If true, carrying a Body Stone or Life Stone in the main inventory or a Baubles slot lets you keep eating while your hunger bar is full. Does not consume EMC.");
 
 			ignitionRingIgniteBlocks = config.getBoolean("ignitionRingIgniteBlocks", "items", false, "If true, the Ignition Ring will passively ignite surrounding blocks.");
 			zeroRingPlaceSnow = config.getBoolean("zeroRingPlaceSnow", "items", false, "If true, the Zero Ring will passively freeze water and place snow around the player.");

@@ -19,12 +19,12 @@ public class ArcaneTransmutationTablet extends ItemPE {
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
 		if (!world.isRemote) {
-			// 传入玩家当前坐标，虽然作为便携 GUI，坐标并不参与 TileEntity 的获取，但保持规范
 			player.openGui(PECore.instance, Constants.ARCANE_TABLET_GUI, world, (int) player.posX, (int) player.posY, (int) player.posZ);
 		}
 		return stack;
 	}
 
+	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register) {
 		this.itemIcon = register.registerIcon(getTexture("arcane_transmutation_tablet"));

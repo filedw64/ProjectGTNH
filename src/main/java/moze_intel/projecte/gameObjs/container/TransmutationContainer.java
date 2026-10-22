@@ -1,5 +1,6 @@
 package moze_intel.projecte.gameObjs.container;
 
+import cpw.mods.fml.common.Loader;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotConsume;
@@ -100,13 +101,12 @@ public class TransmutationContainer extends Container
 			int count = (int) Math.min(maxStackSize, transmutationInventory.emc / emc);
 			count = Math.min(count, ItemHelper.getSpaceFor(player.inventory.mainInventory, stack));
 
-			if (count <= 0) return null;
+			if (count <= 0) return null; // 确保至少能提取1个
 
 			newStack.stackSize = count;
 			transmutationInventory.removeEmc(emc * count);
 			ItemHelper.pushStackInInv(player.inventory, newStack);
 			transmutationInventory.updateOutputs();
-			return null; // 输出槽位必须返回 null
 		}
 		else if (slotIndex >= 27) // Player Inventory
 		{
@@ -118,9 +118,6 @@ public class TransmutationContainer extends Container
 			transmutationInventory.addEmc(emc * stack.stackSize);
 			transmutationInventory.handleKnowledge(stack);
 			slot.putStack(null);
-
-			// 必须返回复制的原始堆叠，告诉客户端转移成功了，否则客户端会认为失败而还原物品UI
-			return newStack;
 		}
 		return null;
 	}
@@ -139,14 +136,36 @@ public class TransmutationContainer extends Container
 		}
 	}
 
+	// 未安装 NEI 时整段判断短路，省掉每次点击的栈回溯
+	private static final boolean NEI_PRESENT = Loader.isModLoaded("NotEnoughItems");
+
+	private static boolean isCalledByNEI() {
+		if (!NEI_PRESENT)
+			return false;
+
+		StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+		// 跳过 getStackTrace(), isCalledByNEI(), slotClick()，只看最近 10 帧：NEI 的入口都在上方 3-6 帧内
+		final int depth = Math.min(stack.length, 13);
+		for (int i = 3; i < depth; i++) {
+			String className = stack[i].getClassName(), methodName = stack[i].getMethodName();
+			if ((className.equals("codechicken.nei.guihook.GuiContainerManager") && methodName.equals("handleSlotClick"))
+				|| className.equals("codechicken.nei.FastTransferManager"))
+				return true;
+		}
+		return false;
+	}
+
 	@Override
 	public ItemStack slotClick(int slot, int button, int clickType, EntityPlayer player) {
-		if (player.worldObj.isRemote && 10 <= slot && slot <= 25)
-			PacketHandler.sendToServer(new SearchUpdatePKT(slot, getSlot(slot).getStack()));
+		if (isCalledByNEI())
+			return null;
 
 		Slot theSlot = null;
 		if (slot >= 0)
 			theSlot = getSlot(slot); // 被点击的槽位对象
+
+		if (player.worldObj.isRemote && 10 <= slot && slot <= 25)
+			PacketHandler.sendToServer(new SearchUpdatePKT(slot, theSlot.getStack()));
 
 		if (clickType == 4 && theSlot instanceof SlotOutput)
 			return null; // 禁止从输出槽位中丢弃物品（又来？）
@@ -164,12 +183,9 @@ public class TransmutationContainer extends Container
 		// 如果玩家手动点击交互的是 Input 或 Lock 槽位 (0~8)，主动触发一次知识学习。
 		// 这样即使 putStack 层面因为 isSame 拦截了自动学习，手动互换依然能被正确记录。
 		if (slot >= 0 && slot <= 8) {
-			Slot clickedSlot = getSlot(slot);
-			if (clickedSlot != null && clickedSlot.getHasStack()) {
-				ItemStack stackInSlot = clickedSlot.getStack();
-				if (EMCHelper.doesItemHaveEmc(stackInSlot) && stackInSlot.getItem() != ObjHandler.tome)
-					transmutationInventory.handleKnowledge(stackInSlot);// 知识之书不需要在此处学习
-			}
+			ItemStack stack = theSlot.getStack();
+			if (EMCHelper.doesItemHaveEmc(stack) && stack.getItem() != ObjHandler.tome)
+				transmutationInventory.handleKnowledge(stack); // 知识之书不需要在此处学习
 		}
 
 		return result;

@@ -46,4 +46,5 @@ dependencies {
 	compileOnly("com.github.GTNewHorizons:BetterQuesting:3.7.15-GTNH:dev")
 	compileOnly("com.github.GTNewHorizons:Botania:1.12.28-GTNH:api")
 	compileOnly("com.github.GTNewHorizons:TinkersConstruct:1.13.57-GTNH:dev")
+	compileOnly("com.github.GTNewHorizons:Nutrition:1.0.1:dev")
 }

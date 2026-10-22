@@ -4,21 +4,21 @@ Repository for ProjectGTNH, a rewrite version of ProjectE for GTNH. Transmutatio
 
 Discover powerful alchemical tools, items, and devices. Break down unwanted items into EMC (Energy-Matter Covalence) and use that EMC to create new items.
 
-#### \# Can I include it in a modpack?
+## Can I include it in a modpack?
 
-This mod may be redistributed as part of a modpack, both public and private modpacks are allowed. You may not mirror the mod by itself or create a "mod installer", legal action will be taken against sites found violating this. It is requested that you credit the mod on any lists as ProjectE, there is no space in the name.
+This mod may be redistributed as part of a modpack; both public and private modpacks are allowed. You may not mirror the mod by itself or create a "mod installer". Legal action will be taken against sites found violating this. If you list the mod anywhere, please credit it as **ProjectE** (one word, no space).
 
-#### \# I found a bug
+## I found a bug
 
 Bugs can be reported at: https://github.com/filedw64/ProjectGTNH/issues
 
 Please try the latest release build before reporting, be sure to also include any logs or steps to reproduce you may have, as well as your Forge version, and whether or not you are using a third party loader such as Cauldron. When submitting logs please use a service such as Pastebin, do not paste the log directly into the issue.
 
-#### \# Downloads
+## Downloads
 
-https://github.com/filedw64/ProjectGTNH/realeses/latest
+https://github.com/filedw64/ProjectGTNH/releases/latest
 
-#### \# Current Team Members
+## Current Team Members
 
 filedw64 - Developer of this program - GTNH Support:
 
@@ -28,7 +28,7 @@ Windy-Bye - Brilliant idea inventor and developer - Mods Integrator:
 
 * Github: https://github.com/Windy-Bye
 
-#### \# Thanks To
+## Thanks To
 
 SinKillerJ - Head of Alchemical Studies - Main Project & Community Lead:
 

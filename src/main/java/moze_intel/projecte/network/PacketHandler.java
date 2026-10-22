@@ -9,13 +9,21 @@ import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.emc.FluidSimpleStack;
 import moze_intel.projecte.emc.NBTSimpleStack;
 import moze_intel.projecte.emc.SimpleStack;
+import moze_intel.projecte.network.packets.ArcaneRecipeTransferPKT;
+import moze_intel.projecte.network.packets.ArcaneTabletButtonPKT;
+import moze_intel.projecte.network.packets.ArcaneTransmutationEmcPKT;
 import moze_intel.projecte.network.packets.CheckUpdatePKT;
 import moze_intel.projecte.network.packets.CollectorSyncPKT;
 import moze_intel.projecte.network.packets.CondenserSyncPKT;
+import moze_intel.projecte.network.packets.HistoryRequestPKT;
+import moze_intel.projecte.network.packets.HistorySyncPKT;
 import moze_intel.projecte.network.packets.KeyPressPKT;
-import moze_intel.projecte.network.packets.KnowledgeChangePKT;
 import moze_intel.projecte.network.packets.KnowledgeClearPKT;
 import moze_intel.projecte.network.packets.KnowledgeSyncPKT;
+import moze_intel.projecte.network.packets.MercurialNotifyPKT;
+import moze_intel.projecte.network.packets.MercurialShapePKT;
+import moze_intel.projecte.network.packets.MercurialTransformPKT;
+import moze_intel.projecte.network.packets.MercurialUndoPKT;
 import moze_intel.projecte.network.packets.OrientationSyncPKT;
 import moze_intel.projecte.network.packets.ParticlePKT;
 import moze_intel.projecte.network.packets.RelaySyncPKT;
@@ -27,8 +35,6 @@ import moze_intel.projecte.network.packets.SyncBagDataPKT;
 import moze_intel.projecte.network.packets.SyncEmcPKT;
 import moze_intel.projecte.network.packets.SyncPedestalPKT;
 import moze_intel.projecte.network.packets.UpdateGemModePKT;
-import moze_intel.projecte.network.packets.ArcaneTabletButtonPKT;
-import moze_intel.projecte.network.packets.ArcaneRecipeTransferPKT;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
@@ -62,11 +68,15 @@ public final class PacketHandler
 		HANDLER.registerMessage(OrientationSyncPKT.Handler.class, OrientationSyncPKT.class, 15, Side.CLIENT);
 		HANDLER.registerMessage(UpdateGemModePKT.Handler.class, UpdateGemModePKT.class, 16, Side.SERVER);
 		HANDLER.registerMessage(SyncPedestalPKT.Handler.class, SyncPedestalPKT.class, 17, Side.CLIENT);
-		HANDLER.registerMessage(KnowledgeChangePKT.Handler.class, KnowledgeChangePKT.class, 18, Side.CLIENT);
-		HANDLER.registerMessage(ArcaneTabletButtonPKT.class, ArcaneTabletButtonPKT.class, 19, Side.SERVER);
-		HANDLER.registerMessage(ArcaneRecipeTransferPKT.class, ArcaneRecipeTransferPKT.class, 20, Side.SERVER);
-
-
+		HANDLER.registerMessage(ArcaneTabletButtonPKT.class, ArcaneTabletButtonPKT.class, 18, Side.SERVER);
+		HANDLER.registerMessage(ArcaneRecipeTransferPKT.class, ArcaneRecipeTransferPKT.class, 19, Side.SERVER);
+		HANDLER.registerMessage(MercurialShapePKT.Handler.class, MercurialShapePKT.class, 20, Side.SERVER);
+		HANDLER.registerMessage(MercurialUndoPKT.class, MercurialUndoPKT.class, 21, Side.SERVER);
+		HANDLER.registerMessage(HistoryRequestPKT.class, HistoryRequestPKT.class, 22, Side.SERVER);
+		HANDLER.registerMessage(HistorySyncPKT.class, HistorySyncPKT.class, 23, Side.CLIENT);
+		HANDLER.registerMessage(MercurialTransformPKT.class, MercurialTransformPKT.class, 24, Side.SERVER);
+		HANDLER.registerMessage(MercurialNotifyPKT.class, MercurialNotifyPKT.class, 25, Side.CLIENT);
+		HANDLER.registerMessage(ArcaneTransmutationEmcPKT.class, ArcaneTransmutationEmcPKT.class, 26, Side.CLIENT);
 	}
 
 	public static Packet getMCPacket(IMessage message)
@@ -140,9 +150,9 @@ public final class PacketHandler
 			}
 		}
 
-        PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
-        list.clear();
-        counter++;
+		PacketHandler.sendToAll(new SyncEmcPKT(-1, list));
+		list.clear();
+		counter++;
 
 		PELogger.logInfo("Sent EMC data packets to all players.");
 		PELogger.logDebug("Total packets per player: " + counter);

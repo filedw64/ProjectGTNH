@@ -97,7 +97,7 @@ public class GUITransmutation extends GuiContainer {
 		if (this.textBoxFilter.isFocused()) {
 			this.textBoxFilter.textboxKeyTyped(par1, par2);
 
-			String srch = this.textBoxFilter.getText();
+			String srch = this.textBoxFilter.getText().toLowerCase();
 			if (!inv.filter.equals(srch)) {
 				inv.filter = srch;
 				inv.searchpage = 0;
@@ -128,7 +128,7 @@ public class GUITransmutation extends GuiContainer {
 		final int minX = textBoxFilter.xPosition, maxX = minX + textBoxFilter.width;
 		final int minY = textBoxFilter.yPosition, maxY = minY + textBoxFilter.height;
 
-		if (mouseButton == 1 && x >= minX && x <= maxX && y <= maxY) {
+		if (mouseButton == 1 && x >= minX && x <= maxX && y >= minY && y <= maxY) {
 			inv.filter = "";
 			this.textBoxFilter.setText("");
 			inv.searchpage = 0;
@@ -147,7 +147,7 @@ public class GUITransmutation extends GuiContainer {
 
 	@Override
 	protected void actionPerformed(GuiButton button) {
-		String srch = this.textBoxFilter.getText();
+		String srch = this.textBoxFilter.getText().toLowerCase();
 
 		if (button.id == 1) {
 			if (inv.searchpage != 0)

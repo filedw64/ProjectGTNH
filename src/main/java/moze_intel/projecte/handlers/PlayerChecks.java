@@ -7,6 +7,7 @@ import moze_intel.projecte.gameObjs.items.IFireProtector;
 import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.IStepAssister;
 import moze_intel.projecte.utils.PlayerHelper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -188,6 +189,33 @@ public final class PlayerChecks
 		}
 
 		return false;
+	}
+
+	// 主背包（含快捷栏）或饰品栏内携带身之宝石/生命宝石即可，不看开关状态、不消耗 EMC
+	public static boolean hasAlwaysEdibleStone(EntityPlayer player) {
+		if (!ProjectEConfig.enableStoneAlwaysEdible || player == null) return false;
+
+		for (ItemStack stack : player.inventory.mainInventory) {
+			if (stack != null && (stack.getItem() == ObjHandler.bodyStone || stack.getItem() == ObjHandler.lifeStone))
+				return true;
+		}
+
+		IInventory baubles = PlayerHelper.getBaubles(player);
+		if (baubles == null) return false;
+
+		for (int i = 0; i < baubles.getSizeInventory(); i++) {
+			ItemStack stack = baubles.getStackInSlot(i);
+			if (stack != null && (stack.getItem() == ObjHandler.bodyStone || stack.getItem() == ObjHandler.lifeStone))
+				return true;
+		}
+
+		return false;
+	}
+
+	// 别用 foodStats.needFood()：它已被 StoneFoodStats 覆写（携带宝石时恒为 true），
+	// 自动喂食需要的是「饥饿条未满」这一原版语义
+	public static boolean isHungerBarNotFull(EntityPlayer player) {
+		return player != null && player.getFoodStats().getFoodLevel() < 20;
 	}
 
 	public static void enableSwrgFlightOverride(EntityPlayerMP player) {
