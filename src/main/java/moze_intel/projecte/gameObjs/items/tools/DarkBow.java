@@ -32,6 +32,12 @@ public class DarkBow extends PEBowBase {
 	public String getSpecialKey() { return "pe.dm_bow.special"; }
 
 	@Override
+	public int getAbilityTier() { return 1; }
+
+	@Override
+	public int getOverlayColor() { return 0x141018; } // 暗物质 #141018
+
+	@Override
 	public void onCreated(ItemStack stack, World world, EntityPlayer player) {
 		if (!world.isRemote) player.addStat(AchievementHandler.DM_BOW, 1);
 	}

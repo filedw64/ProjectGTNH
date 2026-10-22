@@ -24,6 +24,10 @@ import java.util.List;
 public abstract class PEBowBase extends ItemBow {
 	@SideOnly(Side.CLIENT)
 	private IIcon[] pullIcons;
+	@SideOnly(Side.CLIENT)
+	private IIcon overlayIcon;
+	@SideOnly(Side.CLIENT)
+	private IIcon[] overlayPullIcons;
 
 	public PEBowBase(String unlocalizedName) {
 		this.setUnlocalizedName("pe_" + unlocalizedName);
@@ -39,6 +43,13 @@ public abstract class PEBowBase extends ItemBow {
 	public abstract int getEmcCost(); // 每次射击满蓄力的EMC消耗
 	public abstract int getHomingTier(); // 0 = 不追踪
 	public abstract String getSpecialKey(); // 特殊能力描述的翻译键
+	public abstract int getAbilityTier(); // 自带效果梯度 n：暗物质 1、红物质 2、风暴 3
+	public abstract int getOverlayColor(); // 罩层颜色 0xRRGGBB
+
+	// 自带效果数值：抢夺 n、冲击 2n-1、力量 2n+1
+	public int getPowerLevel() { return getAbilityTier() * 2 + 1; }
+	public int getPunchLevel() { return getAbilityTier() * 2 - 1; }
+	public int getLootingLevel() { return getAbilityTier(); }
 
 	@Override
 	public void onPlayerStoppedUsing(ItemStack stack, World world, EntityPlayer player, int useTime) {
@@ -77,11 +88,10 @@ public abstract class PEBowBase extends ItemBow {
 		// 满蓄力
 		if (f >= 1.0F) arrow.setIsCritical(true);
 
-		int power = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, stack);
-		if (power > 0) arrow.setDamage(arrow.getDamage() + (double) power * 0.5D + 0.5D);
-
-		int punch = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, stack);
-		if (punch > 0) arrow.setKnockbackStrength(punch);
+		// 力量/冲击只由弓自带梯度决定，忽略弓上的对应附魔
+		arrow.setDamage(arrow.getDamage() + (double) getPowerLevel() * 0.5D + 0.5D);
+		arrow.setKnockbackStrength(getPunchLevel());
+		arrow.setLootingLevel(getLootingLevel());
 
 		if (EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, stack) > 0) arrow.setFire(100);
 
@@ -115,24 +125,53 @@ public abstract class PEBowBase extends ItemBow {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IIconRegister register) {
+		// pass0 用原版弓贴图（无 domain 前缀即 minecraft），pass1 用本 MOD 的罩层贴图
 		this.itemIcon = register.registerIcon("bow_standby");
 		this.pullIcons = new IIcon[3];
 		this.pullIcons[0] = register.registerIcon("bow_pulling_0");
 		this.pullIcons[1] = register.registerIcon("bow_pulling_1");
 		this.pullIcons[2] = register.registerIcon("bow_pulling_2");
+
+		this.overlayIcon = register.registerIcon("projecte:bow_overlay_standby");
+		this.overlayPullIcons = new IIcon[3];
+		this.overlayPullIcons[0] = register.registerIcon("projecte:bow_overlay_pulling_0");
+		this.overlayPullIcons[1] = register.registerIcon("projecte:bow_overlay_pulling_1");
+		this.overlayPullIcons[2] = register.registerIcon("projecte:bow_overlay_pulling_2");
+	}
+
+	@Override
+	public boolean requiresMultipleRenderPasses() { return true; }
+
+	@Override
+	public int getRenderPasses(int metadata) { return 2; }
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public IIcon getIconFromDamageForRenderPass(int meta, int pass) {
+		return pass == 1 ? this.overlayIcon : this.itemIcon;
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public int getColorFromItemStack(ItemStack stack, int pass) {
+		return pass == 1 ? getOverlayColor() : 0xFFFFFF;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(ItemStack stack, int renderPass, EntityPlayer player, ItemStack usingItem, int useRemaining) {
+		// idx: -1 = 没在拉弓（用 standby 图），0..2 = 拉弓帧；两个 pass 共用同一帧下标
+		int idx = -1;
 		if (usingItem != null) {
 			int time = usingItem.getMaxItemUseDuration() - useRemaining;
 			float ratio = (float) time / (float) getDrawTime();
-			if (ratio >= 0.9F) return pullIcons[2];
-			if (ratio > 0.65F) return pullIcons[1];
-			if (ratio > 0.0F) return pullIcons[0];
+			if (ratio >= 0.9F) idx = 2;
+			else if (ratio > 0.65F) idx = 1;
+			else if (ratio > 0.0F) idx = 0;
 		}
-		return this.itemIcon;
+
+		if (renderPass == 1) return idx < 0 ? this.overlayIcon : this.overlayPullIcons[idx];
+		return idx < 0 ? this.itemIcon : this.pullIcons[idx];
 	}
 
 	@Override
@@ -141,5 +180,6 @@ public abstract class PEBowBase extends ItemBow {
 		list.add(StatCollector.translateToLocalFormatted("pe.bow.tooltip1", getEmcCost()));
 		list.add(StatCollector.translateToLocalFormatted("pe.bow.tooltip2", getDrawTime()));
 		list.add(StatCollector.translateToLocalFormatted("pe.bow.tooltip3", StatCollector.translateToLocal(getSpecialKey())));
+		list.add(StatCollector.translateToLocalFormatted("pe.bow.tooltip4", getLootingLevel(), getPunchLevel(), getPowerLevel()));
 	}
 }

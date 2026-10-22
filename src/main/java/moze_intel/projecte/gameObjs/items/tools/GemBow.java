@@ -25,4 +25,10 @@ public class GemBow extends PEBowBase {
 
 	@Override
 	public String getSpecialKey() { return "pe.storm_bow.special"; }
+
+	@Override
+	public int getAbilityTier() { return 3; }
+
+	@Override
+	public int getOverlayColor() { return 0x2A4FC8; } // 风暴 #2A4FC8
 }

@@ -32,6 +32,12 @@ public class RedBow extends PEBowBase {
 	public String getSpecialKey() { return "pe.rm_bow.special"; }
 
 	@Override
+	public int getAbilityTier() { return 2; }
+
+	@Override
+	public int getOverlayColor() { return 0x8E1620; } // 红物质 #8E1620
+
+	@Override
 	public void onCreated(ItemStack stack, World world, EntityPlayer player) {
 		if (!world.isRemote) player.addStat(AchievementHandler.RM_BOW, 1);
 	}

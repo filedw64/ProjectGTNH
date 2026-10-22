@@ -197,6 +197,7 @@ pe.bow.no_emc=EMC 不足！
 pe.bow.tooltip1=每发消耗 %s EMC
 pe.bow.tooltip2=蓄力时间：%s tick
 pe.bow.tooltip3=特殊效果：%s
+pe.bow.tooltip4=自带效果：抢夺 %s、冲击 %s、力量 %s
 pe.dm_bow.special=无特殊效果
 pe.rm_bow.special=箭矢无视重力
 pe.storm_bow.special=箭矢无视重力、自动追踪目标并召唤落雷

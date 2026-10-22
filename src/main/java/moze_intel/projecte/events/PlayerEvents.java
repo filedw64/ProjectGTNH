@@ -4,6 +4,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
+import moze_intel.projecte.gameObjs.entity.EntityPEArrow;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.tiles.AEGUTile;
 import moze_intel.projecte.gameObjs.tiles.CondenserTile;
@@ -17,6 +18,7 @@ import moze_intel.projecte.utils.ChatHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
@@ -32,9 +34,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
+import java.util.ArrayList;
 
 public class PlayerEvents {
 	// Handles playerData props from being wiped on death
@@ -203,6 +208,34 @@ public class PlayerEvents {
 
 				event.setCanceled(true);
 			}
+		}
+	}
+
+	// 弓自带抢夺以「额外掉落」的形式实现，不依赖玩家手持附魔
+	@SubscribeEvent
+	public void onLivingDrops(LivingDropsEvent event) {
+		if (event.entityLiving == null || event.entityLiving.worldObj == null || event.entityLiving.worldObj.isRemote) return;
+
+		// 只认本 mod 的箭：等级来自那支箭，避免与玩家手持附魔双倍计入
+		Entity directSource = event.source.getSourceOfDamage();
+		if (!(directSource instanceof EntityPEArrow)) return;
+
+		int looting = ((EntityPEArrow) directSource).getLootingLevel();
+		if (looting <= 0) return;
+
+		// 遍历快照：下方会往 event.drops 里追加，直接遍历原列表会并发修改
+		for (EntityItem original : new ArrayList<EntityItem>(event.drops)) {
+			if (original == null || original.getEntityItem() == null) continue;
+
+			int extra = event.entityLiving.worldObj.rand.nextInt(looting + 1);
+			if (extra <= 0) continue;
+
+			// 用 ItemStack 副本另起一个实体，不改原 EntityItem 的 stackSize
+			ItemStack bonusStack = original.getEntityItem().copy();
+			// 不可堆叠物品（工具/护甲）按 maxStackSize 截断，避免造出非法堆叠
+			bonusStack.stackSize = Math.min(extra, bonusStack.getMaxStackSize());
+			if (bonusStack.stackSize <= 0) continue;
+			event.drops.add(new EntityItem(event.entityLiving.worldObj, original.posX, original.posY, original.posZ, bonusStack));
 		}
 	}
 }

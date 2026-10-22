@@ -27,6 +27,7 @@ public class EntityPEArrow extends EntityArrow {
 
 	private int homingTier = 0;
 	private int newTargetCooldown = 0;
+	private int lootingLevel = 0; // 弓自带抢夺等级，仅服务端掉落逻辑使用，无需同步
 
 	// 反射获取原版箭矢的飞行时间（用于穿透射出者）；取不到就静默跳过
 	private static Field ticksInAirField;
@@ -57,6 +58,8 @@ public class EntityPEArrow extends EntityArrow {
 	public void setIgnoreGravity(boolean ignoreGravity) { this.ignoreGravity = ignoreGravity; }
 	public void setSpawnLightning(boolean spawnLightning) { this.spawnLightning = spawnLightning; }
 	public void setHomingTier(int tier) { this.homingTier = tier; }
+	public void setLootingLevel(int lootingLevel) { this.lootingLevel = lootingLevel; }
+	public int getLootingLevel() { return this.lootingLevel; }
 
 	@Override
 	public void onUpdate() {
