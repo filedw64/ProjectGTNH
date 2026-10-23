@@ -3,19 +3,19 @@ package moze_intel.projecte.gameObjs.items;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.events.BuildersWandEventHandler;
 import moze_intel.projecte.gameObjs.ObjHandler;
-import moze_intel.projecte.playerData.Transmutation;
-import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.gameObjs.gui.GUIEMCBuildersWand;
 import moze_intel.projecte.utils.WandHelper;
+import moze_intel.projecte.utils.WandMode;
+import moze_intel.projecte.utils.WandPlacementQueue;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
@@ -31,6 +31,14 @@ public class BuildersWand extends Item {
 
 	private static final String NBT_MODE = "Mode";
 
+	// 聚焦方块：注册名 + meta。未设置时按被点击方块放置与计费
+	public static final String NBT_FOCUS = "FocusBlock";
+	public static final String NBT_FOCUS_META = "FocusMeta";
+
+	// 同一次右键可能同时命中 onItemUse 与 onItemRightClick，用世界时间做防重开标记
+	@SideOnly(Side.CLIENT)
+	private static long lastGuiOpenTime = Long.MIN_VALUE;
+
 	public BuildersWand() {
 		this.setUnlocalizedName("pe_emc_builders_wand");
 		this.setTextureName("projecte:builders_wand");
@@ -39,20 +47,14 @@ public class BuildersWand extends Item {
 	}
 
 	/**
-	 * 读模式：stackTagCompound 为空时先初始化再读，杜绝 NPE。
+	 * 读模式：非法值一律回落到 3x3，老存档字节语义不变。
 	 */
 	public byte getMode(ItemStack stack) {
 		if (stack.stackTagCompound == null) {
 			stack.stackTagCompound = new NBTTagCompound();
 		}
 
-		byte mode = stack.stackTagCompound.getByte(NBT_MODE);
-
-		if (mode < 0 || mode >= WandHelper.MODE_COUNT) {
-			mode = WandHelper.MODE_3X3;
-		}
-
-		return mode;
+		return WandMode.fromId(stack.stackTagCompound.getByte(NBT_MODE)).getId();
 	}
 
 	public void setMode(ItemStack stack, byte mode) {
@@ -63,43 +65,68 @@ public class BuildersWand extends Item {
 		stack.stackTagCompound.setByte(NBT_MODE, mode);
 	}
 
-	public static String getModeLangKey(byte mode) {
-		if (mode == WandHelper.MODE_5X5) {
-			return "pe.builderswand.mode.5x5";
-		}
+	/**
+	 * 读聚焦方块：未设置、注册名已失效、方块无对应物品一律返回 null，不抛异常。
+	 */
+	public ItemStack getFocusStack(ItemStack wand) {
+		if (wand == null || wand.stackTagCompound == null) return null;
 
-		if (mode == WandHelper.MODE_PLANE) {
-			return "pe.builderswand.mode.plane";
-		}
+		String name = wand.stackTagCompound.getString(NBT_FOCUS);
 
-		return "pe.builderswand.mode.3x3";
+		if (name.isEmpty()) return null;
+
+		Object obj = Block.blockRegistry.getObject(name);
+
+		if (!(obj instanceof Block block)) return null;
+
+		ItemStack focus = new ItemStack(block, 1, wand.stackTagCompound.getInteger(NBT_FOCUS_META));
+
+		// 拿不到物品就没法放置和计费
+		return focus.getItem() == null ? null : focus;
 	}
 
-	private void cycleMode(ItemStack stack, EntityPlayer player) {
-		byte newMode = (byte) (getMode(stack) + 1);
+	/**
+	 * 写聚焦方块；focus 为 null 表示清除。
+	 */
+	public void setFocusStack(ItemStack wand, ItemStack focus) {
+		if (wand == null) return;
 
-		if (newMode >= WandHelper.MODE_COUNT) {
-			newMode = WandHelper.MODE_3X3;
+		if (wand.stackTagCompound == null) {
+			wand.stackTagCompound = new NBTTagCompound();
 		}
 
-		setMode(stack, newMode);
+		Block block = null;
 
-		// 模式名传嵌套的 ChatComponentTranslation，由客户端按自身语言翻译
-		player.addChatComponentMessage(new ChatComponentTranslation("pe.item.mode_switch",
-			new ChatComponentTranslation(getModeLangKey(newMode))));
+		if (focus != null && focus.getItem() instanceof ItemBlock itemBlock) {
+			block = itemBlock.field_150939_a;
+		}
 
-		// NBT 改动后立即同步一次，避免 tooltip 停留在旧模式
-		player.inventoryContainer.detectAndSendChanges();
+		String name = block == null ? null : Block.blockRegistry.getNameForObject(block);
+
+		// 非法方块按清除处理，不留无法解析的名字
+		if (name == null) {
+			wand.stackTagCompound.removeTag(NBT_FOCUS);
+			wand.stackTagCompound.removeTag(NBT_FOCUS_META);
+			return;
+		}
+
+		wand.stackTagCompound.setString(NBT_FOCUS, name);
+		wand.stackTagCompound.setInteger(NBT_FOCUS_META, focus.getItemDamage());
+	}
+
+	public static String getModeLangKey(byte mode) {
+		return WandMode.fromId(mode).getLangKey();
 	}
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
-		// NBT 改动只在服务端做，客户端原样返回 stack 以免手部抖动
-		if (world.isRemote) return stack;
+		// 面板只在客户端打开，服务端这条分支什么都不做
+		if (world.isRemote) {
+			if (player.isSneaking()) {
+				openGui(player, getMode(stack), null, getFocusStack(stack));
+			}
 
-		// 潜行 + 右键空中走这条路（右键方块在服务端不会回落到这里，见 onItemUse）
-		if (player.isSneaking()) {
-			cycleMode(stack, player);
+			return stack;
 		}
 
 		return stack;
@@ -107,14 +134,19 @@ public class BuildersWand extends Item {
 
 	@Override
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
-		if (world.isRemote) return true;
+		// 客户端只负责开面板，放置完全交给服务端
+		if (world.isRemote) {
+			if (player.isSneaking()) {
+				openGui(player, getMode(stack), new ItemStack(world.getBlock(x, y, z), 1, world.getBlockMetadata(x, y, z)), getFocusStack(stack));
+			}
 
-		// 1.7.10 服务端右键方块只走到 onItemUse（ForgeHooks.onPlaceItemIntoWorld 无 onItemRightClick 回落），
-		// 因此潜行切模式必须在这里完成并返回 true，返回 false 会让这次交互直接丢失
-		if (player.isSneaking()) {
-			cycleMode(stack, player);
 			return true;
 		}
+
+		// 潜行 + 右键交给客户端开面板，服务端绝不放方块
+		if (player.isSneaking()) return true;
+
+		if (!(player instanceof EntityPlayerMP playerMP)) return true;
 
 		Block targetBlock = world.getBlock(x, y, z);
 		int targetMeta = world.getBlockMetadata(x, y, z);
@@ -122,57 +154,37 @@ public class BuildersWand extends Item {
 
 		if (targetStack.getItem() == null) return true;
 
-		byte mode = getMode(stack);
-		// 平面无限模式的格数上限走 config，其余模式形状固定
-		List<ChunkCoordinates> blocks = WandHelper.getBlocksToPlace(world, x, y, z, side, mode, ProjectEConfig.buildersWandMaxBlocks);
+		// 区域照旧按被点击方块算；有聚焦则放聚焦方块、按聚焦收费
+		ItemStack focus = getFocusStack(stack);
+		Block placeBlock = targetBlock;
+		int placeMeta = targetMeta;
+		ItemStack costStack = targetStack;
 
-		if (blocks.isEmpty()) return true;
-
-		// 【优化】循环外部 O(1) 预计算 EMC 和知识状态
-		boolean hasKnowledge = Transmutation.hasKnowledgeForStack(targetStack, player);
-		double emcCost = EMCHelper.getEmcValue(targetStack);
-		// 【性能】一次操作只建一次背包槽位索引，之后每格 O(1) 扣减
-		WandHelper.CostIndex costIndex = WandHelper.createCostIndex(player, targetStack);
-
-		boolean placedAny = false;
-
-		// 本次放置覆盖上一次的撤销记录
-		BuildersWandEventHandler.clearPlacements(player);
-
-		for (ChunkCoordinates coord : blocks) {
-			// 传入预计算好的值
-			if (!WandHelper.consumeCost(player, targetStack, hasKnowledge, emcCost, costIndex)) {
-				break;
-			}
-
-			Block prevBlock = world.getBlock(coord.posX, coord.posY, coord.posZ);
-			int prevMeta = world.getBlockMetadata(coord.posX, coord.posY, coord.posZ);
-
-			// 放置失败既不计入本杖的放置，也不记入撤销记录
-			if (!world.setBlock(coord.posX, coord.posY, coord.posZ, targetBlock, targetMeta, 3)) {
-				continue;
-			}
-
-			placedAny = true;
-			BuildersWandEventHandler.recordPlacement(player, coord, prevBlock, prevMeta, targetBlock, targetMeta);
+		if (focus != null && focus.getItem() instanceof ItemBlock focusItem) {
+			placeBlock = focusItem.field_150939_a;
+			placeMeta = focus.getItemDamage();
+			costStack = focus;
 		}
 
-		// 统一处理音效，避免循环内部重复执行
-		if (placedAny) {
-			world.playSoundEffect(x + 0.5, y + 0.5, z + 0.5,
-				targetBlock.stepSound.func_150496_b(),
-				(targetBlock.stepSound.getVolume() + 1.0F) / 2.0F,
-				targetBlock.stepSound.getPitch() * 0.8F);
+		WandHelper.PlacementPlan plan = WandHelper.plan(world, x, y, z, side, getMode(stack),
+			ProjectEConfig.buildersWandMaxBlocks, player, costStack);
 
-			// 循环结束只补一次背包同步、只补一次 EMC 同步
-			player.inventoryContainer.detectAndSendChanges();
+		if (plan == null || plan.size() <= 0) return true;
 
-			if (player instanceof EntityPlayerMP) {
-				Transmutation.sync(player);
-			}
-		}
+		WandPlacementQueue.submit(playerMP, plan, placeBlock, placeMeta, costStack);
 
 		return true;
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static void openGui(EntityPlayer player, byte mode, ItemStack targetBlock, ItemStack focusBlock) {
+		long now = player.worldObj.getTotalWorldTime();
+
+		if (lastGuiOpenTime == now) return;
+
+		lastGuiOpenTime = now;
+
+		Minecraft.getMinecraft().displayGuiScreen(new GUIEMCBuildersWand(mode, targetBlock, focusBlock));
 	}
 
 	@Override
@@ -182,6 +194,13 @@ public class BuildersWand extends Item {
 		list.add(String.format(StatCollector.translateToLocal("pe.builderswand.tooltip2"), "EMC"));
 		list.add(StatCollector.translateToLocal("pe.builderswand.tooltip3"));
 		list.add(StatCollector.translateToLocal("pe.item.mode") + ": " + EnumChatFormatting.AQUA
-			+ StatCollector.translateToLocal(getModeLangKey(getMode(stack))));
+			+ StatCollector.translateToLocal(WandMode.fromId(getMode(stack)).getLangKey()));
+
+		ItemStack focus = getFocusStack(stack);
+
+		// 未设置聚焦时不显示这一行
+		if (focus != null) {
+			list.add(String.format(StatCollector.translateToLocal("pe.builderswand.tooltip.focus"), focus.getDisplayName()));
+		}
 	}
 }

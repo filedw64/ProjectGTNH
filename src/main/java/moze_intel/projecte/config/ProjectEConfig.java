@@ -26,6 +26,7 @@ public final class ProjectEConfig {
 	public static boolean enableBuildersWand;
 	public static boolean enableRodOfHarmony;
 	public static int buildersWandMaxBlocks;
+	public static int buildersWandBlocksPerTick;
 	public static int rodOfHarmonyCostPerBlock;
 	public static int rodOfHarmonyCostPerWallBlock;
 	public static int rodOfHarmonyMaxDistance;
@@ -125,6 +126,7 @@ public final class ProjectEConfig {
 			enableBuildersWand = config.getBoolean("enableBuildersWand", "items", true, "Enable EMC Builders Wand");
 			enableRodOfHarmony = config.getBoolean("enableRodOfHarmony", "items", true, "Enable Rod of Harmony");
 			buildersWandMaxBlocks = config.getInt("buildersWandMaxBlocks", "items", 1024, 1, 4096, "Maximum number of blocks a single Builders Wand operation may place");
+			buildersWandBlocksPerTick = config.getInt("buildersWandBlocksPerTick", "items", 128, 1, 4096, "Maximum number of blocks the Builders Wand may place per server tick");
 			rodOfHarmonyCostPerBlock = config.getInt("rodOfHarmonyCostPerBlock", "items", 8, 0, Integer.MAX_VALUE, "EMC cost per block flown with the Rod of Harmony");
 			rodOfHarmonyCostPerWallBlock = config.getInt("rodOfHarmonyCostPerWallBlock", "items", 576, 0, Integer.MAX_VALUE, "EMC cost per solid block tunnelled through with the Rod of Harmony");
 			rodOfHarmonyMaxDistance = config.getInt("rodOfHarmonyMaxDistance", "items", 0, 0, 512, "Maximum Rod of Harmony travel distance in blocks; 0 means server view distance * 16");

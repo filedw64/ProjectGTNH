@@ -37,6 +37,9 @@ import moze_intel.projecte.network.packets.SyncBagDataPKT;
 import moze_intel.projecte.network.packets.SyncEmcPKT;
 import moze_intel.projecte.network.packets.SyncPedestalPKT;
 import moze_intel.projecte.network.packets.UpdateGemModePKT;
+import moze_intel.projecte.network.packets.WandFocusPKT;
+import moze_intel.projecte.network.packets.WandModePKT;
+import moze_intel.projecte.network.packets.WandUndoPKT;
 import moze_intel.projecte.utils.PELogger;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
@@ -81,6 +84,9 @@ public final class PacketHandler
 		HANDLER.registerMessage(ArcaneTransmutationEmcPKT.class, ArcaneTransmutationEmcPKT.class, 26, Side.CLIENT);
 		HANDLER.registerMessage(PickBlockPKT.Handler.class, PickBlockPKT.class, 27, Side.SERVER);
 		HANDLER.registerMessage(GuiSlotPickPKT.Handler.class, GuiSlotPickPKT.class, 28, Side.SERVER);
+		HANDLER.registerMessage(WandModePKT.class, WandModePKT.class, 29, Side.SERVER);
+		HANDLER.registerMessage(WandUndoPKT.class, WandUndoPKT.class, 30, Side.SERVER);
+		HANDLER.registerMessage(WandFocusPKT.class, WandFocusPKT.class, 31, Side.SERVER);
 	}
 
 	public static Packet getMCPacket(IMessage message)

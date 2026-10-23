@@ -23,6 +23,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import moze_intel.projecte.config.CustomEMCParser;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMapper;
+import moze_intel.projecte.events.BuildersWandEventHandler;
 import moze_intel.projecte.events.ConnectionHandler;
 import moze_intel.projecte.events.PlayerEvents;
 import moze_intel.projecte.events.TickEvents;
@@ -43,6 +44,8 @@ import moze_intel.projecte.utils.AchievementHandler;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.GuiHandler;
 import moze_intel.projecte.utils.PELogger;
+import moze_intel.projecte.utils.WandPlacementQueue;
+import moze_intel.projecte.utils.WandUndoProps;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
@@ -87,12 +90,21 @@ public class PECore
 
 		PlayerEvents pe = new PlayerEvents();
 		MinecraftForge.EVENT_BUS.register(pe);
-		MinecraftForge.EVENT_BUS.register(new moze_intel.projecte.events.BuildersWandEventHandler());
+
+		// gameevent.* 事件只在 FML 总线上派发，Forge 总线上永远收不到：
+		// 这两个处理器同时订阅两条总线的事件，所以照 PlayerEvents 的做法，同一实例各注册一次
+		BuildersWandEventHandler wandHandler = new BuildersWandEventHandler();
+		WandUndoProps.Handler undoHandler = new WandUndoProps.Handler();
+		MinecraftForge.EVENT_BUS.register(wandHandler);
+		MinecraftForge.EVENT_BUS.register(undoHandler);
 
 		EventBus FMLBus = FMLCommonHandler.instance().bus();
 		FMLBus.register(pe);
+		FMLBus.register(wandHandler);
+		FMLBus.register(undoHandler);
 		FMLBus.register(new TickEvents());
 		FMLBus.register(new ConnectionHandler());
+		FMLBus.register(new WandPlacementQueue.TickHandler());
 
 		proxy.registerClientOnlyEvents();
 
@@ -151,6 +163,9 @@ public class PECore
 
 		PlayerChecks.clearLists();
 		PELogger.logDebug("Cleared player check-lists: server stopping.");
+
+		WandPlacementQueue.clearAll();
+		PELogger.logDebug("Cleared Builders Wand placement queues.");
 
 		EMCMapper.clearMaps();
 		PELogger.logDebug("Cleared emc value map.");

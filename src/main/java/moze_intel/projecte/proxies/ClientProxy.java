@@ -44,6 +44,7 @@ import moze_intel.projecte.rendering.NovaCataclysmRenderer;
 import moze_intel.projecte.rendering.NovaCatalystRenderer;
 import moze_intel.projecte.rendering.PedestalItemRenderer;
 import moze_intel.projecte.rendering.PedestalRenderer;
+import moze_intel.projecte.rendering.WandHudOverlay;
 import moze_intel.projecte.rendering.WandRenderer;
 import net.minecraft.client.renderer.entity.RenderArrow;
 import moze_intel.projecte.gameObjs.entity.EntityPEArrow;
@@ -126,6 +127,7 @@ public class ClientProxy implements IProxy
 		FMLCommonHandler.instance().bus().register(pr);
 
 		MinecraftForge.EVENT_BUS.register(new WandRenderer());
+		MinecraftForge.EVENT_BUS.register(new WandHudOverlay());
 		MinecraftForge.EVENT_BUS.register(new MercurialEyeRenderer());
 	}
 
