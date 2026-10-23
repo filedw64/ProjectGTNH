@@ -15,6 +15,7 @@ import moze_intel.projecte.network.packets.ArcaneTransmutationEmcPKT;
 import moze_intel.projecte.network.packets.CheckUpdatePKT;
 import moze_intel.projecte.network.packets.CollectorSyncPKT;
 import moze_intel.projecte.network.packets.CondenserSyncPKT;
+import moze_intel.projecte.network.packets.GuiSlotPickPKT;
 import moze_intel.projecte.network.packets.HistoryRequestPKT;
 import moze_intel.projecte.network.packets.HistorySyncPKT;
 import moze_intel.projecte.network.packets.KeyPressPKT;
@@ -26,6 +27,7 @@ import moze_intel.projecte.network.packets.MercurialTransformPKT;
 import moze_intel.projecte.network.packets.MercurialUndoPKT;
 import moze_intel.projecte.network.packets.OrientationSyncPKT;
 import moze_intel.projecte.network.packets.ParticlePKT;
+import moze_intel.projecte.network.packets.PickBlockPKT;
 import moze_intel.projecte.network.packets.RelaySyncPKT;
 import moze_intel.projecte.network.packets.SearchUpdatePKT;
 import moze_intel.projecte.network.packets.SetFlyPKT;
@@ -77,6 +79,8 @@ public final class PacketHandler
 		HANDLER.registerMessage(MercurialTransformPKT.class, MercurialTransformPKT.class, 24, Side.SERVER);
 		HANDLER.registerMessage(MercurialNotifyPKT.class, MercurialNotifyPKT.class, 25, Side.CLIENT);
 		HANDLER.registerMessage(ArcaneTransmutationEmcPKT.class, ArcaneTransmutationEmcPKT.class, 26, Side.CLIENT);
+		HANDLER.registerMessage(PickBlockPKT.Handler.class, PickBlockPKT.class, 27, Side.SERVER);
+		HANDLER.registerMessage(GuiSlotPickPKT.Handler.class, GuiSlotPickPKT.class, 28, Side.SERVER);
 	}
 
 	public static Packet getMCPacket(IMessage message)

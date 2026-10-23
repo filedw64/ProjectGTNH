@@ -58,6 +58,10 @@ public final class ProjectEConfig {
 	public static boolean disableAllRadiusMining;
 	public static int gemChestCooldown;
 
+	public static boolean enablePickBlockTransmute;
+	public static int pickBlockMaxStacks;
+	public static boolean pickBlockCreativeFree;
+
 	public static String sciFormat;
 
 	public static boolean ignitionRingIgniteBlocks;
@@ -103,6 +107,9 @@ public final class ProjectEConfig {
 			unsafeKeyBinds = config.getBoolean("unsafeKeyBinds", "misc", false, "False requires your hand be empty for Gem Armor Offensive Abilities to be readied or triggered");
 			projectileCooldown = config.getInt("projectileCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for firing projectiles");
 			gemChestCooldown = config.getInt("gemChestCooldown", "misc", 0, 0, Integer.MAX_VALUE, "A cooldown (in ticks) for Gem Chestplate explosion");
+			enablePickBlockTransmute = config.getBoolean("enablePickBlockTransmute", "misc", true, "Consume EMC to get the targeted block directly when pick blocking it (middle click)");
+			pickBlockMaxStacks = config.getInt("pickBlockMaxStacks", "misc", 1, 1, 64, "Maximum number of stacks given by one pick block transmutation");
+			pickBlockCreativeFree = config.getBoolean("pickBlockCreativeFree", "misc", true, "If true pick block transmutation costs no EMC in creative mode");
 			sciFormat = config.getString("sciFormat", "misc", "e", "The string used as a separator for scientific notation in tooltips");
 
 			enableTimeWatch = config.getBoolean("enableTimeWatch", "items", true, "Enable Watch of Flowing Time");
