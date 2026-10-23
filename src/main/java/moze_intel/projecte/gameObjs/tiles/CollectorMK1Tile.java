@@ -460,4 +460,8 @@ public class CollectorMK1Tile extends TileEmc implements IInventory, ISidedInven
 		removeEMC(toRemove);
 		return toRemove;
 	}
+
+	public int getEmcGen() {
+		return this.emcGen;
+	}
 }
