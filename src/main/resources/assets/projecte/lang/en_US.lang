@@ -56,6 +56,9 @@ item.pe_rm_sword.name=Red Matter Sword
 item.pe_rm_hoe.name=Red Matter Hoe
 item.pe_rm_shears.name=Red Matter Shears
 item.pe_rm_hammer.name=Red Matter Hammer
+item.pe_dm_bow.name=Dark Matter Bow
+item.pe_rm_bow.name=Red Matter Bow
+item.pe_storm_bow.name=Storm Bow
 item.pe_rm_katar.name=Red Katar
 item.pe_rm_morning_star.name=Red Morningstar
 item.pe_dm_armor_0.name=Dark Matter Helmet
@@ -136,6 +139,10 @@ achievement.dm_pick=Using Matter on Matter
 achievement.dm_pick.desc=Because why not?
 achievement.rm_pick=Is this thing safe?
 achievement.rm_pick.desc=Probably not.
+achievement.dm_bow=Using Matter on Matter, but Bendy
+achievement.dm_bow.desc=Because why not?
+achievement.rm_bow=Is this thing safe?
+achievement.rm_bow.desc=Probably not.
 achievement.klein=EMC Batteries
 achievement.klein.desc=Storing EMC for a rainy day.
 achievement.klein_big=BIG EMC Batteries
@@ -162,6 +169,15 @@ pe.archangel.pedestal2=Triggers every %s
 
 pe.bhb.pedestal1=Sucks in nearby item drops
 pe.bhb.pedestal2=Dumps in adjacent inventories
+
+pe.bow.no_emc=Not enough EMC!
+pe.bow.tooltip1=Costs %s EMC per shot
+pe.bow.tooltip2=Draw time: %s ticks
+pe.bow.tooltip3=Effect: %s
+pe.bow.tooltip4=Innate effects: Looting %s, Punch %s, Power %s
+pe.dm_bow.special=No special effect
+pe.rm_bow.special=Arrows ignore gravity
+pe.storm_bow.special=Arrows ignore gravity, track targets and call down lightning
 
 pe.body.pedestal1=Restores nearby players' hunger and Nutrition values
 pe.body.pedestal2=Half a shank and extra Nutrition every %s

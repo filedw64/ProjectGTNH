@@ -76,6 +76,9 @@ item.pe_rm_sword.name=红物质剑
 item.pe_rm_hoe.name=红物质锄
 item.pe_rm_shears.name=红物质剪刀
 item.pe_rm_hammer.name=红物质锤
+item.pe_dm_bow.name=暗物质弓
+item.pe_rm_bow.name=红物质弓
+item.pe_storm_bow.name=风暴弓
 item.pe_rm_katar.name=红物质拳剑
 item.pe_rm_morning_star.name=红物质钉头锤
 item.pe_dm_armor_3.name=暗物质靴子
@@ -159,6 +162,10 @@ achievement.pe_dm_pick=物质触碰物质!
 achievement.pe_dm_pick.desc=为什么不试试这个呢?
 achievement.pe_rm_pick=安全的工具?
 achievement.pe_rm_pick.desc=也许不那么安全!
+achievement.dm_bow=用物质做的弓
+achievement.dm_bow.desc=为什么不试试这个呢?
+achievement.rm_bow=这玩意儿安全吗?
+achievement.rm_bow.desc=大概不安全。
 achievement.pe_klein=EMC能量电池!
 achievement.pe_klein.desc=储存EMC以备不时之需!
 achievement.pe_klein_big=大容量的EMC能量电池
@@ -185,6 +192,15 @@ pe.archangel.pedestal2=每%s射击一次
 
 pe.bhb.pedestal1=收集附近的掉落物
 pe.bhb.pedestal2=可存入邻近的容器中
+
+pe.bow.no_emc=EMC 不足！
+pe.bow.tooltip1=每发消耗 %s EMC
+pe.bow.tooltip2=蓄力时间：%s tick
+pe.bow.tooltip3=特殊效果：%s
+pe.bow.tooltip4=自带效果：抢夺 %s、冲击 %s、力量 %s
+pe.dm_bow.special=无特殊效果
+pe.rm_bow.special=箭矢无视重力
+pe.storm_bow.special=箭矢无视重力、自动追踪目标并召唤落雷
 
 pe.body.pedestal1=恢复附近玩家的饥饿值与营养值
 pe.body.pedestal2=每%s恢复半格饥饿值，并补充大量营养值

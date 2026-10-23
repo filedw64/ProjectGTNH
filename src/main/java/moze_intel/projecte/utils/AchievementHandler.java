@@ -24,13 +24,16 @@ public final class AchievementHandler
 	public static final Achievement RM_FURNACE = new Achievement("rm_furnace", "rm_furnace", 6, -2, ObjHandler.rmFurnaceOff, RM_BLOCK).setSpecial().registerStat();
 	public static final Achievement DM_PICK = new Achievement("dm_pick", "dm_pick", 2, 2, ObjHandler.dmPick, DARK_MATTER).registerStat();
 	public static final Achievement RM_PICK = new Achievement("rm_pick", "rm_pick", 2, 4, ObjHandler.rmPick, DM_PICK).setSpecial().registerStat();
+	public static final Achievement DM_BOW = new Achievement("dm_bow", "dm_bow", 4, 2, ObjHandler.dmBow, DARK_MATTER).registerStat();
+	public static final Achievement RM_BOW = new Achievement("rm_bow", "rm_bow", 4, 4, ObjHandler.rmBow, DM_BOW).setSpecial().registerStat();
 	public static final Achievement KLEIN_BASIC = new Achievement("klein", "klein", 0, 4, new ItemStack(ObjHandler.kleinStars, 1, 0), PHIL_STONE).registerStat();
 	public static final Achievement KLEIN_MASTER = new Achievement("klein_big", "klein_big", -2, 4, new ItemStack(ObjHandler.kleinStars, 1, 5), KLEIN_BASIC).setSpecial().registerStat();
 
 	public static final ImmutableList<Achievement> list = ImmutableList.of(
 		PHIL_STONE, ALCH_CHEST, ALCH_BAG, TRANSMUTATION, CONDENSER,
 		COLLECTOR, RELAY, PORTABLE_TRANSMUTATION, DARK_MATTER, RED_MATTER, DM_BLOCK,
-		RM_BLOCK, DM_FURNACE, RM_FURNACE, DM_PICK, RM_PICK, KLEIN_BASIC, KLEIN_MASTER
+		RM_BLOCK, DM_FURNACE, RM_FURNACE, DM_PICK, RM_PICK, KLEIN_BASIC, KLEIN_MASTER,
+		DM_BOW, RM_BOW
 	);
 
 	public static void init() {
