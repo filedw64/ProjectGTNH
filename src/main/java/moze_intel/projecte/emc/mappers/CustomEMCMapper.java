@@ -9,10 +9,16 @@ import moze_intel.projecte.utils.PELogger;
 import java.util.Map;
 
 public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Double> {
+	private final boolean logValues;
+
+	public CustomEMCMapper() { this(true); }
+
+	public CustomEMCMapper(boolean logValues) { this.logValues = logValues; }
+
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Double> mapper, Configuration config) {
 		for (Map.Entry<NormalizedSimpleStack,Double> entry : CustomEMCParser.userValues.entrySet()) {
-			PELogger.logInfo("Adding custom EMC value for " + entry.getKey() + ": " + entry.getValue());
+			if (logValues) PELogger.logInfo("Adding custom EMC value for " + entry.getKey() + ": " + entry.getValue());
 			mapper.setValueBefore(entry.getKey(), entry.getValue());
 		}
 	}
