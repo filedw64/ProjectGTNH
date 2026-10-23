@@ -19,6 +19,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.StatCollector;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -50,6 +51,10 @@ public class GUIMercurialShape extends GuiScreen {
 	private static final double TAU = Math.PI * 2;
 	private static final double INNER_RADIUS = 29;
 	private static final double OUTER_RADIUS = 86;
+	private static final int UNDO_WIDTH = 60;
+	private static final int UNDO_HEIGHT = 20;
+	private static final int UNDO_MARGIN = 10;
+	private static final int UNDO_TOP = 10;
 	private static final double[][] ICONS = createIcons();
 	private final double[][] ringVertices = new double[BuildShape.values().length][];
 	private int blockPage;
@@ -117,6 +122,8 @@ public class GUIMercurialShape extends GuiScreen {
 				currentMatrix.readFromNBT(held.getTagCompound());
 			}
 		}
+		// blocksPerPage() 依赖 hasClipboard，夹紧必须放在最后
+		blockPage = Math.min(blockPage, pageCount() - 1);
 	}
 
 	@Override
@@ -132,7 +139,8 @@ public class GUIMercurialShape extends GuiScreen {
 		if (!usableBlocks.isEmpty()) {
 			int boxSize = 24;
 			int padding = 4;
-			int first = blockPage * blocksPerPage();
+			int page = Math.min(blockPage, pageCount() - 1);
+			int first = page * blocksPerPage();
 			int last = Math.min(usableBlocks.size(), first + blocksPerPage());
 			int totalWidth = (last - first) * (boxSize + padding) - padding;
 			int startX = (this.width - totalWidth) / 2;
@@ -156,21 +164,17 @@ public class GUIMercurialShape extends GuiScreen {
 			RenderHelper.disableStandardItemLighting();
 			GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 			if (usableBlocks.size() > blocksPerPage()) {
-				this.drawCenteredString(this.fontRendererObj, (blockPage + 1) + "/" + pageCount() + "  [Mouse Wheel]", this.width / 2, blockY + 29, 0xAAAAAA);
+				this.drawCenteredString(this.fontRendererObj, StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.page", page + 1, pageCount()), this.width / 2, blockY + 29, 0xAAAAAA);
 			}
 		} else {
-			this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.RED + "No valid blocks with EMC found in inventory!", this.width / 2, this.height - 50, 0xFFFFFF);
+			this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.RED + StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.no_blocks"), this.width / 2, this.height - 50, 0xFFFFFF);
 		}
 
 		// 渲染右上角 Undo 按钮
-		int undoWidth = 60;
-		int undoHeight = 20;
-		int undoX = this.width - undoWidth - 10;
-		int undoY = 10;
-
-		hoveredUndo = mouseX >= undoX && mouseX <= undoX + undoWidth && mouseY >= undoY && mouseY <= undoY + undoHeight;
-		drawRect(undoX, undoY, undoX + undoWidth, undoY + undoHeight, hoveredUndo ? 0xAAFF5555 : 0x55AA0000);
-		this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.WHITE + "UNDO", undoX + undoWidth / 2, undoY + 6, 0xFFFFFF);
+		int btnX = undoX();
+		int btnY = undoY();
+		drawRect(btnX, btnY, btnX + UNDO_WIDTH, btnY + UNDO_HEIGHT, hoveredUndo ? 0xAAFF5555 : 0x55AA0000);
+		this.drawCenteredString(this.fontRendererObj, EnumChatFormatting.WHITE + StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.undo"), btnX + UNDO_WIDTH / 2, btnY + 6, 0xFFFFFF);
 
 		// 渲染左侧树状历史记录
 		if (clientHistoryCache != null && !clientHistoryCache.isEmpty()) {
@@ -178,7 +182,7 @@ public class GUIMercurialShape extends GuiScreen {
 			int startY = 40;
 			int rowHeight = 22;
 
-			this.drawString(this.fontRendererObj, EnumChatFormatting.GOLD + "Operation History", listX, 20, 0xFFFFFF);
+			this.drawString(this.fontRendererObj, EnumChatFormatting.GOLD + StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.history"), listX, 20, 0xFFFFFF);
 
 			int index = 0;
 			for (int i = clientHistoryCache.size() - 1; i >= 0 && index < historyRows(); i--) {
@@ -220,27 +224,26 @@ public class GUIMercurialShape extends GuiScreen {
 
 		if (hasClipboard) {
 			int panelWidth = 100;
-			int panelHeight = 60;
 			// 计算右下角坐标，留出 15 像素边距
 			int panelX = this.width - panelWidth - 15;
 			int panelY = matrixY();
 
-			this.drawString(this.fontRendererObj, EnumChatFormatting.LIGHT_PURPLE + "矩阵控制台", panelX + 15, panelY - 12, 0xFFFFFF);
+			this.drawString(this.fontRendererObj, EnumChatFormatting.LIGHT_PURPLE + StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.matrix_title"), panelX + 15, panelY - 12, 0xFFFFFF);
 
 			// 旋转按钮
 			drawRect(panelX, panelY, panelX + 90, panelY + 15, 0x550000AA);
-			this.drawString(this.fontRendererObj, "旋转: " + (currentMatrix.rotations * 90) + "°", panelX + 5, panelY + 4, 0xFFFFFF);
+			this.drawString(this.fontRendererObj, StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.rotation", currentMatrix.rotations * 90), panelX + 5, panelY + 4, 0xFFFFFF);
 
 			// 堆叠轴切换按钮
 			drawRect(panelX, panelY + 20, panelX + 90, panelY + 35, 0x5500AA00);
-			String axisName = currentMatrix.stackAxis == ForgeDirection.UNKNOWN ? "无" : currentMatrix.stackAxis.name();
-			this.drawString(this.fontRendererObj, "堆叠轴: " + axisName, panelX + 5, panelY + 24, 0xFFFFFF);
+			String axisName = StatCollector.translateToLocalFormatted(stackAxisKey(currentMatrix.stackAxis));
+			this.drawString(this.fontRendererObj, StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.axis", axisName), panelX + 5, panelY + 24, 0xFFFFFF);
 
 			// 堆叠数量按钮
 			drawRect(panelX, panelY + 40, panelX + 20, panelY + 55, 0x55AA0000);
 			this.drawString(this.fontRendererObj, "-", panelX + 7, panelY + 44, 0xFFFFFF);
 
-			this.drawString(this.fontRendererObj, "数量: " + currentMatrix.stackCount, panelX + 25, panelY + 44, 0xFFFFFF);
+			this.drawString(this.fontRendererObj, StatCollector.translateToLocalFormatted("item.pe_mercurial_eye.gui.count", currentMatrix.stackCount), panelX + 25, panelY + 44, 0xFFFFFF);
 
 			drawRect(panelX + 70, panelY + 40, panelX + 90, panelY + 55, 0x5500AA00);
 			this.drawString(this.fontRendererObj, "+", panelX + 77, panelY + 44, 0xFFFFFF);
@@ -252,10 +255,9 @@ public class GUIMercurialShape extends GuiScreen {
 		updateHover(mouseX, mouseY);
 		if (mouseButton == 0) {
 
-			// 响应矩阵控制台点击
+			// 响应矩阵面板点击
 			if (hasClipboard) {
 				int panelWidth = 100;
-				int panelHeight = 60;
 				int panelX = this.width - panelWidth - 15;
 				int panelY = matrixY();
 				boolean matrixChanged = false;
@@ -343,6 +345,22 @@ public class GUIMercurialShape extends GuiScreen {
 	@Override
 	public boolean doesGuiPauseGame() { return false; }
 
+	private int undoX() { return width - UNDO_WIDTH - UNDO_MARGIN; }
+	private int undoY() { return UNDO_TOP; }
+
+	private static String stackAxisKey(ForgeDirection dir) {
+		switch (dir) {
+			case DOWN: return "item.pe_mercurial_eye.gui.dir.down";
+			case UP: return "item.pe_mercurial_eye.gui.dir.up";
+			case NORTH: return "item.pe_mercurial_eye.gui.dir.north";
+			case SOUTH: return "item.pe_mercurial_eye.gui.dir.south";
+			case WEST: return "item.pe_mercurial_eye.gui.dir.west";
+			case EAST: return "item.pe_mercurial_eye.gui.dir.east";
+			case UNKNOWN:
+			default: return "item.pe_mercurial_eye.gui.axis_none";
+		}
+	}
+
 	private int wheelX() { return width < 440 ? width - 100 : width / 2; }
 	private int wheelY() { return Math.max(92, Math.min(height / 2 - 20, height - 165)); }
 	private int matrixY() { return height >= 330 ? 40 : height - 75; }
@@ -354,15 +372,19 @@ public class GUIMercurialShape extends GuiScreen {
 	public void handleMouseInput() {
 		super.handleMouseInput();
 		int scroll = Mouse.getEventDWheel();
-		if (scroll != 0) blockPage = (blockPage + (scroll < 0 ? 1 : pageCount() - 1)) % pageCount();
+		if (scroll != 0) {
+			blockPage = (blockPage + (scroll < 0 ? 1 : pageCount() - 1)) % pageCount();
+			blockPage = Math.min(blockPage, pageCount() - 1);
+		}
 	}
 
 	private void updateHover(int mouseX, int mouseY) {
-		blockPage = Math.min(blockPage, pageCount() - 1);
 		hoveredShapeIndex = -1;
 		hoveredBlockIndex = -1;
 		hoveredHistoryId = "";
-		hoveredUndo = mouseX >= width - 70 && mouseX < width - 10 && mouseY >= 10 && mouseY < 30;
+		int btnX = undoX();
+		int btnY = undoY();
+		hoveredUndo = mouseX >= btnX && mouseX < btnX + UNDO_WIDTH && mouseY >= btnY && mouseY < btnY + UNDO_HEIGHT;
 		double dx = mouseX - wheelX();
 		double dy = mouseY - wheelY();
 		double distance = dx * dx + dy * dy;
@@ -381,7 +403,8 @@ public class GUIMercurialShape extends GuiScreen {
 				}
 			}
 		}
-		int first = blockPage * blocksPerPage();
+		int page = Math.min(blockPage, pageCount() - 1);
+		int first = page * blocksPerPage();
 		int count = Math.min(blocksPerPage(), usableBlocks.size() - first);
 		int start = (width - (count * 28 - 4)) / 2;
 		if (mouseY >= height - 60 && mouseY < height - 36 && mouseX >= start) {
@@ -451,7 +474,7 @@ public class GUIMercurialShape extends GuiScreen {
 			GL11.glPopAttrib();
 		}
 		int index = hoveredShapeIndex < 0 ? currentShape : hoveredShapeIndex;
-		drawCenteredString(fontRendererObj, shapes[index].getDisplayName(), x, y + 91, 0xA9ECFF);
+		drawCenteredString(fontRendererObj, StatCollector.translateToLocal(shapes[index].getLangKey()), x, y + 91, 0xA9ECFF);
 		drawCenteredString(fontRendererObj, Integer.toString(shapes[index].getRequiredClicks()), x, y - 4, 0xFFFFFF);
 	}
 

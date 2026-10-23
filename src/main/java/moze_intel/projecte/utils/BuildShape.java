@@ -2,29 +2,30 @@ package moze_intel.projecte.utils;
 
 public enum BuildShape {
 	// 2-Clicks (只需起点和终点)
-	LINE("Line", 2),
-	WALL("Wall", 2),
-	FLOOR("Floor", 2),
+	LINE("item.pe_mercurial_eye.shape.line", 2),
+	WALL("item.pe_mercurial_eye.shape.wall", 2),
+	FLOOR("item.pe_mercurial_eye.shape.floor", 2),
 
 	// 3-Clicks (需要起点、中点确定底面，终点确定高度)
-	CUBE("Cube (Solid)", 3),
-	CUBE_HOLLOW("Cube (Hollow)", 3),
-	CUBE_WIRE("Cube (Wireframe)", 3),
-	SPHERE("Sphere (Solid)", 3),
-	SPHERE_HOLLOW("Sphere (Hollow)", 3),
-	CYLINDER("Cylinder (Solid)", 3),
-	CYLINDER_HOLLOW("Cylinder (Hollow)", 3),
-	SLOPE("Slope", 3);
+	CUBE("item.pe_mercurial_eye.shape.cube", 3),
+	CUBE_HOLLOW("item.pe_mercurial_eye.shape.cube_hollow", 3),
+	CUBE_WIRE("item.pe_mercurial_eye.shape.cube_wire", 3),
+	SPHERE("item.pe_mercurial_eye.shape.sphere", 3),
+	SPHERE_HOLLOW("item.pe_mercurial_eye.shape.sphere_hollow", 3),
+	CYLINDER("item.pe_mercurial_eye.shape.cylinder", 3),
+	CYLINDER_HOLLOW("item.pe_mercurial_eye.shape.cylinder_hollow", 3),
+	SLOPE("item.pe_mercurial_eye.shape.slope", 3);
 
-	private final String displayName;
+	// 存 lang key 而不是成品文案：BuildShape 在服务端也会被加载，翻译交给客户端做
+	private final String langKey;
 	private final int requiredClicks;
 
-	BuildShape(String displayName, int requiredClicks) {
-		this.displayName = displayName;
+	BuildShape(String langKey, int requiredClicks) {
+		this.langKey = langKey;
 		this.requiredClicks = requiredClicks;
 	}
 
-	public String getDisplayName() { return displayName; }
+	public String getLangKey() { return langKey; }
 	public int getRequiredClicks() { return requiredClicks; }
 
 	/** 形状遍历回调：服务端批量建造与客户端线框预览共用同一套迭代顺序 */

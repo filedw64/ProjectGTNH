@@ -35,9 +35,10 @@ public class ConnectionHandler {
 		// 增加类型校验，防止假玩家导致的潜在强转崩溃
 		if (player instanceof EntityPlayerMP playerMP) {
 			PlayerChecks.removePlayerFromLists(playerMP);
-			// 清理该玩家留在服务端静态 Map 里的历史记录与剪贴板，防止内存泄漏
+			// 清理该玩家留在服务端静态 Map 里的历史记录与剪贴板内存缓存，防止内存泄漏
 			MercurialHistory.clearPlayer(playerMP.getUniqueID());
-			MercurialClipboard.clearClipboard(playerMP.getUniqueID());
+			// 剪贴板只清内存、保留存档：被剪掉的方块已经真的从世界里消失了，删档等于永久丢方块
+			MercurialClipboard.evictClipboard(playerMP.getUniqueID());
 		}
 	}
 }

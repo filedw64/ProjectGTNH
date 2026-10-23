@@ -28,29 +28,39 @@ import org.lwjgl.opengl.GL11;
 @SideOnly(Side.CLIENT)
 public class MercurialEyeRenderer {
 
+	// 逐块线框的块数上限：超过后只画整体外壳（8192 块逐帧线框约 20 万顶点）
+	private static final int PER_BLOCK_PREVIEW_LIMIT = 2048;
+	// 缓存仍有效时的重扫间隔（tick）：选区内的方块内容可能被外部改动，需要定期刷新
+	private static final int PREVIEW_REBUILD_INTERVAL = 5;
+
 	// setBlockBoundsBasedOnState 失败的累计次数，用于日志节流
 	private static int blockBoundsFailures = 0;
 	private final java.util.List<AxisAlignedBB> previewBoxes = new java.util.ArrayList<>();
 	private String previewKey;
 	private World previewWorld;
+	private int previewCount;
+	private long previewBuiltTick = Long.MIN_VALUE;
 
 	@SubscribeEvent
 	public void onWorldRenderLast(RenderWorldLastEvent event) {
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityPlayer player = mc.thePlayer;
 		if (player == null || player.worldObj == null) {
-			previewBoxes.clear(); previewKey = null; previewWorld = null;
+			clearPreview();
 			return;
 		}
 		World world = player.worldObj;
 		ItemStack held = player.getHeldItem();
 
 		if (held == null || !(held.getItem() instanceof MercurialEye)) {
-			previewBoxes.clear(); previewKey = null; previewWorld = null;
+			clearPreview();
 			return;
 		}
 		NBTTagCompound nbt = held.getTagCompound();
-		if (nbt == null) return;
+		if (nbt == null) {
+			clearPreview();
+			return;
+		}
 
 		double px = player.lastTickPosX + (player.posX - player.lastTickPosX) * event.partialTicks;
 		double py = player.lastTickPosY + (player.posY - player.lastTickPosY) * event.partialTicks;
@@ -75,6 +85,9 @@ public class MercurialEyeRenderer {
 
 		// 新版的 复制/剪切/粘贴 模式
 		if (mode == MercurialEye.COPY_PASTE_MODE || mode == MercurialEye.CUT_MOVE_MODE) {
+
+			// 本分支不画选区缓存，立即释放上一次的方块线框，避免拿着旧缓存跨模式
+			clearPreview();
 
 			if (nbt.getBoolean("HasClipboard")) {
 				MovingObjectPosition mop = mc.objectMouseOver;
@@ -143,6 +156,7 @@ public class MercurialEyeRenderer {
 		// 恢复原版的 Normal / Transmutation 模式渲染
 		else {
 			if (!nbt.hasKey("AnchorX")) {
+				clearPreview();
 				return;
 			}
 
@@ -163,6 +177,7 @@ public class MercurialEyeRenderer {
 			BuildShape shape = eyeItem.getBuildShape(held);
 			ItemStack targetItem = nbt.hasKey("TargetItem") ? ItemStack.loadItemStackFromNBT(nbt.getCompoundTag("TargetItem")) : null;
 			if (targetItem == null || !(targetItem.getItem() instanceof net.minecraft.item.ItemBlock)) {
+				clearPreview();
 				return;
 			}
 
@@ -189,23 +204,33 @@ public class MercurialEyeRenderer {
 			long sizeX = (long) maxX - minX + 1;
 			long sizeY = (long) maxY - minY + 1;
 			long sizeZ = (long) maxZ - minZ + 1;
-			if (sizeX <= 8192 && sizeY <= 8192 && sizeZ <= 8192 && sizeX * sizeY * sizeZ <= 8192L) {
+			if (sizeX <= MercurialEye.MAX_BUILD_VOLUME && sizeY <= MercurialEye.MAX_BUILD_VOLUME
+				&& sizeZ <= MercurialEye.MAX_BUILD_VOLUME && sizeX * sizeY * sizeZ <= (long) MercurialEye.MAX_BUILD_VOLUME) {
 				if (mode == MercurialEye.NORMAL_MODE) GL11.glColor4f(0.2F, 0.8F, 1.0F, 0.6F);
 				else GL11.glColor4f(1.0F, 0.2F, 0.2F, 0.6F);
 
-				String key = world.getTotalWorldTime() + ":" + startX + ":" + startY + ":" + startZ
+				String key = startX + ":" + startY + ":" + startZ
 					+ ":" + endX + ":" + endY + ":" + endZ + ":" + shape.ordinal() + ":" + mode
 					+ ":" + Block.getIdFromBlock(newBlock) + ":" + newMeta;
-				if (previewWorld != world || !key.equals(previewKey)) {
+				long worldTime = world.getTotalWorldTime();
+				boolean keyChanged = previewWorld != world || !key.equals(previewKey);
+				// 同一 tick 内会渲染多帧，previewBuiltTick 保证节流窗口内只重建一次
+				boolean rebuildDue = worldTime != previewBuiltTick && worldTime % PREVIEW_REBUILD_INTERVAL == 0L;
+				if (keyChanged || rebuildDue) {
 					previewKey = null;
-					previewBoxes.clear();
-					shape.forEachBlock(startX, startY, startZ, endX, endY, endZ,
-						(x, y, z) -> renderBlockOutline(world, x, y, z, newBlock, newMeta, mode));
+					rebuildPreview(world, shape, startX, startY, startZ, endX, endY, endZ, newBlock, newMeta, mode);
 					previewWorld = world;
 					previewKey = key;
+					previewBuiltTick = worldTime;
 				}
+
 				tess.startDrawing(GL11.GL_LINES);
-				for (AxisAlignedBB box : previewBoxes) drawWireframe(tess, box);
+				if (previewCount <= PER_BLOCK_PREVIEW_LIMIT) {
+					for (AxisAlignedBB box : previewBoxes) drawWireframe(tess, box);
+				} else {
+					// 大选区只画整体外壳，不再逐块生成 AABB
+					drawWireframe(tess, AxisAlignedBB.getBoundingBox(minX, minY, minZ, maxX + 1, maxY + 1, maxZ + 1));
+				}
 				tess.draw();
 			}
 		}
@@ -215,6 +240,28 @@ public class MercurialEyeRenderer {
 			GL11.glPopMatrix();
 			GL11.glPopAttrib();
 		}
+	}
+
+	private void clearPreview() {
+		previewBoxes.clear();
+		previewKey = null;
+		previewWorld = null;
+		previewCount = 0;
+		previewBuiltTick = Long.MIN_VALUE;
+	}
+
+	/**
+	 * 先数块数再决定渲染路径：超过阈值的选区不分配任何 AABB，由调用方画整体外壳。
+	 */
+	private void rebuildPreview(World world, BuildShape shape, int startX, int startY, int startZ, int endX, int endY, int endZ,
+		Block newBlock, int newMeta, int mode) {
+		previewBoxes.clear();
+		int[] count = {0};
+		shape.forEachBlock(startX, startY, startZ, endX, endY, endZ, (x, y, z) -> count[0]++);
+		previewCount = count[0];
+		if (previewCount > PER_BLOCK_PREVIEW_LIMIT) return;
+		shape.forEachBlock(startX, startY, startZ, endX, endY, endZ,
+			(x, y, z) -> renderBlockOutline(world, x, y, z, newBlock, newMeta, mode));
 	}
 
 	private void drawWireframe(Tessellator tess, AxisAlignedBB bb) {

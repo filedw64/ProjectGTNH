@@ -12,6 +12,14 @@ import java.util.Map;
 public class StateRotatorRegistry {
 	private static final Map<Class<?>, IStateRotator> CLASS_ROTATORS = new HashMap<>();
 	private static final Map<String, IStateRotator> GT_NBT_ROTATOR = new HashMap<>();
+	// 方块 -> 查表结果缓存：getRotator 在粘贴的 stack×blocks 双层循环里被调用（最坏 8192×64 次），
+	// 每次重新做注册名拼接 + 类遍历 + isAssignableFrom 是纯浪费
+	private static final Map<Block, IStateRotator> ROTATOR_CACHE = new HashMap<>();
+	// 哨兵：区分“还没查过”和“查过了，确实没有旋钮”，null 结果也要缓存
+	private static final IStateRotator NO_ROTATOR = new IStateRotator() {
+		@Override public int rotateMeta(Block block, int meta, int rotations) { return meta; }
+		@Override public void rotateNBT(Block block, int meta, NBTTagCompound nbt, int rotations) {}
+	};
 
 	static {
 		// 原版原木
@@ -85,6 +93,15 @@ public class StateRotatorRegistry {
 	public static IStateRotator getRotator(Block block) {
 		if (block == null) return null;
 
+		IStateRotator rotator = ROTATOR_CACHE.get(block);
+		if (rotator == null) {
+			rotator = resolveRotator(block);
+			ROTATOR_CACHE.put(block, rotator);
+		}
+		return rotator == NO_ROTATOR ? null : rotator;
+	}
+
+	private static IStateRotator resolveRotator(Block block) {
 		// 特判 GT 机器
 		String blockName = Block.blockRegistry.getNameForObject(block);
 		if (blockName != null && blockName.startsWith("gregtech:gt.blockmachines")) {
@@ -97,7 +114,7 @@ public class StateRotatorRegistry {
 				return entry.getValue();
 			}
 		}
-		return null;
+		return NO_ROTATOR;
 	}
 
 	/**

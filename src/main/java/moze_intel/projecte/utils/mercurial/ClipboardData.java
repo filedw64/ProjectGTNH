@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class ClipboardData {
 	// 单个剪贴板的方块数量上限，防止超大选区长期占用服务端内存
-	public static final int MAX_CLIPBOARD_BLOCKS = 32768;
+	public static final int MAX_CLIPBOARD_BLOCKS = 32767;
 
 	public final int sizeX;
 	public final int sizeY;

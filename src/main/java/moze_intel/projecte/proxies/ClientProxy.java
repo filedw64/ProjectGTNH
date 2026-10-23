@@ -119,8 +119,10 @@ public class ClientProxy implements IProxy
 		FMLCommonHandler.instance().bus().register(pickEvents);
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
 		FMLCommonHandler.instance().bus().register(new PickBlockEvents());
-		MinecraftForge.EVENT_BUS.register(new MercurialHUD());
-		FMLCommonHandler.instance().bus().register(new MercurialHUD());
+		// 同一个实例注册到两条总线：HUD 渲染走 Forge 总线，ClientTickEvent 走 FML 总线，共享同一条消息的计时
+		MercurialHUD mercurialHUD = new MercurialHUD();
+		MinecraftForge.EVENT_BUS.register(mercurialHUD);
+		FMLCommonHandler.instance().bus().register(mercurialHUD);
 
 		RenderEvents pr = new RenderEvents();
 		MinecraftForge.EVENT_BUS.register(pr);

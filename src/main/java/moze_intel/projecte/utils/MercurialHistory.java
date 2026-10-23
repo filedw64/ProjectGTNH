@@ -1,10 +1,14 @@
 package moze_intel.projecte.utils;
 
+import moze_intel.projecte.gameObjs.items.MercurialEye;
+import moze_intel.projecte.network.PacketHandler;
+import moze_intel.projecte.network.packets.MercurialNotifyPKT;
 import moze_intel.projecte.playerData.Transmutation;
+import moze_intel.projecte.utils.mercurial.MercurialClipboard;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -40,8 +44,9 @@ public class MercurialHistory {
 		}
 	}
 
-	public static void sendNotify(EntityPlayerMP player, String msg) {
-		moze_intel.projecte.network.PacketHandler.sendTo(new moze_intel.projecte.network.packets.MercurialNotifyPKT(msg), player);
+	// HUD 通知：只传 lang key 与参数，颜色由客户端按 level 判定
+	public static void sendNotify(EntityPlayerMP player, String langKey, int level, String... args) {
+		PacketHandler.sendTo(new MercurialNotifyPKT(langKey, level, args), player);
 	}
 
 	public static class HistoryRecord {
@@ -124,7 +129,7 @@ public class MercurialHistory {
 
 		LinkedList<HistoryRecord> list = historyMap.get(pid);
 		if (list == null || list.isEmpty()) {
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "No history to undo."));
+			sendNotify(player, "item.pe_mercurial_eye.msg.undo_empty", MercurialNotifyPKT.LEVEL_WARN);
 			return;
 		}
 
@@ -146,13 +151,13 @@ public class MercurialHistory {
 		}
 
 		if (target == null) {
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "History record not found or expired."));
+			sendNotify(player, "item.pe_mercurial_eye.msg.undo_not_found", MercurialNotifyPKT.LEVEL_WARN);
 			return;
 		}
 
 		// 记录只在它的产生维度内有效，跨维度撤销会写到完全无关的坐标上
 		if (target.dimensionId != world.provider.dimensionId) {
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.RED + "该记录属于其他维度，无法在此撤销。"));
+			sendNotify(player, "item.pe_mercurial_eye.msg.undo_wrong_dim", MercurialNotifyPKT.LEVEL_WARN);
 			return;
 		}
 
@@ -177,10 +182,8 @@ public class MercurialHistory {
 		// 如果存在冲突且尚未确认，挂起并警告玩家
 		if (!conflicts.isEmpty() && !force) {
 			pendingConfirmations.put(pid, target.id);
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.YELLOW +
-				"Warning: Newer operations modified these blocks. Undoing will ALSO revert " + conflicts.size() + " newer operation(s)."));
-			player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.GREEN +
-				"[Press the Undo key again to confirm]"));
+			// HUD 一行只放得下一条，把"再按一次确认"并进告警文案
+			sendNotify(player, "item.pe_mercurial_eye.msg.undo_conflict", MercurialNotifyPKT.LEVEL_WARN, String.valueOf(conflicts.size()));
 			return;
 		}
 
@@ -195,7 +198,7 @@ public class MercurialHistory {
 		// 撤销目标记录
 		revertRecord(player, world, target);
 		list.remove(target);
-		player.addChatComponentMessage(new ChatComponentText(EnumChatFormatting.AQUA + "Undo successful."));
+		sendNotify(player, "item.pe_mercurial_eye.msg.undo_ok", MercurialNotifyPKT.LEVEL_INFO);
 	}
 
 	private static void revertRecord(EntityPlayerMP player, World world, HistoryRecord record) {
@@ -219,6 +222,8 @@ public class MercurialHistory {
 				if (te != null) {
 					world.setTileEntity(bc.x, bc.y, bc.z, te);
 					te.updateContainingBlockInfo();
+					// 恢复出来的容器/机器内容要落盘，否则退出前没被别的途径标脏就会丢内容
+					te.markDirty();
 				}
 			}
 
@@ -236,6 +241,25 @@ public class MercurialHistory {
 			Transmutation.sync(player);
 		}
 
-		sendNotify(player, "恢复了 " + blocksRestored + " 个方块，跳过 " + blocksSkipped + " 个（已被外部改动）。");
+		// 撤销一条剪切记录意味着方块已经回到世界，剪贴板里还留着同一批方块就是免费复制源
+		if (blocksRestored > 0 && isCutRecord(record)) {
+			MercurialClipboard.clearClipboard(player.getUniqueID());
+			// 手持之眼上的 HasClipboard 也要清，否则下次粘贴会先弹一条"剪贴板为空"
+			ItemStack held = player.getHeldItem();
+			if (held != null && held.getItem() instanceof MercurialEye && held.hasTagCompound()) {
+				held.getTagCompound().setBoolean("HasClipboard", false);
+			}
+		}
+
+		sendNotify(player, "item.pe_mercurial_eye.msg.undo_result", MercurialNotifyPKT.LEVEL_INFO,
+			String.valueOf(blocksRestored), String.valueOf(blocksSkipped));
+	}
+
+	// 只有剪切记录的 newBlock 会是空气：粘贴与批量建造永远往世界里写实体方块
+	private static boolean isCutRecord(HistoryRecord record) {
+		for (BlockChange bc : record.changes) {
+			if (bc.newBlock != Blocks.air || bc.newMeta != 0 || bc.emcDiff != 0D) return false;
+		}
+		return !record.changes.isEmpty();
 	}
 }
