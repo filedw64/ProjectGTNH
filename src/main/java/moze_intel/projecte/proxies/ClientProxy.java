@@ -10,7 +10,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.MinecraftForge;
+import moze_intel.projecte.events.GuiSlotPickEvents;
 import moze_intel.projecte.events.KeyPressEvent;
+import moze_intel.projecte.events.PickBlockEvents;
 import moze_intel.projecte.events.RenderEvents;
 import moze_intel.projecte.events.ToolTipEvent;
 import moze_intel.projecte.events.TransmutationRenderingEvent;
@@ -110,7 +112,9 @@ public class ClientProxy implements IProxy
 	{
 		MinecraftForge.EVENT_BUS.register(new ToolTipEvent());
 		MinecraftForge.EVENT_BUS.register(new TransmutationRenderingEvent());
+		MinecraftForge.EVENT_BUS.register(new GuiSlotPickEvents());
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
+		FMLCommonHandler.instance().bus().register(new PickBlockEvents());
 		MinecraftForge.EVENT_BUS.register(new MercurialHUD());
 		FMLCommonHandler.instance().bus().register(new MercurialHUD());
 
