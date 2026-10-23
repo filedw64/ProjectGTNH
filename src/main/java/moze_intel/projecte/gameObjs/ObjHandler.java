@@ -678,6 +678,9 @@ public class ObjHandler
 		if (ProjectEConfig.enableBuildersWand)
 			GameRegistry.addShapedRecipe(new ItemStack(buildersWand), "XXP", "XSX", "OXX", 'P', philosStone, 'S', new ItemStack(kleinStars, 1, 5), 'O', kleinStars);
 
+		if (ProjectEConfig.enableRodOfHarmony)
+			GameRegistry.addShapedRecipe(new ItemStack(rodOfHarmony), " D ", "KRK", " D ", 'D', new ItemStack(matter, 1, 0), 'K', new ItemStack(kleinStars, 1, 5), 'R', new ItemStack(matter, 1, 1));
+
 		if (ProjectEConfig.enableInfiniteFuel) // 无限燃料：转化桌外面一圈木炭/煤炭
 			GameRegistry.addShapedRecipe(new ItemStack(infiniteFuel), "CCC", "CTC", "CCC", 'C', new ItemStack(Items.coal, 1, OreDictionary.WILDCARD_VALUE), 'T', transmutationTablet);
 

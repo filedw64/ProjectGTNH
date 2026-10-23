@@ -47,7 +47,9 @@ public class GuiSlotPickPKT implements IMessage
 		public IMessage onMessage(GuiSlotPickPKT message, MessageContext ctx)
 		{
 			EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-			if (player == null || player.worldObj == null) return null;
+			if (player == null) return null;
+
+			if (player.worldObj == null) return null;
 
 			Container container = player.openContainer;
 			if (container == null || container.windowId != message.windowId) return null;

@@ -59,13 +59,15 @@ public class PickBlockPKT implements IMessage
 		@Override
 		public IMessage onMessage(PickBlockPKT message, MessageContext ctx)
 		{
+			EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+			if (player == null) return null;
+
 			if (!ProjectEConfig.enablePickBlockTransmute) return null;
 
 			int side = message.side;
 			if (side < 0 || side > 6) return null;
 
-			EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-			if (player == null || player.worldObj == null) return null;
+			if (player.worldObj == null) return null;
 
 			World world = player.worldObj;
 			int x = message.x;

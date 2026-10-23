@@ -87,6 +87,7 @@ public class PECore
 
 		PlayerEvents pe = new PlayerEvents();
 		MinecraftForge.EVENT_BUS.register(pe);
+		MinecraftForge.EVENT_BUS.register(new moze_intel.projecte.events.BuildersWandEventHandler());
 
 		EventBus FMLBus = FMLCommonHandler.instance().bus();
 		FMLBus.register(pe);

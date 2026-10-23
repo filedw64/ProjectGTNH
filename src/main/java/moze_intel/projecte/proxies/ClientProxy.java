@@ -112,7 +112,10 @@ public class ClientProxy implements IProxy
 	{
 		MinecraftForge.EVENT_BUS.register(new ToolTipEvent());
 		MinecraftForge.EVENT_BUS.register(new TransmutationRenderingEvent());
-		MinecraftForge.EVENT_BUS.register(new GuiSlotPickEvents());
+		// 同一个实例注册到两条总线：MouseEvent 走 Forge 总线，ClientTickEvent 走 FML 总线，共享上升沿/去抖状态
+		GuiSlotPickEvents pickEvents = new GuiSlotPickEvents();
+		MinecraftForge.EVENT_BUS.register(pickEvents);
+		FMLCommonHandler.instance().bus().register(pickEvents);
 		FMLCommonHandler.instance().bus().register(new KeyPressEvent());
 		FMLCommonHandler.instance().bus().register(new PickBlockEvents());
 		MinecraftForge.EVENT_BUS.register(new MercurialHUD());

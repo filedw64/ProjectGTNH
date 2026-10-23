@@ -25,6 +25,11 @@ public final class ProjectEConfig {
 	public static boolean enableInfiniteSteak;
 	public static boolean enableBuildersWand;
 	public static boolean enableRodOfHarmony;
+	public static int buildersWandMaxBlocks;
+	public static int rodOfHarmonyCostPerBlock;
+	public static int rodOfHarmonyCostPerWallBlock;
+	public static int rodOfHarmonyMaxDistance;
+	public static int rodOfHarmonySafeRadius;
 	public static boolean enableAEGU;
 	public static boolean enableStoneAlwaysEdible;
 	public static boolean bowLightningEnabled;
@@ -119,6 +124,11 @@ public final class ProjectEConfig {
 			enableInfiniteSteak = config.getBoolean("enableInfiniteSteak", "items", true, "Enable Infinite Steak backported from Project Expansion");
 			enableBuildersWand = config.getBoolean("enableBuildersWand", "items", true, "Enable EMC Builders Wand");
 			enableRodOfHarmony = config.getBoolean("enableRodOfHarmony", "items", true, "Enable Rod of Harmony");
+			buildersWandMaxBlocks = config.getInt("buildersWandMaxBlocks", "items", 1024, 1, 4096, "Maximum number of blocks a single Builders Wand operation may place");
+			rodOfHarmonyCostPerBlock = config.getInt("rodOfHarmonyCostPerBlock", "items", 8, 0, Integer.MAX_VALUE, "EMC cost per block flown with the Rod of Harmony");
+			rodOfHarmonyCostPerWallBlock = config.getInt("rodOfHarmonyCostPerWallBlock", "items", 576, 0, Integer.MAX_VALUE, "EMC cost per solid block tunnelled through with the Rod of Harmony");
+			rodOfHarmonyMaxDistance = config.getInt("rodOfHarmonyMaxDistance", "items", 0, 0, 512, "Maximum Rod of Harmony travel distance in blocks; 0 means server view distance * 16");
+			rodOfHarmonySafeRadius = config.getInt("rodOfHarmonySafeRadius", "items", 2, 0, 8, "Horizontal radius searched for a safe landing spot by the Rod of Harmony");
 			enableAEGU = config.getBoolean("enableAEGU", "items", true, "Enable Alchemical Energy Generating Unit");
 			enableStoneAlwaysEdible = config.getBoolean("enableStoneAlwaysEdible", "items", true, "If true, carrying a Body Stone or Life Stone in the main inventory or a Baubles slot lets you keep eating while your hunger bar is full. Does not consume EMC.");
 			bowLightningEnabled = config.getBoolean("bowLightningEnabled", "items", true, "Whether the Storm Bow's arrows call down lightning on impact");

@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack;
  */
 public final class PickTransmuteHelper
 {
+
 	private PickTransmuteHelper() {}
 
 	/**
@@ -48,6 +49,13 @@ public final class PickTransmuteHelper
 		ItemStack stack = template.copy();
 		stack.stackSize = 1;
 
+		// 模板耐久归一：EMC 与知识都以含 itemDamage 的键比对，受损工具/弓与“已学习的满耐久版本”对不上。
+		// 非 damageable 物品（羊毛颜色等 meta 变体）绝不动 itemDamage。
+		if (stack.getItem() != null && stack.getMaxDamage() > 0)
+		{
+			stack.setItemDamage(0);
+		}
+
 		if (!EMCHelper.doesItemHaveEmc(stack)) return false;
 		double unit = EMCHelper.getEmcValue(stack);
 		if (unit <= 0 || Double.isNaN(unit) || Double.isInfinite(unit)) return false;
@@ -72,7 +80,8 @@ public final class PickTransmuteHelper
 		if (qty <= 0) return false;
 
 		// 全有或全无：放不下就零副作用返回
-		if (ItemHelper.getSpaceFor(player.inventory.mainInventory, stack) < qty) return false;
+		int space = ItemHelper.getSpaceFor(player.inventory.mainInventory, stack);
+		if (space < qty) return false;
 
 		int inserted = 0;
 		int remaining = qty;

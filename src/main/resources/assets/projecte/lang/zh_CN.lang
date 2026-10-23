@@ -375,6 +375,19 @@ pe.harmony.voidcancel=§c传送取消！飞行路线的终点位于虚空之中�
 pe.harmony.toothick=§c传送取消！墙壁太厚或未找到安全的落脚点！
 pe.harmony.noemc=§c传送取消！您的个人 EMC 余额不足 (本次传送需要 %s EMC)。
 
+pe.builderswand.tooltip1=§7优先消耗背包内同种方块，不足时按 EMC 扣费
+pe.builderswand.tooltip2=§7单格费用取决于该方块的 EMC 估值与你的知识状态
+pe.builderswand.tooltip3=§7潜行+右键切换模式，潜行+左键撤销上一次放置
+pe.builderswand.mode.3x3=3x3
+pe.builderswand.mode.5x5=5x5
+pe.builderswand.mode.plane=平面无限
+pe.builderswand.undo.done=§a已撤销 %s 格放置
+pe.builderswand.undo.none=§c没有可撤销的放置记录
+pe.harmony.tooltip1=§7右键：指哪飞哪，按飞行格数扣 EMC
+pe.harmony.tooltip2=§7对准墙壁右键：遁地穿墙，按穿过的实心方块数扣 EMC
+pe.harmony.tooltip3=§7落点不安全时会就近搜索安全位置
+pe.harmony.nosafe=§c传送取消！附近没有找到安全的落脚点。
+
 pe.aegu.nocollector=§c绑定失败：AEGU 必须放置在能量收集器的正上方！
 pe.aegu.selected=§a已选中 AEGU。请使用贤者之石右键点击能量凝聚器进行绑定。
 pe.aegu.wrongdim=§c绑定失败：禁止跨维度绑定！
