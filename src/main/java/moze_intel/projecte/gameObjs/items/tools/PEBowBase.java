@@ -3,11 +3,12 @@ package moze_intel.projecte.gameObjs.items.tools;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import moze_intel.projecte.gameObjs.entity.EntityPEArrow;
-import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.playerData.Transmutation;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemBow;
 import net.minecraft.item.ItemStack;
@@ -65,13 +66,17 @@ public abstract class PEBowBase extends ItemBow {
 		if (f < 0.1F) return;
 		if (f > 1.0F) f = 1.0F;
 
-		// 按蓄力比例扣 EMC，创造模式跳过
+		// 按蓄力比例扣除使用者 EMC 网络中的余额，创造模式跳过
 		if (!world.isRemote && !player.capabilities.isCreativeMode) {
 			int cost = (int) Math.ceil(getEmcCost() * f);
-			// EMC 不足时 consumePlayerFuel 返回 -1，且不会扣掉任何燃料
-			if (EMCHelper.consumePlayerFuel(player, cost) < 0) {
+			double currentEmc = Transmutation.getEmc(player);
+			if (currentEmc < cost) {
 				player.addChatMessage(new ChatComponentTranslation("pe.bow.no_emc"));
 				return;
+			}
+			Transmutation.setEmc(player, currentEmc - cost);
+			if (player instanceof EntityPlayerMP) {
+				Transmutation.sync(player);
 			}
 		}
 
