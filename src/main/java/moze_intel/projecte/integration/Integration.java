@@ -1,10 +1,12 @@
 package moze_intel.projecte.integration;
 
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import moze_intel.projecte.integration.NEI.NEIInit;
 import moze_intel.projecte.integration.TConstruct.TConstructInit;
 import moze_intel.projecte.integration.mappers.ChiselMapper;
 import moze_intel.projecte.integration.mappers.GTMapper;
+import moze_intel.projecte.integration.waila.PEWailaDataProvider;
 import moze_intel.projecte.utils.PELogger;
 
 // Single class to initiate different mod compatibilities. Idea came from Avaritia by SpitefulFox
@@ -13,7 +15,7 @@ public final class Integration
 	public static boolean NEI = false, PHC = false, PHN = false, CCC = false,
 		EFR = false, natura = false, gregtech = false, forestry = false,
 		chisel = false, duraDisplay = false, avaritia = false,
-		botania = false, TConstruct = false;
+		botania = false, TConstruct = false, waila = false;
 
 	public static void modChecks()
 	{
@@ -30,6 +32,7 @@ public final class Integration
 		avaritia = Loader.isModLoaded("Avaritia");
 		botania = Loader.isModLoaded("Botania");
 		TConstruct = Loader.isModLoaded("TConstruct");
+		waila = Loader.isModLoaded("Waila");
 	}
 
 	public static void init()
@@ -102,6 +105,16 @@ public final class Integration
 				TConstructInit.init();
 			} catch (Throwable e) {
 				TConstruct = false;
+				e.printStackTrace();
+			}
+		}
+
+		if (waila) {
+			PELogger.logInfo("Try to integrate with Waila");
+			try {
+				FMLInterModComms.sendMessage("Waila", "register", PEWailaDataProvider.class.getName() + ".register");
+			} catch (Throwable e) {
+				waila = false;
 				e.printStackTrace();
 			}
 		}
