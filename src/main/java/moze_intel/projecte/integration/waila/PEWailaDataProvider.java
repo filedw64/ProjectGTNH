@@ -7,7 +7,6 @@ import mcp.mobius.waila.api.IWailaDataProvider;
 import mcp.mobius.waila.api.IWailaRegistrar;
 import moze_intel.projecte.api.tile.IEmcStorage;
 import moze_intel.projecte.gameObjs.tiles.CollectorMK1Tile;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -74,14 +73,12 @@ public class PEWailaDataProvider implements IWailaDataProvider {
 		// 核心性能优化：坚决不调用 te.writeToNBT(tag)!
 		// 仅通过内存强转读取必需数据，将发包大小从 N KB 缩减到几十 Byte，且节省 CPU 序列化开销。
 
-		if (te instanceof IEmcStorage) {
-			IEmcStorage storage = (IEmcStorage) te;
+		if (te instanceof IEmcStorage storage) {
 			tag.setDouble("StoredEMC", storage.getStoredEmc());
 			tag.setDouble("MaxEMC", storage.getMaximumEmc());
 		}
 
-		if (te instanceof CollectorMK1Tile) {
-			CollectorMK1Tile collector = (CollectorMK1Tile) te;
+		if (te instanceof CollectorMK1Tile collector) {
 			// 每秒生成速率 = (当前光照等级 * 基础发电量 / 16.0f) * 20 ticks
 			float genPerTick = collector.getSunLevel() * collector.getEmcGen() / 16.0f;
 			tag.setDouble("GenRate", genPerTick * 20.0f);
