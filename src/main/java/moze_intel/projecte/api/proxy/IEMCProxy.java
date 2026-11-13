@@ -16,6 +16,9 @@ public interface IEMCProxy
      */
     void registerCustomEMC(ItemStack stack, double value);
 
+    /** Binary compatibility with addons compiled against the original integer EMC API. */
+    void registerCustomEMC(ItemStack stack, int value);
+
     /**
      * Register a custom EMC value for emc calculation that is used in Recipes.
      * You can use the following things for the {@code o}-Parameter:
@@ -27,6 +30,9 @@ public interface IEMCProxy
      * @see IConversionProxy#addConversion(int, Object, Map)
      */
     void registerCustomEMC(Object o, double value);
+
+    /** Binary compatibility with addons compiled against the original integer EMC API. */
+    void registerCustomEMC(Object o, int value);
 
     /**
      * Queries the EMC value registry if the given block has an EMC value

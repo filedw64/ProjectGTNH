@@ -27,6 +27,7 @@ import moze_intel.projecte.events.BuildersWandEventHandler;
 import moze_intel.projecte.events.ConnectionHandler;
 import moze_intel.projecte.events.PlayerEvents;
 import moze_intel.projecte.events.TickEvents;
+import moze_intel.projecte.gameObjs.customRecipes.RecipeTome;
 import moze_intel.projecte.gameObjs.ObjHandler;
 import moze_intel.projecte.handlers.PlayerChecks;
 import moze_intel.projecte.handlers.TileEntityHandler;
@@ -127,6 +128,7 @@ public class PECore
 
 	@EventHandler
 	public void loadComplete(FMLLoadCompleteEvent event) {
+		RecipeTome.register();
 		ObjHandler.registerPhiloStoneSmelting();
 		PELogger.logInfo("Registered PhiloStone Smelting Recipe!");
 	}
