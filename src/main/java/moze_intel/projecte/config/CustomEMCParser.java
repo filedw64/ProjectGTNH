@@ -3,6 +3,7 @@ package moze_intel.projecte.config;
 import com.google.common.collect.Maps;
 import net.minecraft.item.ItemStack;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.emc.EMCHotReload;
 import moze_intel.projecte.emc.NormalizedSimpleStack;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PELogger;
@@ -58,14 +59,15 @@ public final class CustomEMCParser
 	{
 		if (!loaded)
 		{
-			PELogger.logFatal("ERROR: configurations files are not loaded!");
-			return;
+			throw new IllegalStateException("Custom EMC configuration is not loaded");
 		}
 
-		userValues.clear();
+		Map<NormalizedSimpleStack, Double> parsed = new java.util.HashMap<>();
 		try
 		{
 			List<String> lines = Files.readAllLines(CONFIG_PATH, StandardCharsets.UTF_8);
+			if (lines.isEmpty() || !VERSION.equals(lines.get(0)))
+				throw new IllegalArgumentException("Missing or unsupported custom EMC file header");
 			int i = 0;
 
 			while (i < lines.size())
@@ -73,7 +75,11 @@ public final class CustomEMCParser
 				String line = lines.get(i).trim();
 				i++;
 
+				if (line.startsWith("M:") || line.startsWith("E:"))
+					throw new IllegalArgumentException("Orphan custom EMC field at line " + i);
 				if (line.isEmpty() || line.length() < 3 || line.charAt(0) == '#' || line.charAt(1) != ':') continue;
+				if (line.charAt(0) != 'S')
+					throw new IllegalArgumentException("Unknown custom EMC field at line " + i);
 
 				if (line.charAt(0) == 'S')
 				{
@@ -85,31 +91,35 @@ public final class CustomEMCParser
 					while (i < lines.size())
 					{
 						String nextLine = lines.get(i).trim();
+						if (nextLine.startsWith("S:"))
+							throw new IllegalArgumentException("Missing EMC value for " + name);
 						if (nextLine.startsWith("M:")) {
 							meta = Integer.parseInt(nextLine.substring(2));
 						} else if (nextLine.startsWith("E:")) {
 							emc = Double.parseDouble(nextLine.substring(2));
 							i++;
 							break; // 找到了 EMC，这个 Entry 结束
+						} else if (!nextLine.isEmpty() && !nextLine.startsWith("#")) {
+							throw new IllegalArgumentException("Invalid custom EMC field: " + nextLine);
 						}
 						i++;
 					}
 
-					if (emc == -1) continue; // 格式错误？
+					if (!Double.isFinite(emc) || emc == -1 || (name.contains(":") && meta < 0))
+						throw new IllegalArgumentException("Invalid or incomplete custom EMC entry: " + name);
 
 					if (name.contains(":"))
 					{
 						ItemStack stack = ItemHelper.getStackFromString(name, meta);
 						if (stack == null)
 						{
-							PELogger.logFatal("Error in custom EMC file: couldn't find item: " + name);
-							continue;
+							throw new IllegalArgumentException("Unknown custom EMC item: " + name);
 						}
 
 						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
 						else PELogger.logInfo("Registered custom EMC for: " + name + "(" + emc + ")");
 
-						userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
+						parsed.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
 					}
 					else
 					{
@@ -117,8 +127,7 @@ public final class CustomEMCParser
 						List<ItemStack> odItems = ItemHelper.getODItems(name);
 						if (odItems.isEmpty())
 						{
-							PELogger.logFatal("Error in custom EMC file: no OD entry for " + name);
-							continue;
+							throw new IllegalArgumentException("Unknown custom EMC ore dictionary entry: " + name);
 						}
 
 						if (emc <= 0) PELogger.logInfo("Removed " + name + " from EMC mapping");
@@ -126,21 +135,59 @@ public final class CustomEMCParser
 
 						for (ItemStack stack : odItems)
 						{
-							userValues.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
+							parsed.put(NormalizedSimpleStack.forItem(stack), Math.max(emc, 0.0));
 						}
 					}
 				}
 			}
+			userValues = parsed;
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new IllegalArgumentException("Could not read custom EMC data; previous values retained", e);
+		}
+	}
+
+	public enum UpdateResult { APPLIED, WRITE_FAILED, ROLLED_BACK, RESTORE_FAILED }
+
+	/** Commands run on the server thread. Never overwrite a newer external edit during rollback. */
+	public static UpdateResult updateAndApply(java.util.function.BooleanSupplier write,
+		java.util.function.BooleanSupplier apply)
+	{
+		byte[] before;
+		try { before = Files.readAllBytes(CONFIG_PATH); }
+		catch (IOException e) { return UpdateResult.WRITE_FAILED; }
+		byte[] written = null;
+		try {
+			if (!write.getAsBoolean()) {
+				return java.util.Arrays.equals(before, Files.readAllBytes(CONFIG_PATH))
+					? UpdateResult.WRITE_FAILED : UpdateResult.RESTORE_FAILED;
+			}
+			written = Files.readAllBytes(CONFIG_PATH);
+			if (apply.getAsBoolean()) {
+				EMCHotReload.noteSelfWrite();
+				return UpdateResult.APPLIED;
+			}
+		}
+		catch (RuntimeException | IOException e) {
+			PELogger.logError("[failed] Command EMC update: %s", e);
+		}
+		try {
+			if (written == null || !java.util.Arrays.equals(written, Files.readAllBytes(CONFIG_PATH)))
+				throw new IOException("File changed externally; refusing to overwrite it");
+			Files.write(CONFIG_PATH, before);
+			EMCHotReload.noteSelfWrite();
+			return UpdateResult.ROLLED_BACK;
+		}
+		catch (IOException e) {
+			PELogger.logError("[failed] Could not restore custom_emc.cfg after command failure: %s", e);
+			return UpdateResult.RESTORE_FAILED;
 		}
 	}
 
 	public static boolean addToFile(String toAdd, int meta, double emc)
 	{
-		if (!loaded) return false;
+		if (!loaded || !Double.isFinite(emc)) return false;
 
 		try
 		{

@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import moze_intel.projecte.config.CustomEMCParser;
+import moze_intel.projecte.emc.EMCMapper;
 import moze_intel.projecte.utils.MathUtils;
 
 public class SetEmcCMD extends ProjectEBaseCMD
@@ -78,19 +79,18 @@ public class SetEmcCMD extends ProjectEBaseCMD
 				emc = MathUtils.parseDouble(params[1]);
             }
         }
-        if (emc < 0 || emc > 1e300)
+        if (!Double.isFinite(emc) || emc < 0 || emc > 1e300)
         {
             sendError(sender, new ChatComponentTranslation("pe.command.set.invalidemc", params[0]));
             return;
         }
-        if (CustomEMCParser.addToFile(name, meta, emc))
-		{
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.set.success", name, emc));
-			sender.addChatMessage(new ChatComponentTranslation("pe.command.reload.notice"));
-		}
-		else
-		{
-			sendError(sender, new ChatComponentTranslation("pe.command.set.invaliditem", name));
-		}
+        final String target = name;
+        final int targetMeta = meta;
+        final double targetEmc = emc;
+        CustomEMCParser.UpdateResult result = CustomEMCParser.updateAndApply(
+            () -> CustomEMCParser.addToFile(target, targetMeta, targetEmc), EMCMapper::reloadCustomEmc);
+        EmcCommandUpdate.finish(sender, result,
+            new ChatComponentTranslation("pe.command.set.success", name, emc),
+            new ChatComponentTranslation("pe.command.set.invaliditem", name));
 	}
 }

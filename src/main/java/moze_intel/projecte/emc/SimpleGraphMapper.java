@@ -116,6 +116,24 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 
 	@Override
 	public Map<T, V> generateValues() {
+		// 避免重复寻址
+		Map<T, V> values = generateValuesRaw();
+		values.entrySet().removeIf(entry -> arithmetic.isFree(entry.getValue()) || arithmetic.isZero(entry.getValue()));
+		return values;
+	}
+
+	/**
+	 * Same relaxation as {@link #generateValues()}, but keeps the raw values (including free / zero entries).
+	 * The retained EMC graph index needs the unfiltered values, because free entries are meaningful as ingredients.
+	 */
+	public Map<T, V> generateValuesRaw() {
+		Map<T, V> values = generatePropagationValues();
+		values.putAll(valueAfter);
+		return values;
+	}
+
+	/** Values used as recipe inputs, before the non-propagating valueAfter overrides. */
+	protected Map<T, V> generatePropagationValues() {
 		Map<T, V> values = new HashMap<>(valueBefore);
 
 		// 构建 SPFA 队列
@@ -149,9 +167,6 @@ public class SimpleGraphMapper<T, V extends Comparable<V>> extends MappingCollec
 			}
 		}
 
-		values.putAll(valueAfter);
-		// 避免重复寻址
-		values.entrySet().removeIf(entry -> arithmetic.isFree(entry.getValue()) || arithmetic.isZero(entry.getValue()));
 		return values;
 	}
 
